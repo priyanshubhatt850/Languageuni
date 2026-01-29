@@ -49,7 +49,13 @@ import {
   Star,
   BookOpen,
   DollarSign,
-  Eye
+  Eye,
+  Phone,
+  FileText,
+  Linkedin,
+  Twitter,
+  Globe,
+  Download
 } from 'lucide-react';
 import Pagination from '@/components/common/Pagination';
 
@@ -157,6 +163,61 @@ export default function AdminInstructors() {
 
   const handleLogout = () => {
     WWClient.auth.logout();
+  };
+
+  const handleViewResume = (resumeUrl) => {
+    if (!resumeUrl) return;
+
+    try {
+      if (resumeUrl.startsWith('data:')) {
+        const byteCharacters = atob(resumeUrl.split(',')[1]);
+        const byteNumbers = new Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) {
+          byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+        const byteArray = new Uint8Array(byteNumbers);
+        const blob = new Blob([byteArray], { type: 'application/pdf' });
+        const url = URL.createObjectURL(blob);
+        window.open(url, '_blank');
+      } else {
+        window.open(resumeUrl, '_blank');
+      }
+    } catch (error) {
+      toast.error('Failed to open resume');
+    }
+  };
+
+  const handleDownloadResume = (resumeUrl) => {
+    if (!resumeUrl) return;
+
+    try {
+      if (resumeUrl.startsWith('data:')) {
+        const byteCharacters = atob(resumeUrl.split(',')[1]);
+        const byteNumbers = new Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) {
+          byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+        const byteArray = new Uint8Array(byteNumbers);
+        const blob = new Blob([byteArray], { type: 'application/pdf' });
+        
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = 'resume.pdf';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(link.href);
+      } else {
+        const link = document.createElement('a');
+        link.href = resumeUrl;
+        link.download = 'resume.pdf';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+    } catch (error) {
+      toast.error('Failed to download resume');
+    }
   };
 
   if (loading) return <LoadingPage />;
@@ -477,61 +538,207 @@ export default function AdminInstructors() {
 
           {/* View/Edit Dialog */}
           <Dialog open={viewDialogOpen} onOpenChange={setViewDialogOpen}>
-            <DialogContent className="max-w-lg">
+            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>Instructor Details</DialogTitle>
               </DialogHeader>
               {selectedInstructor && (
-                <div className="space-y-4">
-                  <div className="flex items-center gap-4">
-                    <Avatar className="w-16 h-16">
+                <div className="space-y-6">
+                  {/* Header */}
+                  <div className="flex items-center gap-4 pb-4 border-b border-slate-200 dark:border-slate-700">
+                    <Avatar className="w-20 h-20">
                       <AvatarImage src={selectedInstructor.avatar_url} />
-                      <AvatarFallback className="bg-violet-100 text-violet-700 text-xl">
+                      <AvatarFallback className="bg-violet-100 text-violet-700 text-2xl">
                         {selectedInstructor.display_name?.charAt(0)}
                       </AvatarFallback>
                     </Avatar>
-                    <div>
-                      <p className="font-semibold text-lg">{selectedInstructor.display_name}</p>
+                    <div className="flex-1">
+                      <p className="font-semibold text-lg text-slate-900 dark:text-white">{selectedInstructor.display_name}</p>
                       <p className="text-slate-500">{selectedInstructor.user_email}</p>
+                      <Badge className={`mt-2 ${statusColors[selectedInstructor.verification_status]}`}>
+                        {selectedInstructor.verification_status}
+                      </Badge>
                     </div>
                   </div>
 
+                  {/* Contact Information */}
+                  <div className="space-y-3">
+                    <h3 className="font-semibold text-slate-900 dark:text-white">Contact Information</h3>
+                    {selectedInstructor.phone_number && (
+                      <div className="flex items-center gap-3 text-slate-700 dark:text-slate-300">
+                        <Phone className="w-4 h-4 text-slate-400" />
+                        <span>{selectedInstructor.phone_number}</span>
+                      </div>
+                    )}
+                    {selectedInstructor.user_email && (
+                      <div className="flex items-center gap-3 text-slate-700 dark:text-slate-300">
+                        <span className="text-slate-400">📧</span>
+                        <span>{selectedInstructor.user_email}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Bio */}
+                  {selectedInstructor.bio && (
+                    <div className="space-y-2">
+                      <h3 className="font-semibold text-slate-900 dark:text-white">Bio</h3>
+                      <p className="text-slate-700 dark:text-slate-300 text-sm leading-relaxed">
+                        {selectedInstructor.bio}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Resume */}
+                  {selectedInstructor.resume_url && (
+                    <div className="space-y-3 p-4 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg border border-emerald-200 dark:border-emerald-800">
+                      <div className="flex items-center gap-3">
+                        <FileText className="w-5 h-5 text-emerald-600" />
+                        <div>
+                          <p className="font-medium text-emerald-900 dark:text-emerald-100">Resume Uploaded</p>
+                          <p className="text-sm text-emerald-700 dark:text-emerald-200">PDF document</p>
+                        </div>
+                      </div>
+                      <div className="flex gap-2 mt-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleViewResume(selectedInstructor.resume_url)}
+                        >
+                          <Eye className="w-4 h-4 mr-2" />
+                          View Resume
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleDownloadResume(selectedInstructor.resume_url)}
+                        >
+                          <Download className="w-4 h-4 mr-2" />
+                          Download
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Professional Info */}
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <Label className="text-slate-500">Experience</Label>
-                      <p className="font-medium">{selectedInstructor.years_experience || 0} years</p>
+                      <p className="font-medium text-slate-900 dark:text-white">{selectedInstructor.years_experience || 0} years</p>
+                    </div>
+                    <div>
+                      <Label className="text-slate-500">Rating</Label>
+                      <div className="flex items-center gap-1">
+                        <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
+                        <p className="font-medium text-slate-900 dark:text-white">{selectedInstructor.average_rating?.toFixed(1) || '0.0'}</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Languages & Qualifications */}
+                  <div>
+                    <Label className="text-slate-500 block mb-2">Languages Taught</Label>
+                    <div className="flex flex-wrap gap-2">
+                      {selectedInstructor.languages_taught?.length > 0 ? (
+                        selectedInstructor.languages_taught.map(lang => (
+                          <Badge key={lang} variant="secondary">{lang}</Badge>
+                        ))
+                      ) : (
+                        <span className="text-slate-400 text-sm">No languages specified</span>
+                      )}
+                    </div>
+                  </div>
+
+                  <div>
+                    <Label className="text-slate-500 block mb-2">Qualifications</Label>
+                    <div className="flex flex-wrap gap-2">
+                      {selectedInstructor.qualifications?.length > 0 ? (
+                        selectedInstructor.qualifications.map((qual, i) => (
+                          <Badge key={i} variant="outline">{qual}</Badge>
+                        ))
+                      ) : (
+                        <span className="text-slate-400 text-sm">No qualifications listed</span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Social Links */}
+                  {(selectedInstructor.social_links?.linkedin || selectedInstructor.social_links?.twitter || selectedInstructor.social_links?.website) && (
+                    <div className="space-y-3">
+                      <h3 className="font-semibold text-slate-900 dark:text-white">Social Links</h3>
+                      <div className="space-y-2">
+                        {selectedInstructor.social_links?.linkedin && (
+                          <a 
+                            href={selectedInstructor.social_links.linkedin} 
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-2 text-slate-600 dark:text-slate-400 hover:text-violet-600 dark:hover:text-violet-400"
+                          >
+                            <Linkedin className="w-4 h-4" />
+                            <span className="text-sm truncate">{selectedInstructor.social_links.linkedin}</span>
+                          </a>
+                        )}
+                        {selectedInstructor.social_links?.twitter && (
+                          <a 
+                            href={selectedInstructor.social_links.twitter} 
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-2 text-slate-600 dark:text-slate-400 hover:text-violet-600 dark:hover:text-violet-400"
+                          >
+                            <Twitter className="w-4 h-4" />
+                            <span className="text-sm truncate">{selectedInstructor.social_links.twitter}</span>
+                          </a>
+                        )}
+                        {selectedInstructor.social_links?.website && (
+                          <a 
+                            href={selectedInstructor.social_links.website} 
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-2 text-slate-600 dark:text-slate-400 hover:text-violet-600 dark:hover:text-violet-400"
+                          >
+                            <Globe className="w-4 h-4" />
+                            <span className="text-sm truncate">{selectedInstructor.social_links.website}</span>
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Financial & Payment Info */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label className="text-slate-500">Payment Type</Label>
+                      <p className="font-medium text-slate-900 dark:text-white capitalize">{selectedInstructor.payment_type || 'Not set'}</p>
+                    </div>
+                    <div>
+                      <Label className="text-slate-500">Payment Rate</Label>
+                      <p className="font-medium text-slate-900 dark:text-white">
+                        {selectedInstructor.payment_type === 'monthly' 
+                          ? `$${selectedInstructor.monthly_salary || 0}/mo`
+                          : `$${selectedInstructor.hourly_rate || 0}/hr`
+                        }
+                      </p>
                     </div>
                     <div>
                       <Label className="text-slate-500">Total Earnings</Label>
-                      <p className="font-medium">${selectedInstructor.total_earnings || 0}</p>
+                      <p className="font-medium text-slate-900 dark:text-white">${selectedInstructor.total_earnings || 0}</p>
+                    </div>
+                    <div>
+                      <Label className="text-slate-500">Pending Payout</Label>
+                      <p className="font-medium text-slate-900 dark:text-white">${selectedInstructor.pending_payout || 0}</p>
+                    </div>
+                    <div>
+                      <Label className="text-slate-500">Hours Taught</Label>
+                      <p className="font-medium text-slate-900 dark:text-white">{selectedInstructor.total_hours_taught || 0}h</p>
+                    </div>
+                    <div>
+                      <Label className="text-slate-500">Total Students</Label>
+                      <p className="font-medium text-slate-900 dark:text-white">{selectedInstructor.total_students || 0}</p>
                     </div>
                   </div>
 
-                  <div>
-                    <Label className="text-slate-500">Bio</Label>
-                    <p className="text-slate-900 dark:text-white">{selectedInstructor.bio || 'No bio provided'}</p>
-                  </div>
-
-                  <div>
-                    <Label className="text-slate-500">Languages Taught</Label>
-                    <div className="flex flex-wrap gap-2 mt-1">
-                      {selectedInstructor.languages_taught?.map(lang => (
-                        <Badge key={lang} variant="secondary">{lang}</Badge>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div>
-                    <Label className="text-slate-500">Qualifications</Label>
-                    <div className="flex flex-wrap gap-2 mt-1">
-                      {selectedInstructor.qualifications?.map((qual, i) => (
-                        <Badge key={i} variant="outline">{qual}</Badge>
-                      )) || <span className="text-slate-400">None listed</span>}
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label>Revenue Share Percentage</Label>
+                  {/* Revenue Share */}
+                  <div className="space-y-3 p-4 bg-slate-100 dark:bg-slate-700/50 rounded-lg">
+                    <Label className="font-semibold text-slate-900 dark:text-white">Revenue Share Percentage</Label>
                     <div className="flex items-center gap-4">
                       <Input
                         type="number"
@@ -541,7 +748,7 @@ export default function AdminInstructors() {
                         onChange={(e) => setRevenueShare(Number(e.target.value))}
                         className="w-24"
                       />
-                      <span className="text-slate-500">%</span>
+                      <span className="text-slate-600 dark:text-slate-400">%</span>
                     </div>
                   </div>
                 </div>
@@ -552,7 +759,7 @@ export default function AdminInstructors() {
                 </Button>
                 <Button 
                   onClick={() => updateStatusMutation.mutate({ 
-                    id: selectedInstructor?.id, 
+                    id: selectedInstructor?._id, 
                     status: selectedInstructor?.verification_status,
                     revenue_share_percentage: revenueShare
                   })}

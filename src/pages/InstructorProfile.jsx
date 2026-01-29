@@ -22,7 +22,13 @@ import {
   X,
   Globe,
   Linkedin,
-  Twitter
+  Twitter,
+  Phone,
+  FileText,
+  DollarSign,
+  TrendingUp,
+  Download,
+  Eye
 } from 'lucide-react';
 
 const languages = ['English', 'Spanish', 'French', 'German', 'Italian', 'Portuguese', 'Mandarin', 'Japanese', 'Korean', 'Arabic'];
@@ -37,9 +43,14 @@ export default function InstructorProfile() {
   const [formData, setFormData] = useState({
     display_name: '',
     bio: '',
+    phone_number: '',
+    resume_url: '',
+    avatar_url: '',
     languages_taught: [],
     qualifications: [],
     years_experience: 0,
+    hourly_rate: 0,
+    payment_type: 'hourly',
     social_links: {
       linkedin: '',
       twitter: '',
@@ -50,30 +61,30 @@ export default function InstructorProfile() {
   useEffect(() => {
     const loadUser = async () => {
       const userData = await WWClient.auth.me();
+      const instructorData = await WWClient.entities.InstructorProfile.filter({ user_id: userData?._id });
+      if (instructorData.length > 0) {
+        userData.instructorProfile = instructorData[0];
+      }
       setUser(userData);
       setLoading(false);
     };
     loadUser();
   }, []);
 
-  const { data: instructorProfile, isLoading: profileLoading } = useQuery({
-    queryKey: ['instructor-profile', user?.id],
-    queryFn: async () => {
-      const profiles = await WWClient.entities.InstructorProfile.filter({ user_id: user?.id });
-      return profiles[0];
-    },
-    enabled: !!user?.id
-  });
-
   useEffect(() => {
-    if (instructorProfile) {
+    if (user?.instructorProfile) {
       setFormData({
-        display_name: instructorProfile.display_name || user?.full_name || '',
-        bio: instructorProfile.bio || '',
-        languages_taught: instructorProfile.languages_taught || [],
-        qualifications: instructorProfile.qualifications || [],
-        years_experience: instructorProfile.years_experience || 0,
-        social_links: instructorProfile.social_links || {
+        display_name: user.instructorProfile.display_name || user?.full_name || '',
+        bio: user.instructorProfile.bio || '',
+        phone_number: user.instructorProfile.phone_number || '',
+        resume_url: user.instructorProfile.resume_url || '',
+        avatar_url: user.instructorProfile.avatar_url || user?.avatar_url || '',
+        languages_taught: user.instructorProfile.languages_taught || [],
+        qualifications: user.instructorProfile.qualifications || [],
+        years_experience: user.instructorProfile.years_experience || 0,
+        hourly_rate: user.instructorProfile.hourly_rate || 0,
+        payment_type: user.instructorProfile.payment_type || 'hourly',
+        social_links: user.instructorProfile.social_links || {
           linkedin: '',
           twitter: '',
           website: ''
@@ -82,10 +93,11 @@ export default function InstructorProfile() {
     } else if (user) {
       setFormData(prev => ({
         ...prev,
-        display_name: user.full_name || ''
+        display_name: user.full_name || '',
+        avatar_url: user.avatar_url || ''
       }));
     }
-  }, [instructorProfile, user]);
+  }, [user]);
 
   const { data: notifications = [] } = useQuery({
     queryKey: ['instructor-notifications', user?.id],
@@ -96,18 +108,17 @@ export default function InstructorProfile() {
 
   const saveMutation = useMutation({
     mutationFn: async (data) => {
-      if (instructorProfile) {
-        return await WWClient.entities.InstructorProfile.update(instructorProfile.id, data);
+      if (user?.instructorProfile) {
+        return await WWClient.entities.InstructorProfile.update(user.instructorProfile._id, data);
       } else {
         return await WWClient.entities.InstructorProfile.create({
           ...data,
-          user_id: user.id,
+          user_id: user._id,
           user_email: user.email
         });
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['instructor-profile']);
       toast.success('Profile saved successfully');
     }
   });
@@ -150,7 +161,68 @@ export default function InstructorProfile() {
     WWClient.auth.logout();
   };
 
-  if (loading || profileLoading) return <LoadingPage />;
+  const handleViewResume = () => {
+    if (!formData.resume_url) return;
+
+    try {
+      // Check if it's a base64 data URL
+      if (formData.resume_url.startsWith('data:')) {
+        const byteCharacters = atob(formData.resume_url.split(',')[1]);
+        const byteNumbers = new Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) {
+          byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+        const byteArray = new Uint8Array(byteNumbers);
+        const blob = new Blob([byteArray], { type: 'application/pdf' });
+        const url = URL.createObjectURL(blob);
+        window.open(url, '_blank');
+      } else {
+        // Regular URL
+        window.open(formData.resume_url, '_blank');
+      }
+    } catch (error) {
+      toast.error('Failed to open resume');
+      console.error('Error opening resume:', error);
+    }
+  };
+
+  const handleDownloadResume = () => {
+    if (!formData.resume_url) return;
+
+    try {
+      // Check if it's a base64 data URL
+      if (formData.resume_url.startsWith('data:')) {
+        const byteCharacters = atob(formData.resume_url.split(',')[1]);
+        const byteNumbers = new Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) {
+          byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+        const byteArray = new Uint8Array(byteNumbers);
+        const blob = new Blob([byteArray], { type: 'application/pdf' });
+        
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = 'resume.pdf';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(link.href);
+      } else {
+        // Regular URL
+        const link = document.createElement('a');
+        link.href = formData.resume_url;
+        link.download = 'resume.pdf';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+    } catch (error) {
+      toast.error('Failed to download resume');
+      console.error('Error downloading resume:', error);
+    }
+  };
+
+  if (loading) return <LoadingPage />;
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
@@ -175,11 +247,11 @@ export default function InstructorProfile() {
 
           <div className="max-w-3xl space-y-6">
             {/* Verification Status */}
-            {instructorProfile && (
+            {user?.instructorProfile && (
               <Card className={`border-0 shadow-sm ${
-                instructorProfile.verification_status === 'approved' 
+                user.instructorProfile.verification_status === 'approved' 
                   ? 'bg-emerald-50 dark:bg-emerald-900/20'
-                  : instructorProfile.verification_status === 'pending'
+                  : user.instructorProfile.verification_status === 'pending'
                   ? 'bg-amber-50 dark:bg-amber-900/20'
                   : 'bg-red-50 dark:bg-red-900/20'
               }`}>
@@ -189,22 +261,22 @@ export default function InstructorProfile() {
                       Verification Status
                     </p>
                     <p className="text-sm text-slate-600 dark:text-slate-400">
-                      {instructorProfile.verification_status === 'approved' 
+                      {user.instructorProfile.verification_status === 'approved' 
                         ? 'Your profile is verified and visible to students'
-                        : instructorProfile.verification_status === 'pending'
+                        : user.instructorProfile.verification_status === 'pending'
                         ? 'Your profile is under review'
                         : 'Your profile verification was rejected'
                       }
                     </p>
                   </div>
                   <Badge className={
-                    instructorProfile.verification_status === 'approved'
+                    user.instructorProfile.verification_status === 'approved'
                       ? 'bg-emerald-100 text-emerald-700'
-                      : instructorProfile.verification_status === 'pending'
+                      : user.instructorProfile.verification_status === 'pending'
                       ? 'bg-amber-100 text-amber-700'
                       : 'bg-red-100 text-red-700'
                   }>
-                    {instructorProfile.verification_status}
+                    {user.instructorProfile.verification_status}
                   </Badge>
                 </CardContent>
               </Card>
@@ -221,7 +293,7 @@ export default function InstructorProfile() {
               <CardContent className="space-y-6">
                 <div className="flex items-center gap-6">
                   <Avatar className="w-24 h-24">
-                    <AvatarImage src={user?.avatar_url} />
+                    <AvatarImage src={formData.avatar_url} />
                     <AvatarFallback className="bg-violet-100 text-violet-700 text-2xl">
                       {formData.display_name?.charAt(0) || 'I'}
                     </AvatarFallback>
@@ -241,6 +313,22 @@ export default function InstructorProfile() {
                     />
                   </div>
                   <div className="space-y-2">
+                    <Label>Phone Number</Label>
+                    <div className="relative">
+                      <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                      <Input
+                        type="tel"
+                        value={formData.phone_number}
+                        onChange={(e) => setFormData({ ...formData, phone_number: e.target.value })}
+                        placeholder="+1 (555) 000-0000"
+                        className="pl-10"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
                     <Label>Years of Experience</Label>
                     <Input
                       type="number"
@@ -249,6 +337,33 @@ export default function InstructorProfile() {
                       onChange={(e) => setFormData({ ...formData, years_experience: Number(e.target.value) })}
                     />
                   </div>
+                  <div className="space-y-2">
+                    <Label>Hourly Rate ($)</Label>
+                    <div className="relative">
+                      <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                      <Input
+                        type="number"
+                        min={0}
+                        step={0.01}
+                        value={formData.hourly_rate}
+                        onChange={(e) => setFormData({ ...formData, hourly_rate: Number(e.target.value) })}
+                        placeholder="0.00"
+                        className="pl-10"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Payment Type</Label>
+                  <select
+                    value={formData.payment_type}
+                    onChange={(e) => setFormData({ ...formData, payment_type: e.target.value })}
+                    className="w-full h-10 rounded-md border border-input bg-background px-3 py-2"
+                  >
+                    <option value="hourly">Hourly</option>
+                    <option value="monthly">Monthly Salary</option>
+                  </select>
                 </div>
 
                 <div className="space-y-2">
@@ -259,6 +374,62 @@ export default function InstructorProfile() {
                     placeholder="Tell students about yourself, your teaching style, and experience..."
                     rows={4}
                   />
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Resume Section */}
+            <Card className="border-0 shadow-sm bg-white dark:bg-slate-800">
+              <CardHeader>
+                <div className="flex items-center gap-2">
+                  <FileText className="w-5 h-5 text-violet-600" />
+                  <CardTitle>Resume / CV</CardTitle>
+                </div>
+                <CardDescription>Your professional resume for student verification</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {formData.resume_url && (
+                  <div className="p-4 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg border border-emerald-200 dark:border-emerald-800">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center gap-3">
+                        <FileText className="w-6 h-6 text-emerald-600" />
+                        <div>
+                          <p className="font-medium text-emerald-900 dark:text-emerald-100">Resume Uploaded</p>
+                          <p className="text-sm text-emerald-700 dark:text-emerald-200">PDF document</p>
+                        </div>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setFormData({ ...formData, resume_url: '' })}
+                      >
+                        <X className="w-4 h-4" />
+                      </Button>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="flex-1"
+                        onClick={handleViewResume}
+                      >
+                        <Eye className="w-4 h-4 mr-2" />
+                        View Resume
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="flex-1"
+                        onClick={handleDownloadResume}
+                      >
+                        <Download className="w-4 h-4 mr-2" />
+                        Download
+                      </Button>
+                    </div>
+                  </div>
+                )}
+                <div className="text-sm text-slate-600 dark:text-slate-400">
+                  {formData.resume_url ? 'Resume is uploaded and verified' : 'No resume currently uploaded'}
                 </div>
               </CardContent>
             </Card>
@@ -339,6 +510,46 @@ export default function InstructorProfile() {
                 </div>
               </CardContent>
             </Card>
+
+            {/* Earnings Overview (Read-only) */}
+            {user?.instructorProfile && (
+              <Card className="border-0 shadow-sm bg-white dark:bg-slate-800">
+                <CardHeader>
+                  <div className="flex items-center gap-2">
+                    <TrendingUp className="w-5 h-5 text-violet-600" />
+                    <CardTitle>Earnings Overview</CardTitle>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div className="p-4 rounded-lg bg-slate-50 dark:bg-slate-700/50">
+                      <p className="text-sm text-slate-600 dark:text-slate-400 mb-1">Total Earnings</p>
+                      <p className="text-2xl font-bold text-violet-600">${user.instructorProfile.total_earnings || 0}</p>
+                    </div>
+                    <div className="p-4 rounded-lg bg-slate-50 dark:bg-slate-700/50">
+                      <p className="text-sm text-slate-600 dark:text-slate-400 mb-1">Pending Payout</p>
+                      <p className="text-2xl font-bold text-amber-600">${user.instructorProfile.pending_payout || 0}</p>
+                    </div>
+                    <div className="p-4 rounded-lg bg-slate-50 dark:bg-slate-700/50">
+                      <p className="text-sm text-slate-600 dark:text-slate-400 mb-1">Total Hours Taught</p>
+                      <p className="text-2xl font-bold text-emerald-600">{user.instructorProfile.total_hours_taught || 0}h</p>
+                    </div>
+                    <div className="p-4 rounded-lg bg-slate-50 dark:bg-slate-700/50">
+                      <p className="text-sm text-slate-600 dark:text-slate-400 mb-1">Total Students</p>
+                      <p className="text-2xl font-bold text-blue-600">{user.instructorProfile.total_students || 0}</p>
+                    </div>
+                    <div className="p-4 rounded-lg bg-slate-50 dark:bg-slate-700/50">
+                      <p className="text-sm text-slate-600 dark:text-slate-400 mb-1">Average Rating</p>
+                      <p className="text-2xl font-bold text-yellow-600">{user.instructorProfile.average_rating?.toFixed(1) || '0.0'} ⭐</p>
+                    </div>
+                    <div className="p-4 rounded-lg bg-slate-50 dark:bg-slate-700/50">
+                      <p className="text-sm text-slate-600 dark:text-slate-400 mb-1">Revenue Share</p>
+                      <p className="text-2xl font-bold text-indigo-600">{user.instructorProfile.revenue_share_percentage || 0}%</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
 
             {/* Social Links */}
             <Card className="border-0 shadow-sm bg-white dark:bg-slate-800">

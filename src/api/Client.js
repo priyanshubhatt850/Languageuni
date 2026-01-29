@@ -264,7 +264,7 @@ function createClient(config) {
     invoke: async (name, payload = {}, options = {}) => {
       const res = await api.post(`/functions/${name}`, payload, options);
 
-      if (name === 'verifyOTP' && res.data?.token) {
+      if ((name === 'verifyOTP' || name === 'verifyGoogleToken') && res.data?.token) {
         setToken(res.data.token);
         if (res.data?.user) {
           localStorage.setItem('user', JSON.stringify(res.data.user));
@@ -272,7 +272,8 @@ function createClient(config) {
       }
 
       return res.data;
-    }
+    },
+    
   };
 
   /* ================= INTEGRATIONS ================= */

@@ -76,6 +76,17 @@ export default function Header({ user, notifications = [] }) {
       setLoading(false);
     }
   };
+  const getSettingsRoute = () => {
+    switch (user?.role) {
+      case 'admin':
+        return createPageUrl('AdminSettings');
+      case 'instructor':
+        return createPageUrl('InstructorProfile');
+      case 'student':
+      default:
+        return createPageUrl('StudentSettings');
+    }
+  };
 
   return (
     <header className="h-16 bg-white/40 dark:bg-slate-900/40 backdrop-blur-2xl border-b border-slate-200/50 dark:border-slate-800/50 sticky top-0 z-20">
@@ -181,7 +192,7 @@ export default function Header({ user, notifications = [] }) {
               <DropdownMenuLabel>My Account</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem asChild>
-                <Link to={createPageUrl('StudentSettings')}>Profile Settings</Link>
+                <Link to={getSettingsRoute()}>Profile Settings</Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
                 <Link to={createPageUrl('MyCertificates')}>My Certificates</Link>

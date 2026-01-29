@@ -20,7 +20,9 @@ import {
   ArrowRight,
   Check,
   Upload,
-  Camera
+  Camera,
+  Phone,
+  FileText
 } from 'lucide-react';
 
 export default function InstructorOnboarding() {
@@ -38,6 +40,8 @@ export default function InstructorOnboarding() {
     display_name: '',
     bio: '',
     avatar_url: '',
+    phone_number: '',
+    resume_url: '',
     languages_taught: [],
     qualifications: [],
     years_experience: 0,
@@ -50,6 +54,7 @@ export default function InstructorOnboarding() {
 
   const [qualificationInput, setQualificationInput] = useState('');
   const [uploadingImage, setUploadingImage] = useState(false);
+  const [uploadingResume, setUploadingResume] = useState(false);
 
   useEffect(() => {
     const loadUser = async () => {
@@ -57,7 +62,7 @@ export default function InstructorOnboarding() {
       setUser(userData);
       setFormData(prev => ({
         ...prev,
-        display_name: userData.full_name || ''
+        display_name: userData?.full_name || ''
       }));
     };
     loadUser();
@@ -140,9 +145,63 @@ export default function InstructorOnboarding() {
     }
   };
 
+  const handleResumeUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.type !== 'application/pdf') {
+      toast.error('Please upload a PDF file');
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('File size must be less than 5MB');
+      return;
+    }
+
+    setUploadingResume(true);
+    try {
+      const { file_url } = await WWClient.integrations.Core.UploadFile( file );
+      setFormData({ ...formData, resume_url: file_url });
+      toast.success('Resume uploaded successfully');
+    } catch (error) {
+      toast.error('Failed to upload resume');
+    } finally {
+      setUploadingResume(false);
+    }
+  };
+
+  const validatePhoneNumber = (phone) => {
+    // International phone number validation supporting multiple countries
+    const internationalPhoneRegex = /^[\+]?(?:[\d\s\-\(\)]{7,})[\d]$|^[\+]?[1-9]\d{1,14}$/;
+    
+    // More flexible validation - accepts various international formats
+    const cleanedPhone = phone.replace(/[\s\-\(\)\.]/g, '');
+    
+    // Check if it starts with + or a digit
+    if (!cleanedPhone.match(/^[\+]?[0-9]/)) return false;
+    
+    // Check minimum length (at least 7 digits after cleaning)
+    const digitsOnly = cleanedPhone.replace(/\D/g, '');
+    if (digitsOnly.length < 7) return false;
+    
+    // Maximum length for international numbers (15 digits per E.164 standard)
+    if (digitsOnly.length > 15) return false;
+    
+    return true;
+  };
+
   const handleNext = () => {
     if (currentStep === 1 && !formData.display_name) {
       toast.error('Please enter your display name');
+      return;
+    }
+    if (currentStep === 1 && !formData.phone_number) {
+      toast.error('Please enter your phone number');
+      return;
+    }
+    if (currentStep === 1 && !validatePhoneNumber(formData.phone_number)) {
+      toast.error('Please enter a valid international phone number (e.g., +1 555 000 0000, +1 (555) 000-0000, or 555-000-0000)');
       return;
     }
     if (currentStep === 2 && formData.languages_taught.length === 0) {
@@ -153,6 +212,10 @@ export default function InstructorOnboarding() {
   };
 
   const handleSubmit = () => {
+    if (!formData.resume_url) {
+      toast.error('Please upload your resume');
+      return;
+    }
     if (formData.qualifications.length === 0) {
       toast.error('Please add at least one qualification');
       return;
@@ -270,6 +333,28 @@ export default function InstructorOnboarding() {
                     className="bg-slate-700/50 border-slate-600 text-white"
                   />
                 </div>
+
+                <div className="space-y-2">
+                  <Label className="text-slate-200">Phone Number *</Label>
+                  <div className="relative">
+                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                    <Input
+                      type="tel"
+                      value={formData.phone_number}
+                      onChange={(e) => setFormData({ ...formData, phone_number: e.target.value })}
+                      placeholder="e.g., +1 (555) 000-0000 or +44 20 7946 0958"
+                      className={`pl-10 bg-slate-700/50 border-slate-600 text-white ${
+                        formData.phone_number && !validatePhoneNumber(formData.phone_number)
+                          ? 'border-red-500 border-2'
+                          : ''
+                      }`}
+                    />
+                  </div>
+                  {formData.phone_number && !validatePhoneNumber(formData.phone_number) && (
+                    <p className="text-xs text-red-400">Please enter a valid phone number. Examples: +1 (555) 000-0000, +44 20 7946 0958, +91 98765 43210</p>
+                  )}
+                  <p className="text-xs text-slate-400">Supports international formats from any country</p>
+                </div>
               </motion.div>
             )}
 
@@ -318,6 +403,54 @@ export default function InstructorOnboarding() {
                 animate={{ opacity: 1, x: 0 }}
                 className="space-y-4"
               >
+                <div className="space-y-2">
+                  <Label className="text-slate-200">Resume/CV *</Label>
+                  <div className="flex items-center gap-4">
+                    <div className="flex-1">
+                      <input
+                        type="file"
+                        accept=".pdf"
+                        onChange={handleResumeUpload}
+                        className="hidden"
+                        id="resume-upload"
+                        disabled={uploadingResume}
+                      />
+                      <label htmlFor="resume-upload">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          disabled={uploadingResume}
+                          className={`w-full cursor-pointer ${
+                            !formData.resume_url ? 'border-red-500 text-red-400' : ''
+                          }`}
+                          asChild
+                        >
+                          <span>
+                            {uploadingResume ? (
+                              'Uploading...'
+                            ) : (
+                              <>
+                                <Upload className="w-4 h-4 mr-2" />
+                                Upload Resume (PDF)
+                              </>
+                            )}
+                          </span>
+                        </Button>
+                      </label>
+                      <p className="text-xs text-slate-400 mt-1">PDF only, max 5MB</p>
+                    </div>
+                    {formData.resume_url && (
+                      <div className="flex items-center gap-2 px-3 py-2 bg-green-500/20 rounded-lg border border-green-500/30">
+                        <FileText className="w-4 h-4 text-green-400" />
+                        <span className="text-xs text-green-400">Uploaded</span>
+                      </div>
+                    )}
+                  </div>
+                  {!formData.resume_url && currentStep === 3 && (
+                    <p className="text-xs text-amber-400">Resume is required</p>
+                  )}
+                </div>
+
                 <div className="space-y-2">
                   <Label className="text-slate-200">Qualifications & Certifications *</Label>
                   <div className="flex gap-2">
