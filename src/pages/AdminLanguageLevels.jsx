@@ -34,7 +34,7 @@ export default function AdminLanguageLevels() {
   const { data: language } = useQuery({
     queryKey: ['language', languageId],
     queryFn: async () => {
-      const langs = await WWClient.entities.Language.filter({ id: languageId });
+      const langs = await WWClient.entities.Language.filter({ _id: languageId });
       return langs[0];
     },
     enabled: !!languageId
