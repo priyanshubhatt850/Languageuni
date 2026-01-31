@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { WWClient } from '@/api/WWClient'
@@ -38,6 +38,7 @@ import {
   Shield,
   Sparkles
 } from 'lucide-react';
+import { loadScript } from "@paypal/paypal-js";
 
 const materialIcons = {
   reading: BookOpen,
@@ -57,8 +58,10 @@ export default function LevelDetail() {
   const [showPracticeChat, setShowPracticeChat] = useState(false);
   const [selectedMaterial, setSelectedMaterial] = useState(null);
   const [flippedCards, setFlippedCards] = useState({});
+  const [showPayPal, setShowPayPal] = useState(false);
   const { theme, setTheme } = useTheme();
   const queryClient = useQueryClient();
+  const paypalContainerRef = useRef(null);
 
   useEffect(() => {
     const loadUser = async () => {
@@ -75,13 +78,13 @@ export default function LevelDetail() {
   const { data: courseData, isLoading } = useQuery({
     queryKey: ['course-level-full', levelId],
     queryFn: async () => {
-      const levels = await WWClient.entities.CourseLevel.filter({ id: levelId });
+      const levels = await WWClient.entities.CourseLevel.filter({ _id: levelId });
       const level = levels[0];
       
       if (!level) return null;
       
       const [langs, materials] = await Promise.all([
-        WWClient.entities.Language.filter({ id: level.language_id }),
+        WWClient.entities.Language.filter({ _id: level.language_id }),
         WWClient.entities.StudyMaterial.filter({ level_id: levelId }, 'display_order')
       ]);
       
@@ -101,21 +104,21 @@ export default function LevelDetail() {
   const materials = courseData?.materials || [];
 
   const { data: enrollment } = useQuery({
-    queryKey: ['enrollment', user?.id, levelId],
+    queryKey: ['enrollment', user?._id, levelId],
     queryFn: async () => {
       const enrollments = await WWClient.entities.Enrollment.filter({
-        user_id: user.id,
+        user_id: user._id,
         course_id: levelId
       });
       return enrollments[0];
     },
-    enabled: !!user?.id && !!levelId,
+    enabled: !!user?._id && !!levelId,
     staleTime: 2 * 60 * 1000
   });
 
   const enrollMutation = useMutation({
     mutationFn: () => WWClient.entities.Enrollment.create({
-      user_id: user.id,
+      user_id: user._id,
       course_id: levelId,
       instructor_id: level.instructor_id,
       payment_amount: level.discount_price || level.price,
@@ -159,6 +162,55 @@ export default function LevelDetail() {
       }());
     }
   });
+  const startPaypalMutation = useMutation({
+    mutationFn:({amount,levelId,redirectRoute})=>WWClient.entities.Enrollment.postwithparams('startPaypalPayment',{
+      amount,
+      levelId,
+      redirectRoute
+    })
+  })
+  // Load PayPal SDK dynamically
+  useEffect(() => {
+    loadScript({ "client-id": "AZ9mQV1dm76WOaOQfKRdJq0nZ8I7B9DtW9Xnv25aB2OOJYhA-7Dl00p0PxY704pVZBtR1zE3VRw_pyDl" }); // Replace YOUR_PAYPAL_CLIENT_ID with your actual PayPal client ID
+  }, []);
+
+  // Render PayPal buttons when modal is shown
+useEffect(() => {
+  if (!showPayPal || !window.paypal || !paypalContainerRef.current) return;
+
+  window.paypal
+    .Buttons({
+      createOrder: async (data, actions) => {
+        const response = await startPaypalMutation.mutateAsync({
+          amount: level.discount_price || level.price,
+          levelId: levelId,
+          redirectRoute: `LevelDetail?id=${levelId}`, // ✅ FIXED
+        });
+        return response.paypal.id; // must return PayPal orderId
+      },
+         
+      onApprove: async (data, actions) => {
+        const details = await actions.order.capture();
+        enrollMutation.mutate();
+        setShowPayPal(false);
+      },
+
+      onCancel: () => {
+        setShowPayPal(false);
+      },
+
+      onError: (err) => {
+        console.error("PayPal error:", err);
+        setShowPayPal(false);
+      },
+    })
+    .render(paypalContainerRef.current);
+
+  // 🧹 cleanup (important if showPayPal toggles)
+  return () => {
+    paypalContainerRef.current.innerHTML = "";
+  };
+}, [showPayPal, levelId]);
 
   if (!level || !language) {
     return (
@@ -488,7 +540,7 @@ export default function LevelDetail() {
                         <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                           <Button
                             className="w-full bg-gradient-to-r from-purple-600 via-purple-600 to-pink-600 hover:from-purple-700 hover:via-purple-700 hover:to-pink-700 h-14 text-base font-bold shadow-2xl"
-                            onClick={() => enrollMutation.mutate()}
+                            onClick={() => setShowPayPal(true)}
                             disabled={enrollMutation.isPending}
                           >
                             {enrollMutation.isPending ? (
@@ -780,6 +832,71 @@ export default function LevelDetail() {
             language={language}
             onClose={() => setShowPracticeChat(false)}
           />
+        )}
+      </AnimatePresence>
+
+      {/* PayPal Modal */}
+      <AnimatePresence>
+        {showPayPal && window.paypal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-violet-900/80 via-purple-900/80 to-slate-900/80 backdrop-blur-[3px]"
+            onClick={() => setShowPayPal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.92, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.92, opacity: 0 }}
+              className="relative bg-gradient-to-br from-white via-violet-50 to-purple-100 dark:from-slate-900 dark:via-violet-950 dark:to-purple-950 border border-violet-200 dark:border-violet-800 rounded-2xl p-0 shadow-2xl max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Decorative Top Bar */}
+              <div className="flex items-center justify-between px-8 pt-7 pb-2 border-b border-violet-100 dark:border-violet-900 bg-gradient-to-r from-violet-100/60 via-white/80 to-purple-100/60 dark:from-violet-950/40 dark:to-purple-950/40 rounded-t-2xl">
+                <h3 className="text-2xl font-extrabold text-violet-800 dark:text-violet-200 tracking-tight flex items-center gap-2">
+                  <img src="https://www.paypalobjects.com/webstatic/icon/pp258.png" alt="PayPal" className="w-7 h-7 mr-1" />
+                  Secure Payment
+                </h3>
+                <button
+                  className="ml-2 rounded-full p-1.5 hover:bg-violet-100 dark:hover:bg-violet-900 transition"
+                  aria-label="Close"
+                  onClick={() => setShowPayPal(false)}
+                  type="button"
+                >
+                  <svg className="w-5 h-5 text-violet-500 dark:text-violet-300" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                  </svg>
+                </button>
+              </div>
+              <div className="px-8 py-6">
+                <div className="mb-4 flex items-center gap-2">
+                  <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-violet-500 to-purple-500 shadow text-white text-lg font-bold">
+                    <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M7.667 20.667c-2.3 0-3.934-1.634-3.934-3.934V7.267c0-2.3 1.634-3.934 3.934-3.934h8.666c2.3 0 3.934 1.634 3.934 3.934v9.466c0 2.3-1.634 3.934-3.934 3.934H7.667zm0-1.5h8.666c1.5 0 2.434-.934 2.434-2.434V7.267c0-1.5-.934-2.434-2.434-2.434H7.667c-1.5 0-2.434.934-2.434 2.434v9.466c0 1.5.934 2.434 2.434 2.434z" /></svg>
+                  </span>
+                  <span className="text-violet-700 dark:text-violet-200 font-semibold text-lg">
+                    Pay for <span className="font-bold">{level?.level_name}</span>
+                  </span>
+                </div>
+                <div className="mb-6">
+                  <span className="block text-4xl font-extrabold text-violet-700 dark:text-violet-200 tracking-tight">
+                    ${level?.discount_price || level?.price}
+                  </span>
+                  <span className="block text-xs text-slate-500 dark:text-slate-400 mt-1">
+                    One-time payment, no hidden fees.
+                  </span>
+                </div>
+                <div ref={paypalContainerRef}></div>
+                <Button
+                  variant="outline"
+                  className="w-full mt-8 border-violet-200 dark:border-violet-800 text-violet-700 dark:text-violet-200 font-semibold hover:bg-violet-50 dark:hover:bg-violet-950/30 transition"
+                  onClick={() => setShowPayPal(false)}
+                >
+                  Cancel
+                </Button>
+              </div>
+            </motion.div>
+          </motion.div>
         )}
       </AnimatePresence>
     </div>

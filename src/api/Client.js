@@ -84,6 +84,9 @@ function createClient(config) {
 
       filter: (params = {}) =>
         api.post(`/${name}/filter`, params).then(r => r.data),
+      getwithparams: (id, params) => api.get(`/${name}/${id}`, { params }).then(r => r.data),
+      postwithparams: (id, params) => api.post(`/${name}/${id}`, { ...params }).then(r => r.data),
+
     };
   });
 
@@ -273,7 +276,7 @@ function createClient(config) {
 
       return res.data;
     },
-    
+
   };
 
   /* ================= INTEGRATIONS ================= */
