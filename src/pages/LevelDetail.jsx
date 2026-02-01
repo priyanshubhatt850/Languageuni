@@ -39,6 +39,7 @@ import {
   Sparkles
 } from 'lucide-react';
 import { loadScript } from "@paypal/paypal-js";
+import CryptoJS from "crypto-js";
 
 const materialIcons = {
   reading: BookOpen,
@@ -49,6 +50,40 @@ const materialIcons = {
   video: Video,
   live_session: Calendar
 };
+const KEY = import.meta.env.VITE_MATERIAL_ENCRYPTION_KEY
+
+const decryptMaterials = (materials) => {
+  if (!materials?.content || !materials?.iv) return [];
+
+  try {
+    const key = CryptoJS.enc.Utf8.parse(KEY); // SAME key
+    const iv = CryptoJS.enc.Hex.parse(materials.iv);
+    const ciphertext = CryptoJS.enc.Hex.parse(materials.content);
+
+    const decrypted = CryptoJS.AES.decrypt(
+      { ciphertext },
+      key,
+      {
+        iv,
+        mode: CryptoJS.mode.CBC,
+        padding: CryptoJS.pad.Pkcs7
+      }
+    );
+
+    const text = decrypted.toString(CryptoJS.enc.Utf8);
+
+    if (!text) {
+      throw new Error("Empty decrypt result");
+    }
+
+    return JSON.parse(text);
+  } catch (err) {
+    console.error("Decrypt failed:", err);
+    return [];
+  }
+};
+
+
 
 export default function LevelDetail() {
   const navigate = useNavigate();
@@ -62,7 +97,6 @@ export default function LevelDetail() {
   const { theme, setTheme } = useTheme();
   const queryClient = useQueryClient();
   const paypalContainerRef = useRef(null);
-
   useEffect(() => {
     const loadUser = async () => {
       try {
@@ -75,46 +109,42 @@ export default function LevelDetail() {
     loadUser();
   }, []);
 
+  // Only fetch courseData after user is loaded
+  const [userLoaded, setUserLoaded] = useState(false);
+  useEffect(() => {
+    const loadUser = async () => {
+      try {
+        const userData = await WWClient.auth.me();
+        setUser(userData);
+      } catch {
+        setUser(null);
+      } finally {
+        setUserLoaded(true);
+      }
+    };
+    loadUser();
+  }, []);
+
+  // Unified API call for all course details, enabled only after user is loaded
   const { data: courseData, isLoading } = useQuery({
-    queryKey: ['course-level-full', levelId],
+    queryKey: ['level-detail', levelId, user?._id],
     queryFn: async () => {
-      const levels = await WWClient.entities.CourseLevel.filter({ _id: levelId });
-      const level = levels[0];
-      
-      if (!level) return null;
-      
-      const [langs, materials] = await Promise.all([
-        WWClient.entities.Language.filter({ _id: level.language_id }),
-        WWClient.entities.StudyMaterial.filter({ level_id: levelId }, 'display_order')
-      ]);
-      
-      return {
-        level,
-        language: langs[0],
-        materials: materials || []
-      };
+      return WWClient.entities.Enrollment.getwithparams('getCoursematerialDetails', {
+        levelId
+      });
     },
-    enabled: !!levelId,
+    enabled: !!levelId && userLoaded,
     staleTime: 10 * 60 * 1000,
     gcTime: 15 * 60 * 1000
   });
 
+  // Extract unified data
   const level = courseData?.level;
   const language = courseData?.language;
-  const materials = courseData?.materials || [];
-
-  const { data: enrollment } = useQuery({
-    queryKey: ['enrollment', user?._id, levelId],
-    queryFn: async () => {
-      const enrollments = await WWClient.entities.Enrollment.filter({
-        user_id: user._id,
-        course_id: levelId
-      });
-      return enrollments[0];
-    },
-    enabled: !!user?._id && !!levelId,
-    staleTime: 2 * 60 * 1000
-  });
+  const materials = decryptMaterials(courseData?.materials) || [];
+  console.log(materials, "these are materials ")
+  const enrollment = courseData?.enrollment;
+  const hasAccess = courseData?.hasAccess;
 
   const enrollMutation = useMutation({
     mutationFn: () => WWClient.entities.Enrollment.create({
@@ -127,7 +157,7 @@ export default function LevelDetail() {
     }),
     onSuccess: () => {
       queryClient.invalidateQueries(['enrollment']);
-      
+
       const duration = 3000;
       const animationEnd = Date.now() + duration;
       const colors = ['#8b5cf6', '#a855f7', '#c084fc', '#e879f9'];
@@ -163,7 +193,7 @@ export default function LevelDetail() {
     }
   });
   const startPaypalMutation = useMutation({
-    mutationFn:({amount,levelId,redirectRoute})=>WWClient.entities.Enrollment.postwithparams('startPaypalPayment',{
+    mutationFn: ({ amount, levelId, redirectRoute }) => WWClient.entities.Enrollment.postwithparams('startPaypalPayment', {
       amount,
       levelId,
       redirectRoute
@@ -175,42 +205,43 @@ export default function LevelDetail() {
   }, []);
 
   // Render PayPal buttons when modal is shown
-useEffect(() => {
-  if (!showPayPal || !window.paypal || !paypalContainerRef.current) return;
+  useEffect(() => {
+    if (!showPayPal || !window.paypal || !paypalContainerRef.current) return;
 
-  window.paypal
-    .Buttons({
-      createOrder: async (data, actions) => {
-        const response = await startPaypalMutation.mutateAsync({
-          amount: level.discount_price || level.price,
-          levelId: levelId,
-          redirectRoute: `LevelDetail?id=${levelId}`, // ✅ FIXED
-        });
-        return response.paypal.id; // must return PayPal orderId
-      },
-         
-      onApprove: async (data, actions) => {
-        const details = await actions.order.capture();
-        enrollMutation.mutate();
-        setShowPayPal(false);
-      },
+    window.paypal
+      .Buttons({
+        createOrder: async (data, actions) => {
+          const response = await startPaypalMutation.mutateAsync({
+            amount: level.discount_price || level.price,
+            levelId: levelId,
+            redirectRoute: `LevelDetail?id=${levelId}`, // ✅ FIXED
+            instructor_id: level.instructor_id
+          });
+          return response.paypal.id; // must return PayPal orderId
+        },
 
-      onCancel: () => {
-        setShowPayPal(false);
-      },
+        onApprove: async (data, actions) => {
+          const details = await actions.order.capture();
+          enrollMutation.mutate();
+          setShowPayPal(false);
+        },
 
-      onError: (err) => {
-        console.error("PayPal error:", err);
-        setShowPayPal(false);
-      },
-    })
-    .render(paypalContainerRef.current);
+        onCancel: () => {
+          setShowPayPal(false);
+        },
 
-  // 🧹 cleanup (important if showPayPal toggles)
-  return () => {
-    paypalContainerRef.current.innerHTML = "";
-  };
-}, [showPayPal, levelId]);
+        onError: (err) => {
+          console.error("PayPal error:", err);
+          setShowPayPal(false);
+        },
+      })
+      .render(paypalContainerRef.current);
+
+    // 🧹 cleanup (important if showPayPal toggles)
+    return () => {
+      paypalContainerRef.current.innerHTML = "";
+    };
+  }, [showPayPal, levelId]);
 
   if (!level || !language) {
     return (
@@ -219,9 +250,9 @@ useEffect(() => {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between h-16">
               <div className="flex items-center gap-4">
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
+                <Button
+                  variant="ghost"
+                  size="icon"
                   onClick={() => navigate(-1)}
                   className="hover:bg-violet-100 dark:hover:bg-violet-900/30"
                 >
@@ -245,24 +276,24 @@ useEffect(() => {
   }, {});
 
   const features = [
-    { 
-      icon: Video, 
-      label: 'HD Video Lessons', 
+    {
+      icon: Video,
+      label: 'HD Video Lessons',
       description: 'High-quality recorded lectures available 24/7'
     },
-    { 
-      icon: Calendar, 
-      label: 'Live Classes', 
+    {
+      icon: Calendar,
+      label: 'Live Classes',
       description: 'Interactive sessions with expert instructors'
     },
-    { 
-      icon: GraduationCap, 
-      label: 'Certificate', 
+    {
+      icon: GraduationCap,
+      label: 'Certificate',
       description: 'Earn an official certificate upon completion'
     },
-    { 
-      icon: Shield, 
-      label: 'Lifetime Access', 
+    {
+      icon: Shield,
+      label: 'Lifetime Access',
       description: 'Access all materials forever with no time limit'
     },
   ];
@@ -281,9 +312,9 @@ useEffect(() => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-4">
-              <Button 
-                variant="ghost" 
-                size="icon" 
+              <Button
+                variant="ghost"
+                size="icon"
                 onClick={() => navigate(-1)}
                 className="hover:bg-violet-100 dark:hover:bg-violet-900/30"
               >
@@ -292,10 +323,10 @@ useEffect(() => {
               <Link to={createPageUrl('Home')} className="flex items-center gap-2">
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-600 to-purple-600 flex items-center justify-center shadow-lg">
                   <svg className="w-6 h-6 text-white" viewBox="0 0 24 24" fill="none">
-                    <path d="M12 2L3 7V17L12 22L21 17V7L12 2Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                    <path d="M12 12L3 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                    <path d="M12 12V22" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                    <path d="M12 12L21 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path d="M12 2L3 7V17L12 22L21 17V7L12 2Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                    <path d="M12 12L3 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                    <path d="M12 12V22" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                    <path d="M12 12L21 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                 </div>
                 <span className="font-bold text-xl text-slate-900 dark:text-white">Language Uni</span>
@@ -313,7 +344,7 @@ useEffect(() => {
               {user && (
                 <Link to={createPageUrl(
                   user?.role === 'admin' ? 'AdminDashboard' :
-                  user?.role === 'instructor' ? 'InstructorDashboard' : 'StudentDashboard'
+                    user?.role === 'instructor' ? 'InstructorDashboard' : 'StudentDashboard'
                 )}>
                   <Button className="bg-violet-600 hover:bg-violet-700">Dashboard</Button>
                 </Link>
@@ -344,7 +375,7 @@ useEffect(() => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="grid lg:grid-cols-5 gap-12 items-start">
             {/* Main Content - 3 columns */}
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8 }}
@@ -396,7 +427,7 @@ useEffect(() => {
                 </motion.div>
 
                 {/* Stats Row */}
-                <motion.div 
+                <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.4 }}
@@ -410,7 +441,7 @@ useEffect(() => {
                   ].map((stat, idx) => {
                     const StatIcon = stat.icon;
                     return (
-                      <motion.div 
+                      <motion.div
                         key={idx}
                         whileHover={{ y: -4, scale: 1.05 }}
                         className="flex items-center gap-3 bg-gradient-to-r from-white/10 to-white/5 backdrop-blur-md px-5 py-3 rounded-xl border border-white/20 hover:border-white/40 transition-colors"
@@ -438,7 +469,7 @@ useEffect(() => {
                           <feature.icon className="w-8 h-8 mb-2 text-white" />
                           <p className="text-sm text-white/90 font-medium text-center">{feature.label}</p>
                         </div>
-                        
+
                         {/* Back Side */}
                         <div className="absolute inset-0 backface-hidden rotate-y-180 bg-white/20 backdrop-blur-md rounded-xl p-4 border border-white/30 flex items-center justify-center">
                           <p className="text-xs text-white/95 text-center leading-relaxed">{feature.description}</p>
@@ -451,7 +482,7 @@ useEffect(() => {
             </motion.div>
 
             {/* Premium Pricing Card - 2 columns */}
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.4, duration: 0.6 }}
@@ -464,7 +495,11 @@ useEffect(() => {
                     {level.thumbnail_url ? (
                       <>
                         <img
-                          src={level.thumbnail_url}
+                          src={
+                            level.thumbnail_url.startsWith('data:image')
+                              ? level.thumbnail_url
+                              : `data:image/jpeg;base64,${level.thumbnail_url}`
+                          }
                           alt={level.level_name}
                           className="w-full h-full object-cover"
                         />
@@ -510,7 +545,7 @@ useEffect(() => {
                     </motion.div>
 
                     {/* CTA Buttons */}
-                    <motion.div 
+                    <motion.div
                       initial={{ opacity: 0, y: 20 }}
                       whileInView={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.2 }}
@@ -528,13 +563,13 @@ useEffect(() => {
                               Enrolled Successfully
                             </Button>
                           </motion.div>
-                          <Button
+                          {/* <Button
                             className="w-full bg-gradient-to-r from-purple-600 via-purple-600 to-pink-600 hover:from-purple-700 hover:via-purple-700 hover:to-pink-700 h-14 text-base font-bold shadow-xl group"
                             onClick={() => setShowPracticeChat(true)}
                           >
                             <Sparkles className="w-5 h-5 mr-2 group-hover:animate-spin" />
                             Practice with AI
-                          </Button>
+                          </Button> */}
                         </>
                       ) : user ? (
                         <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
@@ -665,7 +700,7 @@ useEffect(() => {
                 {Object.keys(groupedMaterials).length === 0 ? (
                   <div className="text-center py-16">
                     <motion.div
-                      animate={{ 
+                      animate={{
                         rotate: [0, 10, -10, 10, 0],
                         scale: [1, 1.1, 1]
                       }}
@@ -690,9 +725,9 @@ useEffect(() => {
                             const Icon = materialIcons[type];
                             const count = groupedMaterials[type].length;
                             return (
-                              <TabsTrigger 
-                                key={type} 
-                                value={type} 
+                              <TabsTrigger
+                                key={type}
+                                value={type}
                                 className="gap-2 data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 data-[state=active]:shadow-lg rounded-lg px-4 py-2 whitespace-nowrap flex-shrink-0"
                               >
                                 <Icon className="w-5 h-5" />
@@ -708,9 +743,10 @@ useEffect(() => {
                     {Object.entries(groupedMaterials).map(([type, items]) => (
                       <TabsContent key={type} value={type} className="space-y-4 mt-8">
                         {items.map((material, idx) => {
-                          const canAccess = isEnrolled || material.is_free_preview;
+                          // Only allow access if hasAccess or material.is_free_preview
+                          const canAccess = hasAccess || material.is_free_preview;
                           const Icon = materialIcons[material.material_type];
-                          
+
                           return (
                             <motion.div
                               key={material.id}
@@ -719,20 +755,17 @@ useEffect(() => {
                               transition={{ delay: idx * 0.05 }}
                               className="group"
                             >
-                              <Card className={`border-0 shadow-md hover:shadow-xl transition-all overflow-hidden ${
-                                canAccess ? 'hover:-translate-y-1' : 'opacity-75'
-                              }`}>
+                              <Card className={`border-0 shadow-md hover:shadow-xl transition-all overflow-hidden ${canAccess ? 'hover:-translate-y-1' : 'opacity-75'
+                                }`}>
                                 <CardContent className="p-4 sm:p-6">
                                   <div className="flex flex-col sm:flex-row sm:items-center gap-4">
                                     <div className="flex items-start gap-3 flex-1 min-w-0">
-                                      <div className={`w-12 h-12 sm:w-14 sm:h-14 rounded-xl flex items-center justify-center flex-shrink-0 ${
-                                        canAccess 
-                                          ? 'bg-gradient-to-br from-violet-100 to-purple-100 dark:from-violet-900/30 dark:to-purple-900/30'
-                                          : 'bg-slate-100 dark:bg-slate-800'
-                                      }`}>
-                                        <Icon className={`w-6 h-6 sm:w-7 sm:h-7 ${
-                                          canAccess ? 'text-violet-600 dark:text-violet-400' : 'text-slate-400'
-                                        }`} />
+                                      <div className={`w-12 h-12 sm:w-14 sm:h-14 rounded-xl flex items-center justify-center flex-shrink-0 ${canAccess
+                                        ? 'bg-gradient-to-br from-violet-100 to-purple-100 dark:from-violet-900/30 dark:to-purple-900/30'
+                                        : 'bg-slate-100 dark:bg-slate-800'
+                                        }`}>
+                                        <Icon className={`w-6 h-6 sm:w-7 sm:h-7 ${canAccess ? 'text-violet-600 dark:text-violet-400' : 'text-slate-400'
+                                          }`} />
                                       </div>
                                       <div className="flex-1 min-w-0">
                                         <div className="flex items-start gap-2 mb-2 flex-wrap">
@@ -865,7 +898,7 @@ useEffect(() => {
                   type="button"
                 >
                   <svg className="w-5 h-5 text-violet-500 dark:text-violet-300" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                   </svg>
                 </button>
               </div>

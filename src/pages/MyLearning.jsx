@@ -43,89 +43,60 @@ export default function MyLearning() {
     loadUser();
   }, []);
 
-  const { data: enrollments = [] } = useQuery({
-    queryKey: ['my-enrollments', user?.id],
-    queryFn: () => WWClient.entities.Enrollment.filter({ user_id: user?.id }, '-enrolled_date'),
-    enabled: !!user?.id,
-    initialData: []
-  });
-
-  const { data: allCourseLevels = [] } = useQuery({
-    queryKey: ['course-levels-for-enrollments', enrollments],
+  // Use the new API to get all course details for the user's enrollments
+  const { data: myCourses = [], isLoading: coursesLoading } = useQuery({
+    queryKey: ['my-courses', user?._id],
     queryFn: async () => {
-      if (enrollments.length === 0) return [];
-      const levelIds = [...new Set(enrollments.map(e => e.course_id))];
-      const levels = await Promise.all(
-        levelIds.map(id => WWClient.entities.CourseLevel.filter({ id }).then(l => l[0]))
-      );
-      return levels.filter(Boolean);
+      if (!user?._id) return [];
+      // Directly get all course details for the user
+      const courseDetailsList = await WWClient.entities.Enrollment.getwithparams('getallcourseList', {
+        user_id: user._id
+      });
+      // courseDetailsList is expected to be an array of objects with enrollment, courseDetails, languageDetails, materialDetails, etc.
+      return Array.isArray(courseDetailsList) ? courseDetailsList : [];
     },
-    enabled: enrollments.length > 0,
+    enabled: !!user?._id,
     initialData: []
   });
 
-  const { data: courseLevelProgress = [] } = useQuery({
-    queryKey: ['my-progress', user?.id],
-    queryFn: () => WWClient.entities.StudentCourseLevelProgress.filter({ user_id: user?.id }),
-    enabled: !!user?.id,
-    initialData: []
-  });
-
-  const { data: allLanguages = [] } = useQuery({
-    queryKey: ['languages-for-levels'],
-    queryFn: async () => {
-      if (allCourseLevels.length === 0) return [];
-      const langIds = [...new Set(allCourseLevels.map(l => l.language_id))];
-      const languages = await Promise.all(
-        langIds.map(id => WWClient.entities.Language.filter({ id }).then(l => l[0]))
-      );
-      return languages.filter(Boolean);
-    },
-    enabled: allCourseLevels.length > 0,
-    initialData: []
-  });
-
-  const { data: studyMaterials = [] } = useQuery({
-    queryKey: ['materials-for-levels'],
-    queryFn: async () => {
-      if (allCourseLevels.length === 0) return [];
-      const levelIds = [...new Set(allCourseLevels.map(l => l.id))];
-      const materialsPromises = levelIds.map(id => 
-        WWClient.entities.StudyMaterial.filter({ level_id: id })
-      );
-      const materialsArrays = await Promise.all(materialsPromises);
-      return materialsArrays.flat();
-    },
-    enabled: allCourseLevels.length > 0,
-    initialData: []
-  });
-
-  const { data: notifications = [] } = useQuery({
-    queryKey: ['my-notifications', user?.id],
-    queryFn: () => WWClient.entities.Notification.filter({ user_id: user?.id }, '-created_date', 10),
-    enabled: !!user?.id,
-    initialData: []
-  });
-
-  const enrollmentLevels = enrollments.map(e => {
-    const level = allCourseLevels.find(l => l.id === e.course_id);
-    const progress = courseLevelProgress.find(p => p.course_level_id === e.course_id);
-    return {
-      id: e.id,
-      enrollment: e,
-      level,
-      progress: progress || { status: 'not_started', progress_percentage: 0, course_level_id: e.course_id, language_id: level?.language_id }
+  // Flatten and map data for UI
+  const enrollmentLevels = myCourses.map((course) => {
+    // course = enrollment object with courseDetails, languageDetails, materialDetails, etc.
+    const enrollment = course;
+    const level = course.courseDetails;
+    const language = course.languageDetails;
+    const progress = {
+      status: course.status === 'active' && course.progress_percentage < 100
+        ? (course.progress_percentage > 0 ? 'in_progress' : 'not_started')
+        : (course.progress_percentage === 100 ? 'completed' : 'not_started'),
+      progress_percentage: course.progress_percentage || 0,
+      course_level_id: course.course_id,
+      language_id: language?._id
     };
-  }).filter(item => item.level);
+    const materials = Array.isArray(course.materialDetails)
+      ? course.materialDetails
+      : [];
+      const material = course?.totalMaterials || 0;
+    return {
+      id: enrollment._id,
+      enrollment,
+      level,
+      language,
+      progress,
+      materials,
+      material
+    };
+  }).filter(item => item.level && item.language);
 
   const activeProgress = enrollmentLevels.filter(item => item.progress.status === 'in_progress' || item.progress.status === 'not_started');
+  console.log(activeProgress,"this is activeprogress")
   const completedProgress = enrollmentLevels.filter(item => item.progress.status === 'completed');
 
-  const filteredActive = activeProgress.filter(item => 
+  const filteredActive = activeProgress.filter(item =>
     item.level?.level_name?.toLowerCase().includes(searchTerm.toLowerCase())
   );
-  
-  const filteredCompleted = completedProgress.filter(item => 
+
+  const filteredCompleted = completedProgress.filter(item =>
     item.level?.level_name?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -133,12 +104,18 @@ export default function MyLearning() {
     WWClient.auth.logout();
   };
 
-  if (loading) return <LoadingPage />;
+  if (loading || coursesLoading) return <LoadingPage />;
 
+  // Move notifications query ABOVE LevelCard definition and all returns
+  // const { data: notifications = [] } = useQuery({
+  //   queryKey: ['my-notifications', user?._id],
+  //   queryFn: () => WWClient.entities.Notification.filter({ user_id: user?._id }, '-created_date', 10),
+  //   enabled: !!user?._id,
+  //   initialData: []
+  // });
+const notifications = []
   const LevelCard = ({ item, index }) => {
-    const { level, progress, enrollment } = item;
-    const language = allLanguages.find(lang => lang.id === level?.language_id);
-    const levelMaterials = studyMaterials.filter(m => m.level_id === level?.id);
+    const { level, progress, enrollment, language, materials, material } = item;
 
     const levelGradients = {
       A1: 'from-emerald-400 to-teal-600',
@@ -210,7 +187,7 @@ export default function MyLearning() {
             {/* Stats Row */}
             <div className="grid grid-cols-3 gap-4 mb-6 pb-6 border-b border-slate-100 dark:border-slate-700">
               <div className="text-center">
-                <div className="text-2xl font-bold text-slate-900 dark:text-white">{levelMaterials.length}</div>
+                <div className="text-2xl font-bold text-slate-900 dark:text-white">{material}</div>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Materials</p>
               </div>
               <div className="text-center">
@@ -267,7 +244,7 @@ export default function MyLearning() {
             {/* Action Button */}
             <div className="mt-auto pt-4">
               <Button
-                onClick={() => navigate(createPageUrl(`StudentPractice?levelId=${level.id}`))}
+                onClick={() => navigate(createPageUrl(`StudentPractice?levelId=${level._id}`))}
                 className={`w-full py-3 font-semibold rounded-xl gap-2 transition-all duration-300 shadow-md ${
                   isCompleted
                     ? 'bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-700 dark:text-slate-100 dark:hover:bg-slate-600'
@@ -348,7 +325,7 @@ export default function MyLearning() {
              ) : (
                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                  {filteredActive.map((item, index) => (
-                   <LevelCard key={item.id} item={item} index={index} />
+                   <LevelCard key={item._id} item={item} index={index} />
                  ))}
                </div>
              )}
@@ -364,7 +341,7 @@ export default function MyLearning() {
              ) : (
                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                  {filteredCompleted.map((item, index) => (
-                   <LevelCard key={item.id} item={item} index={index} />
+                   <LevelCard key={item._id} item={item} index={index} />
                  ))}
                </div>
              )}

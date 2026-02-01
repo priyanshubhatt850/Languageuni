@@ -40,21 +40,21 @@ export default function StudentPractice() {
 
   // Check if user is enrolled
   const { data: enrollment } = useQuery({
-    queryKey: ['enrollment', levelId, user?.id],
+    queryKey: ['enrollment', levelId, user?._id],
     queryFn: async () => {
       const enrollments = await WWClient.entities.Enrollment.filter({
         course_id: levelId,
-        user_id: user?.id
+        user_id: user?._id
       });
       return enrollments[0];
     },
-    enabled: !!levelId && !!user?.id
+    enabled: !!levelId && !!user?._id
   });
 
   const { data: level } = useQuery({
     queryKey: ['level', levelId],
     queryFn: async () => {
-      const levels = await WWClient.entities.CourseLevel.filter({ id: levelId });
+      const levels = await WWClient.entities.CourseLevel.filter({ _id: levelId });
       return levels[0];
     },
     enabled: !!levelId
@@ -82,16 +82,16 @@ export default function StudentPractice() {
   });
 
   const { data: bookmarks = [] } = useQuery({
-    queryKey: ['material-bookmarks', user?.id, levelId],
+    queryKey: ['material-bookmarks', user?._id, levelId],
     queryFn: async () => {
       const bookmarks = await WWClient.entities.StudentMaterialBookmark.filter({
-        user_id: user?.id,
+        user_id: user?._id,
         level_id: levelId,
         is_bookmarked: true
       });
       return bookmarks.map(b => b.material_id);
     },
-    enabled: !!user?.id && !!levelId,
+    enabled: !!user?._id && !!levelId,
     initialData: []
   });
 
@@ -110,9 +110,9 @@ export default function StudentPractice() {
   });
 
   const { data: notifications = [] } = useQuery({
-    queryKey: ['student-notifications', user?.id],
-    queryFn: () => WWClient.entities.Notification.filter({ user_id: user?.id }, '-created_date', 10),
-    enabled: !!user?.id,
+    queryKey: ['student-notifications', user?._id],
+    queryFn: () => WWClient.entities.Notification.filter({ user_id: user?._id }, '-created_date', 10),
+    enabled: !!user?._id,
     initialData: []
   });
 
@@ -286,7 +286,7 @@ export default function StudentPractice() {
                   >
                     {filteredMaterials.map((material, index) => (
                       <motion.div
-                        key={material.id}
+                        key={material._id}
                         variants={{
                           hidden: { opacity: 0, y: 20 },
                           show: { opacity: 1, y: 0 }
@@ -298,12 +298,12 @@ export default function StudentPractice() {
                           onView={setSelectedMaterial}
                           onBookmarkChange={() => {
                             setBookmarkedMaterials(prev => 
-                              bookmarkedMaterials.includes(material.id)
-                                ? prev.filter(id => id !== material.id)
-                                : [...prev, material.id]
+                              bookmarkedMaterials.includes(material._id)
+                                ? prev.filter(id => id !== material._id)
+                                : [...prev, material._id]
                             );
                           }}
-                          isBookmarked={bookmarkedMaterials.includes(material.id)}
+                          isBookmarked={bookmarkedMaterials.includes(material._id)}
                         />
                       </motion.div>
                     ))}
@@ -343,7 +343,7 @@ export default function StudentPractice() {
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {flashcards.map((deck, index) => (
                     <motion.div
-                      key={deck.id}
+                      key={deck._id}
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: index * 0.1 }}
@@ -375,7 +375,7 @@ export default function StudentPractice() {
                           )}
                           <Button 
                             className="w-full bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700 text-white font-semibold gap-2 group-hover:shadow-lg transition-all"
-                            onClick={() => navigate(createPageUrl(`StudentFlashcards?levelId=${levelId}&deckId=${deck.id}`))}
+                            onClick={() => navigate(createPageUrl(`StudentFlashcards?levelId=${levelId}&deckId=${deck._id}`))}
                           >
                             <Play className="w-4 h-4" />
                             Study Now
@@ -407,7 +407,7 @@ export default function StudentPractice() {
                   <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {exercises.map((exercise, index) => (
                     <motion.div
-                      key={exercise.id}
+                      key={exercise._id}
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: index * 0.1 }}
@@ -443,7 +443,7 @@ export default function StudentPractice() {
                           </div>
                           <Button 
                             className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-semibold gap-2 group-hover:shadow-lg transition-all"
-                            onClick={() => navigate(createPageUrl(`StudentExercise?levelId=${levelId}&exerciseId=${exercise.id}`))}
+                            onClick={() => navigate(createPageUrl(`StudentExercise?levelId=${levelId}&exerciseId=${exercise._id}`))}
                           >
                             <Play className="w-4 h-4" />
                             Start Exercise
