@@ -179,7 +179,7 @@ export default function AdminLogin() {
         {/* Footer */}
         <div className="text-center mt-8">
           <p className="text-sm text-purple-300">
-            © 2026 Language Uni. All rights reserved.
+            © 2026 Global Tongue. All rights reserved.
           </p>
         </div>
       </motion.div>

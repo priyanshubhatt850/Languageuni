@@ -89,7 +89,7 @@ export default function LanguageDetail() {
                     <path d="M12 12L21 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
                 </div>
-                <span className="font-bold text-xl text-slate-900 dark:text-white">Language Uni</span>
+                <span className="font-bold text-xl text-slate-900 dark:text-white">Global Tongue</span>
               </Link>
             </div>
             <div className="flex items-center gap-3">

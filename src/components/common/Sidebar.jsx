@@ -95,7 +95,7 @@ export default function Sidebar({ userRole, currentPage, onLogout }) {
                 <path d="M12 12L21 7" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
             </div>
-            <span className="font-bold text-xl bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-300 bg-clip-text text-transparent">Language Uni</span>
+            <span className="font-bold text-xl bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-300 bg-clip-text text-transparent">Global Tongue</span>
           </Link>
         )}
         <Button

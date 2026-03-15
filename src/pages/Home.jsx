@@ -199,7 +199,7 @@ export default function Home() {
                   <path d="M12 12L21 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
               </div>
-              <span className="font-bold text-xl text-slate-900 dark:text-white">Language Uni</span>
+              <span className="font-bold text-xl text-slate-900 dark:text-white">Global Tongue</span>
             </Link>
 
             <div className="hidden md:flex items-center gap-8">
@@ -729,7 +729,7 @@ export default function Home() {
                     <path d="M12 12L21 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                 </div>
-                <span className="font-bold text-xl">Language Uni</span>
+                <span className="font-bold text-xl">Global Tongue</span>
               </Link>
               <p className="text-slate-400 mb-6">
                 Empowering learners worldwide to achieve language fluency through expert instruction.
@@ -767,7 +767,7 @@ export default function Home() {
           </div>
 
           <div className="pt-8 border-t border-slate-800 text-center text-slate-400">
-            <p>© 2026 Language Uni. All rights reserved.</p>
+            <p>© 2026 Global Tongue. All rights reserved.</p>
           </div>
         </div>
       </footer>

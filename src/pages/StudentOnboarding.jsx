@@ -84,7 +84,7 @@ export default function StudentOnboarding() {
       avatar_url: avatarUrl
     });
 
-    toast.success('Welcome to Language Uni!');
+    toast.success('Welcome to Global Tongue!');
     navigate('/StudentDashboard');
   };
 
@@ -99,7 +99,7 @@ export default function StudentOnboarding() {
           <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center mx-auto mb-4">
             <BookOpen className="w-8 h-8 text-white" />
           </div>
-          <h1 className="text-3xl font-bold text-white mb-2">Welcome to Language Uni!</h1>
+          <h1 className="text-3xl font-bold text-white mb-2">Welcome to Global Tongue!</h1>
           <p className="text-slate-300">Let's personalize your learning journey</p>
         </motion.div>
 

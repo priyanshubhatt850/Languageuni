@@ -201,7 +201,9 @@ export default function LevelDetail() {
   })
   // Load PayPal SDK dynamically
   useEffect(() => {
-    loadScript({ "client-id": "AZ9mQV1dm76WOaOQfKRdJq0nZ8I7B9DtW9Xnv25aB2OOJYhA-7Dl00p0PxY704pVZBtR1zE3VRw_pyDl" }); // Replace YOUR_PAYPAL_CLIENT_ID with your actual PayPal client ID
+    // loadScript({ "client-id": "AZ9mQV1dm76WOaOQfKRdJq0nZ8I7B9DtW9Xnv25aB2OOJYhA-7Dl00p0PxY704pVZBtR1zE3VRw_pyDl" }); // Replace YOUR_PAYPAL_CLIENT_ID with your actual PayPal client ID
+    loadScript({ "client-id": import.meta.env.VITE_PAYPAL_CLIENT_ID }); // Replace YOUR_PAYPAL_CLIENT_ID with your actual PayPal client ID
+
   }, []);
 
   // Render PayPal buttons when modal is shown
@@ -329,7 +331,7 @@ export default function LevelDetail() {
                     <path d="M12 12L21 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                 </div>
-                <span className="font-bold text-xl text-slate-900 dark:text-white">Language Uni</span>
+                <span className="font-bold text-xl text-slate-900 dark:text-white">Global Tongue</span>
               </Link>
             </div>
             <div className="flex items-center gap-3">

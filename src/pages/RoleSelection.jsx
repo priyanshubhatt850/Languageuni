@@ -210,7 +210,7 @@ export default function RoleSelection() {
                   <path d="M12 12L21 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
               </div>
-              <h1 className="text-3xl md:text-4xl font-bold text-white">Language Uni</h1>
+              <h1 className="text-3xl md:text-4xl font-bold text-white">Global Tongue</h1>
             </div>
             <p className="text-lg text-slate-300">Select your role to get started</p>
           </motion.div>
