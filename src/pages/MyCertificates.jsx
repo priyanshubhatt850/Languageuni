@@ -45,9 +45,9 @@ export default function MyCertificates() {
   });
 
   const { data: notifications = [] } = useQuery({
-    queryKey: ['my-notifications', user?.id],
-    queryFn: () => WWClient.entities.Notification.filter({ user_id: user?.id }, '-created_date', 10),
-    enabled: !!user?.id,
+    queryKey: ['my-notifications', user?._id],
+    queryFn: () => WWClient.entities.Notification.filter({ user_id: user?._id }, '-created_date', 10),
+    enabled: !!user?._id,
     initialData: []
   });
 
@@ -91,7 +91,7 @@ export default function MyCertificates() {
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {enrollments.map((enrollment, index) => (
                 <motion.div
-                  key={enrollment.id}
+                  key={enrollment._id || enrollment.id}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.1 }}

@@ -71,7 +71,7 @@ export default function Leaderboard() {
       const users = await WWClient.entities.User.filter({ id: { $in: userIds } });
       
       const combined = userPoints.map((points, index) => {
-        const userData = users.find(u => u.id === points.user_id);
+        const userData = users.find(u => u._id === points.user_id);
         return {
           ...points,
           rank: index + 1,
@@ -84,7 +84,7 @@ export default function Leaderboard() {
     staleTime: 2 * 60 * 1000,
   });
 
-  const currentUserRank = leaderboardData?.find(item => item.user_id === user?.id);
+  const currentUserRank = leaderboardData?.find(item => item.user_id === user?._id);
   
   // Pagination for leaderboard (skip first 3 for podium)
   const leaderboardList = leaderboardData?.slice(3) || [];
@@ -243,7 +243,7 @@ export default function Leaderboard() {
                         key={item.user_id} 
                         data={item} 
                         delay={index * 0.05}
-                        isCurrentUser={item.user_id === user?.id}
+                        isCurrentUser={item.user_id === user?._id}
                       />
                     ))}
                   </AnimatePresence>

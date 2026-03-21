@@ -33,9 +33,9 @@ export default function StudentSchedule() {
   }, []);
 
   const { data: enrollments = [] } = useQuery({
-    queryKey: ['my-enrollments', user?.id],
-    queryFn: () => WWClient.entities.Enrollment.filter({ user_id: user?.id }),
-    enabled: !!user?.id,
+    queryKey: ['my-enrollments', user?._id],
+    queryFn: () => WWClient.entities.Enrollment.filter({ user_id: user?._id }),
+    enabled: !!user?._id,
     initialData: []
   });
 
@@ -59,9 +59,9 @@ export default function StudentSchedule() {
   });
 
   const { data: notifications = [] } = useQuery({
-    queryKey: ['my-notifications', user?.id],
-    queryFn: () => WWClient.entities.Notification.filter({ user_id: user?.id }, '-created_date', 10),
-    enabled: !!user?.id,
+    queryKey: ['my-notifications', user?._id],
+    queryFn: () => WWClient.entities.Notification.filter({ user_id: user?._id }, '-created_date', 10),
+    enabled: !!user?._id,
     initialData: []
   });
 
@@ -166,7 +166,7 @@ export default function StudentSchedule() {
                         <div className="space-y-2">
                           {dayLessons.map((lesson) => (
                             <div
-                              key={lesson.id}
+                              key={lesson._id || lesson.id}
                               className="p-2 rounded-lg bg-violet-100 dark:bg-violet-900/30 text-xs"
                             >
                               <p className="font-medium text-violet-700 dark:text-violet-300 truncate">

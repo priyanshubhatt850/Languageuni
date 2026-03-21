@@ -106,7 +106,7 @@ export default function PracticeChat({ level, language, onClose }) {
       const conv = await WWClient.agents.createConversation({
         agent_name: 'language_practice',
         metadata: {
-          level_id: level.id,
+          level_id: level._id || level.id,
           level_name: level.level_name,
           language: language.name,
           language_flag: language.flag
@@ -114,7 +114,7 @@ export default function PracticeChat({ level, language, onClose }) {
       });
       setConversation(conv);
 
-      const unsubscribe = WWClient.agents.subscribeToConversation(conv.id, (data) => {
+      const unsubscribe = WWClient.agents.subscribeToConversation(conv._id || conv.id, (data) => {
         setMessages(data.messages || []);
       });
 

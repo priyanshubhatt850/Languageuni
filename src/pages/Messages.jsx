@@ -86,7 +86,7 @@ export default function Messages() {
     queryKey: ['chat-messages', selectedConversation?._id],
     queryFn: async () => {
       const msgs = await WWClient.entities.ChatMessage.filter(
-        { conversation_id: selectedConversation.id },
+        { conversation_id: selectedConversation._id || selectedConversation.id },
         'created_date'
       );
       
@@ -96,14 +96,14 @@ export default function Messages() {
       );
       if (unreadMessages.length > 0) {
         await Promise.all(
-          unreadMessages.map(m => WWClient.entities.ChatMessage.update(m.id, { is_read: true }))
+          unreadMessages.map(m => WWClient.entities.ChatMessage.update(m._id || m.id, { is_read: true }))
         );
         queryClient.invalidateQueries(['chat-conversations']);
       }
       
       return msgs;
     },
-    enabled: !!selectedConversation?.id,
+    enabled: !!selectedConversation?._id,
     initialData: []
   });
 
@@ -268,7 +268,7 @@ export default function Messages() {
                         </SelectTrigger>
                         <SelectContent>
                           {courseLevels.map(course => (
-                            <SelectItem key={course.id} value={course.id}>
+                            <SelectItem key={course._id || course.id} value={course._id || course.id}>
                               {course.level_name}
                             </SelectItem>
                           ))}
@@ -333,11 +333,11 @@ export default function Messages() {
                         
                         return (
                           <button
-                            key={conv.id}
+                            key={conv._id || conv.id}
                             onClick={() => setSelectedConversation(conv)}
                             className={cn(
                               "w-full p-4 flex items-start gap-3 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors text-left",
-                              selectedConversation?.id === conv.id && "bg-violet-50 dark:bg-violet-900/20"
+                              selectedConversation?._id === conv._id || selectedConversation?.id === conv.id && "bg-violet-50 dark:bg-violet-900/20"
                             )}
                           >
                             <div className="w-10 h-10 rounded-full bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center flex-shrink-0">
@@ -411,7 +411,7 @@ export default function Messages() {
                           <Select
                             value={selectedConversation.status}
                             onValueChange={async (status) => {
-                              await WWClient.entities.ChatConversation.update(selectedConversation.id, { status });
+                              await WWClient.entities.ChatConversation.update(selectedConversation._id || selectedConversation.id, { status });
                               queryClient.invalidateQueries(['chat-conversations']);
                             }}
                           >
@@ -432,10 +432,10 @@ export default function Messages() {
                       <div className="space-y-4">
                         <AnimatePresence>
                           {messages.map((msg, index) => {
-                            const isMine = msg.sender_id === user?.id;
+                            const isMine = msg.sender_id === user?._id;
                             return (
                               <motion.div
-                                key={msg.id || index}
+                                key={msg._id || msg.id || index}
                                 initial={{ opacity: 0, y: 10 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 className={cn(

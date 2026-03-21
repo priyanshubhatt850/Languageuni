@@ -21,7 +21,7 @@ export default function MaterialCard({ material, levelId, onView, onBookmarkChan
           level_id: levelId
         });
         if (existing.length > 0) {
-          await WWClient.entities.StudentMaterialBookmark.delete(existing[0].id);
+          await WWClient.entities.StudentMaterialBookmark.delete(existing[0]._id || existing[0].id);
           toast.success('Removed from bookmarks');
         }
       } else {

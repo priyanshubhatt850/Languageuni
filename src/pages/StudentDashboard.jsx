@@ -54,9 +54,9 @@ export default function StudentDashboard() {
   }, []);
 
   const { data: enrollments = [] } = useQuery({
-    queryKey: ['my-enrollments', user?.id],
-    queryFn: () => WWClient.entities.Enrollment.filter({ user_id: user?.id }),
-    enabled: !!user?.id,
+    queryKey: ['my-enrollments', user?._id],
+    queryFn: () => WWClient.entities.Enrollment.filter({ user_id: user?._id }),
+    enabled: !!user?._id,
     initialData: []
   });
 
@@ -76,25 +76,25 @@ export default function StudentDashboard() {
   });
 
   const { data: notifications = [] } = useQuery({
-    queryKey: ['my-notifications', user?.id],
-    queryFn: () => WWClient.entities.Notification.filter({ user_id: user?.id }, '-created_date', 10),
-    enabled: !!user?.id,
+    queryKey: ['my-notifications', user?._id],
+    queryFn: () => WWClient.entities.Notification.filter({ user_id: user?._id }, '-created_date', 10),
+    enabled: !!user?._id,
     initialData: []
   });
 
   const { data: userPoints } = useQuery({
-    queryKey: ['user-points', user?.id],
+    queryKey: ['user-points', user?._id],
     queryFn: async () => {
-      const points = await WWClient.entities.UserPoints.filter({ user_id: user?.id });
+      const points = await WWClient.entities.UserPoints.filter({ user_id: user?._id });
       return points[0];
     },
     enabled: !!user?.id
   });
 
   const { data: userBadges = [] } = useQuery({
-    queryKey: ['user-badges', user?.id],
-    queryFn: () => WWClient.entities.UserBadge.filter({ user_id: user?.id }),
-    enabled: !!user?.id,
+    queryKey: ['user-badges', user?._id],
+    queryFn: () => WWClient.entities.UserBadge.filter({ user_id: user?._id }),
+    enabled: !!user?._id,
     initialData: []
   });
 
@@ -120,7 +120,7 @@ export default function StudentDashboard() {
     initialData: []
   });
 
-  const currentUserRank = leaderboardData.findIndex(u => u.user_id === user?.id) + 1;
+  const currentUserRank = leaderboardData.findIndex(u => u.user_id === user?._id) + 1;
 
   const activeEnrollments = enrollments.filter(e => e.status === 'active');
   const completedEnrollments = enrollments.filter(e => e.status === 'completed');

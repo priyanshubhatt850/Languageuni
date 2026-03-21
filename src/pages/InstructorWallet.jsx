@@ -76,12 +76,12 @@ export default function InstructorWallet() {
   }, []);
 
   const { data: wallet, isLoading: walletLoading } = useQuery({
-    queryKey: ['instructor-wallet', user?.id],
+    queryKey: ['instructor-wallet', user?._id],
     queryFn: async () => {
-      const wallets = await WWClient.entities.Wallet.filter({ instructor_id: user?.id });
+      const wallets = await WWClient.entities.Wallet.filter({ instructor_id: user?._id });
       if (wallets.length === 0) {
         return await WWClient.entities.Wallet.create({ 
-          instructor_id: user?.id,
+          instructor_id: user?._id,
           balance: 0,
           total_earned: 0,
           total_withdrawn: 0

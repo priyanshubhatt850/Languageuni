@@ -15,6 +15,7 @@ import {
   Upload,
   User
 } from 'lucide-react';
+import { uploadImageToCloudinary } from '@/utils/cloudinaryUpload';
 
 const languages = ['English', 'Spanish', 'French', 'German', 'Italian', 'Portuguese', 'Mandarin', 'Japanese', 'Korean', 'Arabic'];
 const proficiencyLevels = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
@@ -59,11 +60,15 @@ export default function StudentOnboarding() {
 
     setUploading(true);
     try {
-      const { file_url } = await WWClient.integrations.Core.UploadFile( file );
-      setAvatarUrl(file_url);
+      const response = await uploadImageToCloudinary(file, {
+        folder: 'language-uni/student-avatars',
+        tags: ['student', 'avatar']
+      });
+      setAvatarUrl(response.file_url);
       toast.success('Profile picture uploaded!');
     } catch (error) {
-      toast.error('Failed to upload image');
+      console.error('Upload error:', error);
+      toast.error(error.message || 'Failed to upload image');
     } finally {
       setUploading(false);
     }

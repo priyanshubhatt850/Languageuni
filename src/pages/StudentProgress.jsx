@@ -47,7 +47,7 @@ export default function StudentProgress() {
       
       return enrichedProgress;
     },
-    enabled: !!user?.id
+    enabled: !!user?._id
   });
 
   if (loading || !user) {

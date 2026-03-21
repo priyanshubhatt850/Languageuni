@@ -24,6 +24,7 @@ import {
   Phone,
   FileText
 } from 'lucide-react';
+import { uploadImageToCloudinary, uploadDocumentToCloudinary } from '@/utils/cloudinaryUpload';
 
 export default function InstructorOnboarding() {
   const navigate = useNavigate();
@@ -135,11 +136,15 @@ export default function InstructorOnboarding() {
 
     setUploadingImage(true);
     try {
-      const { file_url } = await WWClient.integrations.Core.UploadFile( file );
-      setFormData({ ...formData, avatar_url: file_url });
+      const response = await uploadImageToCloudinary(file, {
+        folder: 'language-uni/instructor-avatars',
+        tags: ['instructor', 'avatar']
+      });
+      setFormData({ ...formData, avatar_url: response.file_url });
       toast.success('Image uploaded successfully');
     } catch (error) {
-      toast.error('Failed to upload image');
+      console.error('Upload error:', error);
+      toast.error(error.message || 'Failed to upload image');
     } finally {
       setUploadingImage(false);
     }
@@ -161,11 +166,15 @@ export default function InstructorOnboarding() {
 
     setUploadingResume(true);
     try {
-      const { file_url } = await WWClient.integrations.Core.UploadFile( file );
-      setFormData({ ...formData, resume_url: file_url });
+      const response = await uploadDocumentToCloudinary(file, {
+        folder: 'language-uni/instructor-resumes',
+        tags: ['instructor', 'resume', 'pdf']
+      });
+      setFormData({ ...formData, resume_url: response.file_url });
       toast.success('Resume uploaded successfully');
     } catch (error) {
-      toast.error('Failed to upload resume');
+      console.error('Upload error:', error);
+      toast.error(error.message || 'Failed to upload resume');
     } finally {
       setUploadingResume(false);
     }

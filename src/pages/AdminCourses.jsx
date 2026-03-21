@@ -83,9 +83,9 @@ export default function AdminCourses() {
   });
 
   const { data: notifications = [] } = useQuery({
-    queryKey: ['admin-notifications', user?.id],
-    queryFn: () => WWClient.entities.Notification.filter({ user_id: user?.id }, '-created_date', 10),
-    enabled: !!user?.id,
+    queryKey: ['admin-notifications', user?._id],
+    queryFn: () => WWClient.entities.Notification.filter({ user_id: user?._id }, '-created_date', 10),
+    enabled: !!user?._id,
     initialData: []
   });
 
@@ -221,7 +221,7 @@ export default function AdminCourses() {
                     </TableRow>
                   ) : (
                     filteredCourses.map((course) => (
-                      <TableRow key={course.id}>
+                      <TableRow key={course._id || course.id}>
                         <TableCell>
                           <div className="flex items-center gap-3">
                             <div className="w-12 h-12 rounded-lg bg-slate-100 dark:bg-slate-700 overflow-hidden">
@@ -282,27 +282,27 @@ export default function AdminCourses() {
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
                               <DropdownMenuItem asChild>
-                                <Link to={createPageUrl(`AdminManageCourse?id=${course.id}`)}>
+                                <Link to={createPageUrl(`AdminManageCourse?id=${course._id || course.id}`)}>
                                   <Edit className="w-4 h-4 mr-2" />
                                   Edit Course
                                 </Link>
                               </DropdownMenuItem>
                               <DropdownMenuItem asChild>
-                                <Link to={createPageUrl(`CourseDetails?id=${course.id}`)}>
+                                <Link to={createPageUrl(`CourseDetails?id=${course._id || course.id}`)}>
                                   <Eye className="w-4 h-4 mr-2" />
                                   View Course
                                 </Link>
                               </DropdownMenuItem>
                               {course.status === 'draft' && (
                                 <DropdownMenuItem 
-                                  onClick={() => updateStatusMutation.mutate({ id: course.id, status: 'published' })}
+                                  onClick={() => updateStatusMutation.mutate({ id: course._id || course.id, status: 'published' })}
                                 >
                                   Publish
                                 </DropdownMenuItem>
                               )}
                               {course.status === 'published' && (
                                 <DropdownMenuItem 
-                                  onClick={() => updateStatusMutation.mutate({ id: course.id, status: 'archived' })}
+                                  onClick={() => updateStatusMutation.mutate({ id: course._id || course.id, status: 'archived' })}
                                 >
                                   Archive
                                 </DropdownMenuItem>
@@ -343,7 +343,7 @@ export default function AdminCourses() {
                 </Button>
                 <Button 
                   variant="destructive" 
-                  onClick={() => deleteMutation.mutate(selectedCourse?.id)}
+                  onClick={() => deleteMutation.mutate(selectedCourse?._id || selectedCourse?.id)}
                   disabled={deleteMutation.isPending}
                 >
                   {deleteMutation.isPending ? 'Deleting...' : 'Delete'}

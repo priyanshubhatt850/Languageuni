@@ -206,7 +206,7 @@ export default function LanguageDetail() {
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
               {standardLevels.map((level, index) => (
                 <motion.div
-                  key={level.id}
+                  key={level._id}
                   initial={{ opacity: 0, y: 30 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
@@ -214,7 +214,7 @@ export default function LanguageDetail() {
                   whileHover={{ y: -12 }}
                   className="group"
                 >
-                  <Link to={createPageUrl(`LevelDetail?id=${level.id}`)}>
+                  <Link to={createPageUrl(`LevelDetail?id=${level._id}`)}>
                     <Card className="border-0 shadow-lg hover:shadow-2xl transition-all duration-500 overflow-hidden cursor-pointer h-full bg-white dark:bg-slate-900/80 backdrop-blur-sm border border-slate-100 dark:border-slate-800">
                       {/* Image */}
                       <div className="aspect-video relative overflow-hidden bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-950/30 dark:to-cyan-950/30">
@@ -398,13 +398,13 @@ export default function LanguageDetail() {
             <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
               {examLevels.map((level, index) => (
                 <motion.div
-                  key={level.id}
+                  key={level._id}
                   initial={{ opacity: 0, x: index % 2 === 0 ? -30 : 30 }}
                   whileInView={{ opacity: 1, x: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: index * 0.2 }}
                 >
-                  <Link to={createPageUrl(`LevelDetail?id=${level.id}`)}>
+                  <Link to={createPageUrl(`LevelDetail?id=${level._id}`)}>
                     <Card className="border-0 shadow-xl hover:shadow-2xl hover:shadow-purple-500/20 dark:hover:shadow-purple-500/10 hover:-translate-y-2 transition-all duration-500 overflow-hidden group cursor-pointer h-full bg-white dark:bg-slate-900">
                       <div className="bg-gradient-to-br from-purple-100 to-pink-100 dark:from-purple-900/30 dark:to-pink-900/30 p-8">
                         <div className="flex items-start justify-between mb-4">
@@ -468,7 +468,7 @@ export default function LanguageDetail() {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               {standardLevels.length > 0 && (
-                <Link to={createPageUrl(`LevelDetail?id=${standardLevels[0].id}`)}>
+                <Link to={createPageUrl(`LevelDetail?id=${standardLevels[0]._id}`)}>
                   <Button size="lg" className="bg-white text-blue-600 hover:bg-blue-50 text-lg px-8 shadow-2xl w-full sm:w-auto">
                     Start with {standardLevels[0].level_name}
                   </Button>

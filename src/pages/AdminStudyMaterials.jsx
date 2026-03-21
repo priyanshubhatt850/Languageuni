@@ -29,6 +29,7 @@ import {
   Calendar,
   Upload
 } from 'lucide-react';
+import { uploadDocumentToCloudinary, uploadImageToCloudinary } from '@/utils/cloudinaryUpload';
 
 const materialIcons = {
   reading: BookOpen,
@@ -159,11 +160,14 @@ export default function AdminStudyMaterials() {
 
     setUploadingFile(true);
     try {
-      const { file_url } = await WWClient.integrations.Core.UploadFile( file );
-      setFormData({ ...formData, file_url });
+      const response = await uploadDocumentToCloudinary(file, {
+        tags: ['study-material', 'document']
+      });
+      setFormData({ ...formData, file_url: response.file_url });
       toast.success('File uploaded successfully');
     } catch (error) {
-      toast.error('Failed to upload file');
+      console.error('Upload error:', error);
+      toast.error(error.message || 'Failed to upload file');
     } finally {
       setUploadingFile(false);
     }

@@ -97,9 +97,9 @@ export default function AdminApproveHours() {
   });
 
   const { data: notifications = [] } = useQuery({
-    queryKey: ['admin-notifications', user?.id],
-    queryFn: () => WWClient.entities.Notification.filter({ user_id: user?.id }, '-created_date', 10),
-    enabled: !!user?.id,
+    queryKey: ['admin-notifications', user?._id],
+    queryFn: () => WWClient.entities.Notification.filter({ user_id: user?._id }, '-created_date', 10),
+    enabled: !!user?._id,
     initialData: []
   });
 
@@ -260,11 +260,11 @@ export default function AdminApproveHours() {
                   ) : (
                     paginatedSessions.map((session) => {
                       const instructor = instructors.find(i => i.user_id === session.instructor_id);
-                      const student = users.find(u => u.id === session.student_id);
+                      const student = users.find(u => u._id === session.student_id);
                       const course = courseLevels.find(c => c.id === session.course_level_id);
                       
                       return (
-                        <TableRow key={session.id}>
+                        <TableRow key={session._id || session.id}>
                           <TableCell className="font-medium">
                             {instructor?.display_name || 'Unknown'}
                           </TableCell>
@@ -309,7 +309,7 @@ export default function AdminApproveHours() {
                                 <DropdownMenuContent align="end">
                                   <DropdownMenuItem
                                     onClick={() => approvalMutation.mutate({
-                                      sessionId: session.id,
+                                      sessionId: session._id || session.id,
                                       action: 'approve'
                                     })}
                                     className="text-emerald-600"
@@ -393,7 +393,7 @@ export default function AdminApproveHours() {
                       return;
                     }
                     approvalMutation.mutate({
-                      sessionId: selectedSession.id,
+                      sessionId: selectedSession._id || selectedSession.id,
                       action: 'reject',
                       rejectionReason
                     });

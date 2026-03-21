@@ -273,7 +273,7 @@ export default function AdminCourseLevels() {
                       </SelectTrigger>
                       <SelectContent>
                         {languages.map(lang => (
-                          <SelectItem key={lang.id} value={lang.id}>
+                          <SelectItem key={lang._id || lang.id} value={lang._id || lang.id}>
                             {lang.flag} {lang.name}
                           </SelectItem>
                         ))}
@@ -387,7 +387,7 @@ export default function AdminCourseLevels() {
                     </SelectTrigger>
                     <SelectContent>
                       {instructors.map(inst => (
-                        <SelectItem key={inst.id} value={inst.user_id}>
+                        <SelectItem key={inst._id || inst.id} value={inst.user_id}>
                           {inst.display_name}
                         </SelectItem>
                       ))}

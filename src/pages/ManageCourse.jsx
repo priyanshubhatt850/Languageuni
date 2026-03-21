@@ -118,9 +118,9 @@ export default function ManageCourse() {
   });
 
   const { data: notifications = [] } = useQuery({
-    queryKey: ['my-notifications', user?.id],
-    queryFn: () => WWClient.entities.Notification.filter({ user_id: user?.id }, '-created_date', 10),
-    enabled: !!user?.id,
+    queryKey: ['my-notifications', user?._id],
+    queryFn: () => WWClient.entities.Notification.filter({ user_id: user?._id }, '-created_date', 10),
+    enabled: !!user?._id,
     initialData: []
   });
 
@@ -184,7 +184,7 @@ export default function ManageCourse() {
 
   const handleSaveLesson = () => {
     if (editingLesson) {
-      updateLessonMutation.mutate({ id: editingLesson.id, data: lessonForm });
+      updateLessonMutation.mutate({ id: editingLesson._id || editingLesson.id, data: lessonForm });
     } else {
       createLessonMutation.mutate(lessonForm);
     }
@@ -342,7 +342,7 @@ export default function ManageCourse() {
                   ) : (
                     <div className="space-y-3">
                       {sortedLessons.map((lesson) => (
-                        <div key={lesson.id} className="p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
+                        <div key={lesson._id || lesson.id} className="p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
                           <div className="flex items-start justify-between">
                             <div className="flex-1">
                               <div className="flex items-center gap-2 mb-1">
@@ -364,7 +364,7 @@ export default function ManageCourse() {
                               <Button size="sm" variant="outline" onClick={() => handleEditLesson(lesson)}>
                                 <Edit className="w-3 h-3" />
                               </Button>
-                              <Button size="sm" variant="outline" onClick={() => deleteLessonMutation.mutate(lesson.id)}>
+                              <Button size="sm" variant="outline" onClick={() => deleteLessonMutation.mutate(lesson._id || lesson.id)}>
                                 <Trash2 className="w-3 h-3" />
                               </Button>
                             </div>

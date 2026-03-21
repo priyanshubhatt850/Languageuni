@@ -25,9 +25,9 @@ export default function StudentLiveSessions() {
   }, []);
 
   const { data: enrollments = [] } = useQuery({
-    queryKey: ['student-enrollments', user?.id],
-    queryFn: () => WWClient.entities.Enrollment.filter({ user_id: user?.id, status: 'active' }),
-    enabled: !!user?.id,
+    queryKey: ['student-enrollments', user?._id],
+    queryFn: () => WWClient.entities.Enrollment.filter({ user_id: user?._id, status: 'active' }),
+    enabled: !!user?._id,
     initialData: []
   });
 
@@ -50,9 +50,9 @@ export default function StudentLiveSessions() {
   });
 
   const { data: notifications = [] } = useQuery({
-    queryKey: ['student-notifications', user?.id],
-    queryFn: () => WWClient.entities.Notification.filter({ user_id: user?.id }, '-created_date', 10),
-    enabled: !!user?.id,
+    queryKey: ['student-notifications', user?._id],
+    queryFn: () => WWClient.entities.Notification.filter({ user_id: user?._id }, '-created_date', 10),
+    enabled: !!user?._id,
     initialData: []
   });
 
@@ -107,12 +107,12 @@ export default function StudentLiveSessions() {
           ) : (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {relevantSessions.map((session, index) => {
-                const courseLevel = courseLevels.find(c => c.id === session.course_level_id);
-                const language = languages.find(l => l.id === courseLevel?.language_id);
+                const courseLevel = courseLevels.find(c => c._id === session.course_level_id);
+                const language = languages.find(l => l._id === courseLevel?.language_id);
 
                 return (
                   <motion.div
-                    key={session.id}
+                    key={session._id || session.id}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: index * 0.05 }}

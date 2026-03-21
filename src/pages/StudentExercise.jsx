@@ -43,9 +43,9 @@ export default function StudentExercise() {
   });
 
   const { data: notifications = [] } = useQuery({
-    queryKey: ['student-notifications', user?.id],
-    queryFn: () => WWClient.entities.Notification.filter({ user_id: user?.id }, '-created_date', 10),
-    enabled: !!user?.id,
+    queryKey: ['student-notifications', user?._id],
+    queryFn: () => WWClient.entities.Notification.filter({ user_id: user?._id }, '-created_date', 10),
+    enabled: !!user?._id,
     initialData: []
   });
 
@@ -58,7 +58,7 @@ export default function StudentExercise() {
       // Save attempt
       const attempt = await WWClient.entities.ExerciseAttempt.create({
         exercise_id: exerciseId,
-        user_id: user.id,
+        user_id: user._id,
         level_id: levelId,
         answers: Object.entries(data.answers).map(([key, answer]) => ({
           item_id: key,

@@ -15,6 +15,7 @@ import { LoadingPage } from '@/components/common/LoadingSpinner';
 import { toast } from 'sonner';
 import { ArrowLeft, Save, Trash2, Plus, Sparkles, Upload, X } from 'lucide-react';
 import CourseOutlineGenerator from '@/components/ai/CourseOutlineGenerator';
+import { uploadThumbnailToCloudinary } from '@/utils/cloudinaryUpload';
 
 export default function AdminCreateLevel() {
   const navigate = useNavigate();
@@ -98,7 +99,7 @@ export default function AdminCreateLevel() {
   });
 
   const { data: notifications = [] } = useQuery({
-    queryKey: ['admin-notifications', user?.id],
+    queryKey: ['admin-notifications', user?._id],
     queryFn: () => WWClient.entities.Notification.filter({ user_id: user?._id }, '-created_date', 10),
     enabled: !!user?._id,
     initialData: []
@@ -152,11 +153,14 @@ export default function AdminCreateLevel() {
 
     setUploadingThumbnail(true);
     try {
-      const { file_url } = await WWClient.integrations.Core.UploadFile( file);
-      setFormData({ ...formData, thumbnail_url: file_url });
+      const response = await uploadThumbnailToCloudinary(file, {
+        tags: ['level', 'thumbnail']
+      });
+      setFormData({ ...formData, thumbnail_url: response.file_url });
       toast.success('Thumbnail uploaded');
     } catch (error) {
-      toast.error('Upload failed');
+      console.error('Upload error:', error);
+      toast.error(error.message || 'Upload failed');
     } finally {
       setUploadingThumbnail(false);
     }
