@@ -405,9 +405,13 @@ export default function LevelDetail() {
   ];
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
-      {/* Professional Navigation */}
-      <nav className="sticky top-0 z-50 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 shadow-sm">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 relative overflow-hidden transition-colors duration-300">
+      {/* Decorative background gradients */}
+      <div className="absolute top-0 right-1/4 w-96 h-96 bg-violet-200/30 dark:bg-violet-900/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute top-1/3 left-10 w-80 h-80 bg-emerald-100/20 dark:bg-emerald-950/5 rounded-full blur-3xl pointer-events-none" />
+
+      {/* Modern Navigation */}
+      <nav className="sticky top-0 z-50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-slate-200 dark:border-slate-800 transition-all duration-300">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-4">
@@ -415,13 +419,13 @@ export default function LevelDetail() {
                 variant="ghost"
                 size="icon"
                 onClick={() => navigate(-1)}
-                className="hover:bg-slate-100 dark:hover:bg-slate-800"
+                className="hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl"
               >
-                <ArrowLeft className="w-5 h-5" />
+                <ArrowLeft className="w-5 h-5 text-slate-650 dark:text-slate-350" />
               </Button>
-              <Link to={createPageUrl('Home')} className="flex items-center gap-2">
-                <img src="/logo.png" alt="Global Tongue logo" className="w-8 h-8 object-contain rounded-lg" />
-                <span className="font-semibold text-slate-900 dark:text-white">Global Tongue</span>
+              <Link to={createPageUrl('Home')} className="flex items-center gap-2.5 group">
+                <img src="/logo.png" alt="Global Tongue logo" className="w-9 h-9 object-contain rounded-xl shadow-md transition-transform duration-300 group-hover:scale-105" />
+                <span className="font-bold text-lg text-slate-900 dark:text-white tracking-tight">Global Tongue</span>
               </Link>
             </div>
             <div className="flex items-center gap-3">
@@ -429,7 +433,7 @@ export default function LevelDetail() {
                 variant="ghost"
                 size="icon"
                 onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-                className="text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
+                className="text-slate-650 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl"
               >
                 {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
               </Button>
@@ -438,7 +442,15 @@ export default function LevelDetail() {
                   user?.role === 'admin' ? 'AdminDashboard' :
                     user?.role === 'instructor' ? 'InstructorDashboard' : 'StudentDashboard'
                 )}>
-                  <Button className="bg-blue-600 hover:bg-blue-700">Dashboard</Button>
+                  <Button className="bg-violet-600 hover:bg-violet-700 text-white rounded-xl shadow-md shadow-violet-650/10 font-bold h-10 px-5 transition-all flex items-center gap-2">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <rect x="3" y="3" width="7" height="9" rx="1"/>
+                      <rect x="14" y="3" width="7" height="5" rx="1"/>
+                      <rect x="14" y="12" width="7" height="9" rx="1"/>
+                      <rect x="3" y="16" width="7" height="5" rx="1"/>
+                    </svg>
+                    Dashboard
+                  </Button>
                 </Link>
               )}
             </div>
@@ -446,8 +458,8 @@ export default function LevelDetail() {
         </div>
       </nav>
 
-      {/* Professional Hero Section */}
-      <section className="py-16 bg-white dark:bg-slate-900">
+      {/* Hero Section */}
+      <section className="py-12 md:py-16 relative">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-3 gap-12">
             {/* Main Content - 2 columns */}
@@ -455,57 +467,68 @@ export default function LevelDetail() {
               {/* Header */}
               <div className="space-y-6">
                 <div className="flex items-center gap-4">
-                  <div className="w-20 h-20 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-4xl">
-                    {language.flag}
+                  <div className="w-16 h-16 rounded-2xl bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/30 text-emerald-605 dark:text-emerald-400 flex items-center justify-center font-black text-2xl shrink-0">
+                    {language?.code?.toUpperCase() || language?.name?.substring(0, 2).toUpperCase() || 'FR'}
                   </div>
                   <div>
-                    <Badge className="mb-2 bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
-                      {level.level_type === 'exam' ? 'Exam Prep' : `Level ${level.level_name}`}
-                    </Badge>
+                    <div className="px-3.5 py-1.5 rounded-full bg-emerald-50 dark:bg-emerald-950/20 text-emerald-605 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-900/30 text-xs font-black uppercase tracking-wider">
+                      Level {level.level_name}
+                    </div>
                   </div>
                 </div>
 
-                <div>
-                  <h1 className="text-4xl font-bold text-slate-900 dark:text-white mb-3">
+                <div className="space-y-3">
+                  <h1 className="text-4xl sm:text-5xl font-black text-slate-900 dark:text-white tracking-tight">
                     Master {level.level_name}
                   </h1>
-                  <p className="text-lg text-slate-600 dark:text-slate-300">
-                    {level.description || 'Comprehensive language course designed for fluency and confidence'}
+                  <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">
+                    {level.level_type || 'Test'}
+                  </p>
+                  <p className="text-sm sm:text-base text-slate-500 dark:text-slate-400 font-medium leading-relaxed max-w-xl text-left">
+                    {level.description || 'Begin your journey with the fundamentals. This course is designed to build a strong foundation for your language skills.'}
                   </p>
                 </div>
 
                 {/* Stats */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <div className="bg-slate-50 dark:bg-slate-800 p-4 rounded-lg">
-                    <div className="flex items-center gap-2 mb-1">
-                      <Clock className="w-4 h-4 text-slate-600 dark:text-slate-400" />
-                      <span className="text-sm text-slate-600 dark:text-slate-400">Duration</span>
-                    </div>
-                    <p className="text-lg font-semibold text-slate-900 dark:text-white">{level.duration_hours || 0}h</p>
-                  </div>
-                  <div className="bg-slate-50 dark:bg-slate-800 p-4 rounded-lg">
-                    <div className="flex items-center gap-2 mb-1">
-                      <Users className="w-4 h-4 text-slate-600 dark:text-slate-400" />
-                      <span className="text-sm text-slate-600 dark:text-slate-400">Students</span>
-                    </div>
-                    <p className="text-lg font-semibold text-slate-900 dark:text-white">{level.enrolled_count || 0}</p>
-                  </div>
-                  <div className="bg-slate-50 dark:bg-slate-800 p-4 rounded-lg">
-                    <div className="flex items-center gap-2 mb-1">
-                      <BookOpen className="w-4 h-4 text-slate-600 dark:text-slate-400" />
-                      <span className="text-sm text-slate-600 dark:text-slate-400">Materials</span>
-                    </div>
-                    <p className="text-lg font-semibold text-slate-900 dark:text-white">{materials.length}</p>
-                  </div>
-                  {level.rating > 0 && (
-                    <div className="bg-slate-50 dark:bg-slate-800 p-4 rounded-lg">
-                      <div className="flex items-center gap-2 mb-1">
-                        <Star className="w-4 h-4 text-amber-500" fill="currentColor" />
-                        <span className="text-sm text-slate-600 dark:text-slate-400">Rating</span>
+                <div className="grid grid-cols-3 gap-4 pt-2">
+                  <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800/80 p-4 rounded-2xl shadow-sm space-y-2.5 text-left transition-all hover:shadow-md">
+                    <div className="flex items-center gap-2">
+                      <div className="w-7 h-7 rounded-lg bg-violet-50 text-violet-600 dark:bg-violet-950/40 dark:text-violet-400 flex items-center justify-center shrink-0">
+                        <Clock className="w-4 h-4" />
                       </div>
-                      <p className="text-lg font-semibold text-slate-900 dark:text-white">{level.rating.toFixed(1)}</p>
+                      <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">Duration</span>
                     </div>
-                  )}
+                    <p className="text-xl font-black text-slate-800 dark:text-white">{level.duration_hours || 0}h</p>
+                  </div>
+                  <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800/80 p-4 rounded-2xl shadow-sm space-y-2.5 text-left transition-all hover:shadow-md">
+                    <div className="flex items-center gap-2">
+                      <div className="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400 flex items-center justify-center shrink-0">
+                        <Users className="w-4 h-4" />
+                      </div>
+                      <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">Students</span>
+                    </div>
+                    <p className="text-xl font-black text-slate-800 dark:text-white">{level.enrolled_count || 0}</p>
+                  </div>
+                  <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800/80 p-4 rounded-2xl shadow-sm space-y-2.5 text-left transition-all hover:shadow-md">
+                    <div className="flex items-center gap-2">
+                      <div className="w-7 h-7 rounded-lg bg-amber-50 text-amber-600 dark:bg-amber-950/40 dark:text-amber-400 flex items-center justify-center shrink-0">
+                        <BookOpen className="w-4 h-4" />
+                      </div>
+                      <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">Materials</span>
+                    </div>
+                    <p className="text-xl font-black text-slate-800 dark:text-white">{materials.length}</p>
+                  </div>
+                </div>
+
+                {/* Decorative Vector Graphic */}
+                <div className="relative pt-6 min-h-[120px] hidden md:block">
+                  <div className="absolute left-0 bottom-0 pointer-events-none opacity-20 dark:opacity-10 w-64 h-24 select-none">
+                    <svg viewBox="0 0 200 80" className="w-full h-full text-violet-500" fill="currentColor">
+                      <path d="M10 70 Q 50 20, 100 60 T 190 40" fill="none" stroke="currentColor" strokeWidth="2" strokeDasharray="3 3" />
+                      <circle cx="100" cy="60" r="4" />
+                      <circle cx="190" cy="40" r="4" />
+                    </svg>
+                  </div>
                 </div>
               </div>
             </div>
@@ -513,9 +536,9 @@ export default function LevelDetail() {
             {/* Pricing Card - 1 column */}
             <div>
               <div className="sticky top-24">
-                <Card className="border-0 shadow-lg overflow-hidden">
+                <Card className="border border-slate-150 dark:border-slate-800 shadow-xl rounded-3xl overflow-hidden bg-white dark:bg-slate-900/60 backdrop-blur-md">
                   {/* Course Image */}
-                  <div className="aspect-video relative overflow-hidden bg-slate-100 dark:bg-slate-800">
+                  <div className="aspect-video relative m-4 rounded-2xl overflow-hidden bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700">
                     {level.thumbnail_url ? (
                       <img
                         src={
@@ -533,16 +556,16 @@ export default function LevelDetail() {
                     )}
                   </div>
 
-                  <CardContent className="p-6 space-y-6">
+                  <CardContent className="p-6 pt-2 space-y-6 text-left">
                     {/* Pricing */}
                     <div>
-                      <p className="text-sm text-slate-500 dark:text-slate-400 font-medium mb-2">Price</p>
-                      <div className="flex items-baseline gap-2">
-                        <span className="text-4xl font-bold text-slate-900 dark:text-white">
+                      <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1.5">Price</p>
+                      <div className="flex items-baseline gap-2.5">
+                        <span className="text-4xl font-black text-slate-900 dark:text-white tracking-tight">
                           ${level.discount_price || level.price}
                         </span>
                         {level.discount_price && (
-                          <Badge variant="secondary" className="bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300 text-xs">
+                          <Badge variant="secondary" className="bg-red-50 text-red-655 dark:bg-red-950/30 dark:text-red-300 text-xs py-0.5 px-2">
                             Save {Math.round(((level.price - level.discount_price) / level.price) * 100)}%
                           </Badge>
                         )}
@@ -554,53 +577,62 @@ export default function LevelDetail() {
 
                     {/* CTA Buttons */}
                     {isEnrolled ? (
-                      <Button className="w-full bg-green-600 hover:bg-green-700 h-12 font-semibold" disabled>
-                        <CheckCircle className="w-5 h-5 mr-2" />
+                      <Button className="w-full bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl h-12 font-bold flex items-center justify-center gap-2 cursor-default">
+                        <CheckCircle className="w-5 h-5" />
                         Enrolled
                       </Button>
                     ) : user ? (
                       <Button
-                        className="w-full bg-blue-600 hover:bg-blue-700 h-12 font-semibold"
+                        className="w-full bg-violet-605 hover:bg-violet-700 text-white rounded-xl h-12 font-bold flex items-center justify-center gap-2 shadow-md shadow-violet-600/10 transition-all hover:scale-[1.02] active:scale-[0.98]"
                         onClick={() => setPaymentMethod('select')}
                         disabled={enrollMutation.isPending || createRazorpayOrderMutation.isPending}
                       >
-                        {enrollMutation.isPending || createRazorpayOrderMutation.isPending ? 'Processing...' : 'Enroll Now'}
+                        {enrollMutation.isPending || createRazorpayOrderMutation.isPending ? 'Processing...' : (
+                          <>
+                            Enroll Now <ArrowRight className="w-4 h-4" />
+                          </>
+                        )}
                       </Button>
                     ) : (
                       <Button
-                        className="w-full bg-blue-600 hover:bg-blue-700 h-12 font-semibold"
+                        className="w-full bg-violet-605 hover:bg-violet-700 text-white rounded-xl h-12 font-bold flex items-center justify-center gap-2 shadow-md shadow-violet-600/10 transition-all hover:scale-[1.02] active:scale-[0.98]"
                         onClick={() => WWClient.auth.redirectToLogin()}
                       >
-                        Sign In to Enroll
+                        Sign In to Enroll <ArrowRight className="w-4 h-4" />
                       </Button>
                     )}
 
-                    <p className="text-xs text-slate-500 dark:text-slate-400 text-center">
-                      One-time payment • Lifetime access • No hidden fees
-                    </p>
+                    {/* Trust Highlights */}
+                    <div className="flex items-center justify-between text-[9px] font-extrabold uppercase tracking-wider text-slate-400 py-3 border-t border-b border-slate-100 dark:border-slate-800/80">
+                      <span className="flex items-center gap-1"><FileText className="w-3.5 h-3.5 text-slate-400" /> One-time payment</span>
+                      <span>•</span>
+                      <span className="flex items-center gap-1"><Shield className="w-3.5 h-3.5 text-slate-400" /> Lifetime access</span>
+                      <span>•</span>
+                      <span className="flex items-center gap-1"><Lock className="w-3.5 h-3.5 text-slate-400" /> No hidden fees</span>
+                    </div>
 
-                    {/* Includes */}
-                    <div className="pt-4 border-t border-slate-200 dark:border-slate-700 space-y-3">
-                      <h4 className="font-semibold text-slate-900 dark:text-white text-sm">Course Includes:</h4>
-                      <div className="space-y-2 text-sm text-slate-600 dark:text-slate-400">
-                        <div className="flex items-center gap-2">
-                          <CheckCircle className="w-4 h-4 text-green-600 flex-shrink-0" />
+                    {/* Includes Checklist */}
+                    <div className="space-y-3">
+                      <h4 className="font-extrabold text-slate-900 dark:text-white text-xs uppercase tracking-wider">Course Includes:</h4>
+                      <div className="space-y-2.5 text-sm font-semibold text-slate-605 dark:text-slate-400">
+                        <div className="flex items-center gap-2.5">
+                          <CheckCircle className="w-4 h-4 text-emerald-500 shrink-0" />
                           <span>{level.duration_hours || 0} hours of content</span>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <CheckCircle className="w-4 h-4 text-green-600 flex-shrink-0" />
+                        <div className="flex items-center gap-2.5">
+                          <CheckCircle className="w-4 h-4 text-emerald-500 shrink-0" />
                           <span>{materials.length} learning materials</span>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <CheckCircle className="w-4 h-4 text-green-600 flex-shrink-0" />
+                        <div className="flex items-center gap-2.5">
+                          <CheckCircle className="w-4 h-4 text-emerald-500 shrink-0" />
                           <span>Live sessions</span>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <CheckCircle className="w-4 h-4 text-green-600 flex-shrink-0" />
+                        <div className="flex items-center gap-2.5">
+                          <CheckCircle className="w-4 h-4 text-emerald-500 shrink-0" />
                           <span>Certificate on completion</span>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <CheckCircle className="w-4 h-4 text-green-600 flex-shrink-0" />
+                        <div className="flex items-center gap-2.5">
+                          <CheckCircle className="w-4 h-4 text-emerald-500 shrink-0" />
                           <span>Lifetime access</span>
                         </div>
                       </div>
@@ -614,29 +646,29 @@ export default function LevelDetail() {
       </section>
 
       {/* Main Content Area */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative z-10">
         <div className="space-y-12">
           {/* Learning Goals */}
           {level.learning_goals && level.learning_goals.length > 0 && (
             <div>
-              <Card className="border-0 shadow-md overflow-hidden">
-                <div className="bg-blue-50 dark:bg-blue-950/20 p-6 border-b border-blue-200 dark:border-blue-800">
-                  <h2 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                    <Target className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+              <Card className="border border-slate-100 dark:border-slate-800 shadow-md overflow-hidden bg-white/60 dark:bg-slate-900/60 backdrop-blur-md rounded-3xl">
+                <div className="bg-slate-50/50 dark:bg-slate-850/50 p-6 border-b border-slate-100 dark:border-slate-800 text-left">
+                  <h2 className="text-xl font-black text-slate-900 dark:text-white flex items-center gap-2.5">
+                    <Target className="w-5 h-5 text-violet-600 dark:text-violet-400" />
                     What You'll Learn
                   </h2>
                 </div>
-                <CardContent className="p-6">
-                  <div className="grid md:grid-cols-2 gap-4">
+                <CardContent className="p-6 text-left">
+                  <div className="grid md:grid-cols-2 gap-3.5">
                     {level.learning_goals.map((goal, idx) => (
                       <div
                         key={idx}
-                        className="flex items-start gap-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-800/50"
+                        className="flex items-start gap-3 p-3.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-855 shadow-sm"
                       >
-                        <div className="w-6 h-6 rounded-full bg-blue-600 flex items-center justify-center flex-shrink-0 mt-0.5">
-                          <CheckCircle className="w-4 h-4 text-white" />
+                        <div className="w-5 h-5 rounded-full bg-emerald-50 dark:bg-emerald-950/30 flex items-center justify-center shrink-0 mt-0.5">
+                          <CheckCircle className="w-4 h-4 text-emerald-600" />
                         </div>
-                        <span className="text-slate-700 dark:text-slate-300">{goal}</span>
+                        <span className="text-slate-650 dark:text-slate-350 text-sm font-semibold">{goal}</span>
                       </div>
                     ))}
                   </div>
@@ -647,27 +679,27 @@ export default function LevelDetail() {
 
           {/* Study Materials */}
           <div>
-            <Card className="border-0 shadow-md overflow-hidden">
-              <div className="bg-blue-50 dark:bg-blue-950/20 p-6 border-b border-blue-200 dark:border-blue-800">
-                <h2 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                  <BookOpen className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+            <Card className="border border-slate-100 dark:border-slate-800 shadow-md overflow-hidden bg-white/60 dark:bg-slate-900/60 backdrop-blur-md rounded-3xl">
+              <div className="bg-slate-50/50 dark:bg-slate-850/50 p-6 border-b border-slate-105 dark:border-slate-800 text-left">
+                <h2 className="text-xl font-black text-slate-900 dark:text-white flex items-center gap-2.5">
+                  <BookOpen className="w-5 h-5 text-violet-600 dark:text-violet-400" />
                   Course Materials
                 </h2>
               </div>
-              <CardContent className="p-6">
+              <CardContent className="p-6 text-left">
                 {Object.keys(groupedMaterials).length === 0 ? (
                   <div className="text-center py-12">
                     <BookOpen className="w-16 h-16 text-slate-300 dark:text-slate-600 mx-auto mb-4" />
-                    <h3 className="text-lg font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                    <h3 className="text-lg font-black text-slate-700 dark:text-slate-350 mb-2">
                       Materials Coming Soon
                     </h3>
-                    <p className="text-slate-500 dark:text-slate-400">
+                    <p className="text-slate-500 dark:text-slate-400 font-medium text-sm">
                       We're preparing course materials for you
                     </p>
                   </div>
                 ) : (
                   <Tabs defaultValue={Object.keys(groupedMaterials)[0]} className="w-full">
-                    <TabsList className="mb-6 bg-slate-100 dark:bg-slate-800 p-1 rounded-lg inline-flex flex-wrap">
+                    <TabsList className="mb-6 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl gap-1 inline-flex flex-wrap">
                       {Object.keys(groupedMaterials).map(type => {
                         const Icon = materialIcons[type];
                         const count = groupedMaterials[type].length;
@@ -675,11 +707,11 @@ export default function LevelDetail() {
                           <TabsTrigger
                             key={type}
                             value={type}
-                            className="gap-2 data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 py-2"
+                            className="gap-2 rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 data-[state=active]:text-violet-650 dark:data-[state=active]:text-white data-[state=active]:shadow-sm py-2 px-4 text-xs font-bold transition-all"
                           >
                             <Icon className="w-4 h-4" />
-                            <span className="capitalize text-sm">{type.replace('_', ' ')}</span>
-                            <span className="text-xs bg-slate-200 dark:bg-slate-600 px-2 py-0.5 rounded">
+                            <span className="capitalize">{type.replace('_', ' ')}</span>
+                            <span className="text-[10px] bg-slate-200 dark:bg-slate-600 px-2 py-0.5 rounded-full">
                               {count}
                             </span>
                           </TabsTrigger>
@@ -696,53 +728,49 @@ export default function LevelDetail() {
                           return (
                             <div
                               key={material._id || material.id}
-                              className={`group border border-slate-200 dark:border-slate-700 rounded-lg p-4 transition-all ${
+                              className={`group border border-slate-100 dark:border-slate-850 rounded-2xl p-4 transition-all bg-white dark:bg-slate-900/50 ${
                                 canAccess
-                                  ? 'hover:shadow-md hover:border-blue-300 dark:hover:border-blue-700'
-                                  : 'opacity-60'
+                                  ? 'hover:shadow-lg hover:border-violet-200 dark:hover:border-violet-800/40'
+                                  : 'opacity-70'
                               }`}
                             >
-                              <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-                                <div className="flex items-start gap-3 flex-1 min-w-0">
-                                  <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${
+                              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                                <div className="flex items-center gap-3.5 flex-1 min-w-0">
+                                  <div className={`w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 ${
                                     canAccess
-                                      ? 'bg-blue-100 dark:bg-blue-900/30'
-                                      : 'bg-slate-100 dark:bg-slate-800'
+                                      ? 'bg-violet-50 text-violet-600 dark:bg-violet-950/30 dark:text-violet-400'
+                                      : 'bg-slate-50 text-slate-400 dark:bg-slate-800 dark:text-slate-500'
                                   }`}>
-                                    <Icon className={`w-5 h-5 ${
-                                      canAccess
-                                        ? 'text-blue-600 dark:text-blue-400'
-                                        : 'text-slate-400'
-                                    }`} />
+                                    <Icon className="w-5 h-5" />
                                   </div>
-                                  <div className="flex-1 min-w-0">
-                                    <div className="flex items-start gap-2 mb-1 flex-wrap">
-                                      <h4 className="font-medium text-slate-900 dark:text-white">
+                                  <div className="flex-1 min-w-0 text-left">
+                                    <div className="flex items-center gap-2.5 mb-1.5 flex-wrap">
+                                      <h4 className="font-extrabold text-sm text-slate-850 dark:text-white tracking-tight">
                                         {material.title}
                                       </h4>
                                       {material.is_free_preview && (
-                                        <Badge className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300 text-xs">
+                                        <Badge className="bg-emerald-50 text-emerald-605 border border-emerald-100 text-[10px] font-bold py-0.5 px-2">
                                           Free Preview
                                         </Badge>
                                       )}
                                     </div>
                                     {material.description && (
-                                      <p className="text-sm text-slate-600 dark:text-slate-400 line-clamp-1">
+                                      <p className="text-xs text-slate-500 dark:text-slate-400 font-medium line-clamp-1">
                                         {material.description}
                                       </p>
                                     )}
                                     {material.duration_minutes > 0 && (
-                                      <div className="flex items-center gap-1 text-xs text-slate-500 mt-1">
-                                        <Clock className="w-3 h-3" />
+                                      <div className="flex items-center gap-1 text-[10px] text-slate-400 font-bold mt-1 uppercase tracking-wider">
+                                        <Clock className="w-3.5 h-3.5 text-slate-350" />
                                         {material.duration_minutes} min
                                       </div>
                                     )}
                                   </div>
                                 </div>
                                 {canAccess ? (
-                                  <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                                  <div className="flex flex-col sm:flex-row gap-2.5 w-full sm:w-auto">
                                     {material.material_type === 'live_session' ? (
-                                      <Button size="sm" className="bg-blue-600 hover:bg-blue-700" asChild>
+                                      <Button size="sm" className="bg-violet-600 hover:bg-violet-700 text-white rounded-xl font-bold h-9 px-4" asChild>
                                         <a href={material.live_session_link} target="_blank" rel="noopener noreferrer">
                                           <Play className="w-4 h-4 mr-1" />
                                           Join
@@ -750,32 +778,32 @@ export default function LevelDetail() {
                                       </Button>
                                     ) : ['video', 'listening', 'reading', 'grammar', 'vocabulary', 'writing'].includes(material.material_type) ? (
                                       <>
-                                        <Button size="sm" className="bg-blue-600 hover:bg-blue-700" onClick={() => setSelectedMaterial(material)}>
-                                          <Play className="w-4 h-4 mr-1" />
+                                        <Button size="sm" className="bg-violet-600 hover:bg-violet-700 text-white rounded-xl font-bold h-9 px-4" onClick={() => setSelectedMaterial(material)}>
+                                          <Play className="w-4 h-4 mr-1.5" />
                                           View
                                         </Button>
                                         {material.file_url && (
-                                          <Button size="sm" variant="outline" asChild>
+                                          <Button size="sm" variant="outline" className="border-slate-202 text-slate-650 hover:bg-slate-50 rounded-xl h-9 px-4 font-bold" asChild>
                                             <a href={material.file_url} download>
-                                              <Download className="w-4 h-4 mr-1" />
+                                              <Download className="w-4 h-4 mr-1.5" />
                                               Download
                                             </a>
                                           </Button>
                                         )}
                                       </>
                                     ) : (
-                                      <Button size="sm" variant="outline" asChild>
+                                      <Button size="sm" variant="outline" className="border-slate-202 text-slate-650 hover:bg-slate-50 rounded-xl h-9 px-4 font-bold" asChild>
                                         <a href={material.file_url} target="_blank" rel="noopener noreferrer">
-                                          <Download className="w-4 h-4 mr-1" />
+                                          <Download className="w-4 h-4 mr-1.5" />
                                           Download
                                         </a>
                                       </Button>
                                     )}
                                   </div>
                                 ) : (
-                                  <div className="flex items-center gap-2 text-slate-400">
-                                    <Lock className="w-4 h-4" />
-                                    <span className="text-xs font-medium">Enroll to unlock</span>
+                                  <div className="flex items-center gap-2 text-slate-400 dark:text-slate-500 pr-2">
+                                    <Lock className="w-4 h-4 text-slate-350" />
+                                    <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Enroll to unlock</span>
                                   </div>
                                 )}
                               </div>
@@ -824,78 +852,72 @@ export default function LevelDetail() {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="relative bg-white dark:bg-slate-900 rounded-xl shadow-xl max-w-md w-full mx-4"
+              className="relative bg-white dark:bg-slate-900 rounded-2xl shadow-xl max-w-md w-full mx-4 overflow-hidden border border-slate-100 dark:border-slate-800"
               onClick={(e) => e.stopPropagation()}
             >
               {/* Header */}
-              <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-800">
-                <h3 className="text-lg font-bold text-slate-900 dark:text-white">
+              <div className="flex items-center justify-between px-6 py-4.5 border-b border-slate-100 dark:border-slate-800">
+                <h3 className="text-base font-extrabold text-slate-900 dark:text-white uppercase tracking-wider">
                   Choose Payment Method
                 </h3>
                 <button
-                  className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+                  className="text-slate-400 hover:text-slate-650 dark:hover:text-slate-350 transition-colors"
                   onClick={() => setPaymentMethod(null)}
                 >
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   </svg>
                 </button>
               </div>
 
-              <div className="px-6 py-6">
+              <div className="px-6 py-6 space-y-4">
                 {/* Razorpay Option */}
                 <button
-                  className={`w-full p-4 mb-4 border-2 rounded-lg transition-all ${
+                  className={`w-full p-4 border-2 rounded-2xl transition-all text-left flex items-center justify-between group ${
                     paymentMethod === 'razorpay'
-                      ? 'border-blue-600 bg-blue-50 dark:bg-blue-900/20'
-                      : 'border-slate-200 dark:border-slate-700 hover:border-blue-400'
+                      ? 'border-violet-600 bg-violet-50/40 dark:bg-violet-950/20'
+                      : 'border-slate-100 dark:border-slate-800 hover:border-violet-200 hover:bg-slate-50/50'
                   }`}
                   onClick={() => {
                     setPaymentMethod('razorpay');
                     setShowRazorpay(true);
                   }}
                 >
-                  <div className="flex items-center justify-between">
-                    <div className="text-left">
-                      <h4 className="font-semibold text-slate-900 dark:text-white">Razorpay</h4>
-                      <p className="text-sm text-slate-600 dark:text-slate-400">Debit/Credit Card, UPI, Wallet</p>
-                    </div>
-                    <div className="text-2xl">💳</div>
+                  <div className="space-y-1">
+                    <h4 className="font-extrabold text-sm text-slate-850 dark:text-white">Razorpay</h4>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Debit/Credit Card, UPI, Wallets, NetBanking</p>
                   </div>
+                  <div className="w-10 h-10 rounded-xl bg-violet-50 text-violet-605 flex items-center justify-center shrink-0 text-xl font-bold">💳</div>
                 </button>
 
                 {/* PayPal Option */}
                 <button
-                  className={`w-full p-4 border-2 rounded-lg transition-all ${
+                  className={`w-full p-4 border-2 rounded-2xl transition-all text-left flex items-center justify-between group ${
                     paymentMethod === 'paypal'
-                      ? 'border-blue-600 bg-blue-50 dark:bg-blue-900/20'
-                      : 'border-slate-200 dark:border-slate-700 hover:border-blue-400'
+                      ? 'border-violet-600 bg-violet-50/40 dark:bg-violet-950/20'
+                      : 'border-slate-100 dark:border-slate-800 hover:border-violet-200 hover:bg-slate-50/50'
                   }`}
                   onClick={() => {
                     setPaymentMethod('paypal');
                     setShowPayPal(true);
                   }}
                 >
-                  <div className="flex items-center justify-between">
-                    <div className="text-left">
-                      <h4 className="font-semibold text-slate-900 dark:text-white">PayPal</h4>
-                      <p className="text-sm text-slate-600 dark:text-slate-400">Secure PayPal checkout</p>
-                    </div>
-                    <div className="text-2xl">🅿️</div>
+                  <div className="space-y-1">
+                    <h4 className="font-extrabold text-sm text-slate-855 dark:text-white">PayPal</h4>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Secure credit card and PayPal checkout</p>
                   </div>
+                  <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0 text-xl font-bold">🅿️</div>
                 </button>
 
                 {/* Price Info */}
-                <div className="mt-6 pt-6 border-t border-slate-200 dark:border-slate-700">
-                  <div className="text-center">
-                    <p className="text-sm text-slate-600 dark:text-slate-400 mb-1">Total Amount</p>
-                    <div className="text-2xl font-bold text-slate-900 dark:text-white">
-                      ${level?.discount_price || level?.price}
-                    </div>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">
-                      One-time payment • Lifetime access
-                    </p>
+                <div className="mt-6 pt-6 border-t border-slate-100 dark:border-slate-800/80 text-center">
+                  <p className="text-xs text-slate-400 font-bold uppercase tracking-wider mb-1">Total Amount</p>
+                  <div className="text-3xl font-black text-slate-900 dark:text-white">
+                    ${level?.discount_price || level?.price}
                   </div>
+                  <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-1.5">
+                    One-time payment • Lifetime access
+                  </p>
                 </div>
               </div>
             </motion.div>
@@ -914,36 +936,36 @@ export default function LevelDetail() {
             }}
           >
             <div
-              className="relative bg-white dark:bg-slate-900 rounded-xl p-0 shadow-xl max-w-md w-full mx-4"
+              className="relative bg-white dark:bg-slate-900 rounded-2xl shadow-xl max-w-md w-full mx-4 overflow-hidden border border-slate-100 dark:border-slate-800"
               onClick={(e) => e.stopPropagation()}
             >
               {/* Header */}
-              <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-800">
-                <h3 className="text-lg font-bold text-slate-900 dark:text-white">
+              <div className="flex items-center justify-between px-6 py-4.5 border-b border-slate-100 dark:border-slate-800">
+                <h3 className="text-base font-extrabold text-slate-900 dark:text-white uppercase tracking-wider">
                   Complete Your Enrollment
                 </h3>
                 <button
-                  className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+                  className="text-slate-400 hover:text-slate-655 dark:hover:text-slate-350 transition-colors"
                   onClick={() => {
                     setShowPayPal(false);
                     setPaymentMethod(null);
                   }}
                 >
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   </svg>
                 </button>
               </div>
 
-              <div className="px-6 py-4">
+              <div className="px-6 py-5 text-left">
                 {/* Course Summary */}
-                <div className="mb-6 pb-6 border-b border-slate-200 dark:border-slate-800">
-                  <p className="text-sm text-slate-600 dark:text-slate-400 mb-2">Enrolling in</p>
-                  <h4 className="font-semibold text-slate-900 dark:text-white mb-3">{level?.level_name}</h4>
-                  <div className="text-3xl font-bold text-slate-900 dark:text-white">
+                <div className="mb-6 pb-6 border-b border-slate-100 dark:border-slate-800">
+                  <p className="text-xs text-slate-400 font-bold uppercase tracking-wider mb-2">Enrolling in</p>
+                  <h4 className="font-extrabold text-slate-800 dark:text-white mb-3 text-lg leading-tight">Master {level?.level_name}</h4>
+                  <div className="text-3xl font-black text-slate-900 dark:text-white">
                     ${level?.discount_price || level?.price}
                   </div>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                  <p className="text-[10px] text-slate-450 font-bold uppercase tracking-wider mt-1.5">
                     One-time payment • Lifetime access
                   </p>
                 </div>
@@ -954,7 +976,7 @@ export default function LevelDetail() {
                 {/* Cancel Button */}
                 <Button
                   variant="outline"
-                  className="w-full border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
+                  className="w-full border-slate-202 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl h-11 font-bold"
                   onClick={() => {
                     setShowPayPal(false);
                     setPaymentMethod(null);
