@@ -976,13 +976,33 @@ export default function Home() {
                         className="border border-slate-100 hover:border-violet-200 bg-white hover:bg-slate-50/20 hover:shadow-xl transition-all duration-300 rounded-[24px] p-6 cursor-pointer flex flex-col justify-between group relative overflow-hidden"
                       >
                         <div className="space-y-4">
-                          {/* Generated 3D Shelf Illustration */}
-                          <div className="relative w-full h-32 flex items-center justify-center overflow-hidden shrink-0">
-                            <img
-                              src="/instructor_portal.png"
-                              alt="Instructor Portal Illustration"
-                              className="w-auto h-full max-h-[120px] object-contain group-hover:scale-105 transition-transform duration-300"
-                            />
+                          {/* Precise Vector Shelf Illustration */}
+                          <div className="relative w-full h-32 flex flex-col items-center justify-end overflow-visible shrink-0 pb-1">
+                            {/* Decorative sparks */}
+                            <Sparkles className="absolute right-12 top-2 w-4.5 h-4.5 text-violet-300 opacity-60 rotate-12" />
+                            <Sparkles className="absolute left-12 top-4 w-3.5 h-3.5 text-violet-300 opacity-40 -rotate-12" />
+                            
+                            <div className="relative w-48 h-20 flex items-end justify-center">
+                              {/* Left Calendar widget */}
+                              <div className="absolute left-4 bottom-0 w-11 h-11 bg-[#ece8ff] border border-violet-100 rounded-xl shadow-sm flex items-center justify-center text-violet-500 rotate-[-10deg] z-10 group-hover:rotate-[-6deg] group-hover:scale-105 transition-all duration-300">
+                                <Calendar className="w-5.5 h-5.5" />
+                              </div>
+
+                              {/* Center Graduation Cap circle */}
+                              <div className="relative w-20 h-20 rounded-full bg-gradient-to-tr from-violet-150 via-violet-100 to-violet-50 flex items-center justify-center border border-violet-200 shadow-md shadow-violet-500/5 z-20 group-hover:scale-[1.05] transition-transform duration-300">
+                                <div className="w-16 h-16 rounded-full bg-white flex items-center justify-center shadow-inner">
+                                  <GraduationCap className="w-9 h-9 text-violet-600" />
+                                </div>
+                              </div>
+
+                              {/* Right Stats Chart widget */}
+                              <div className="absolute right-4 bottom-0 w-11 h-11 bg-[#ece8ff] border border-violet-100 rounded-xl shadow-sm flex items-center justify-center text-violet-500 rotate-[10deg] z-10 group-hover:rotate-[6deg] group-hover:scale-105 transition-all duration-300">
+                                <BarChart3 className="w-5.5 h-5.5" />
+                              </div>
+                            </div>
+
+                            {/* The Wood Shelf */}
+                            <div className="w-48 h-2 bg-gradient-to-r from-[#dec6ad] via-[#e6c39f] to-[#dec6ad] rounded-full shadow-sm mt-2.5 z-30" />
                           </div>
                           
                           <div className="space-y-1.5 text-center">
@@ -1011,13 +1031,35 @@ export default function Home() {
                         className="border border-slate-105 hover:border-emerald-200 bg-white hover:bg-slate-50/20 hover:shadow-xl transition-all duration-300 rounded-[24px] p-6 cursor-pointer flex flex-col justify-between group relative overflow-hidden"
                       >
                         <div className="space-y-4">
-                          {/* Generated 3D Shelf Illustration */}
-                          <div className="relative w-full h-32 flex items-center justify-center overflow-hidden shrink-0">
-                            <img
-                              src="/student_portal.png"
-                              alt="Student Portal Illustration"
-                              className="w-auto h-full max-h-[120px] object-contain group-hover:scale-105 transition-transform duration-300"
-                            />
+                          {/* Precise Vector Shelf Illustration */}
+                          <div className="relative w-full h-32 flex flex-col items-center justify-end overflow-visible shrink-0 pb-1">
+                            {/* Decorative sparks */}
+                            <Sparkles className="absolute right-12 top-2 w-4.5 h-4.5 text-emerald-300 opacity-60 rotate-12" />
+                            <Sparkles className="absolute left-12 top-4 w-3.5 h-3.5 text-emerald-300 opacity-40 -rotate-12" />
+
+                            <div className="relative w-48 h-20 flex items-end justify-center">
+                              {/* Left Stacked Books widget */}
+                              <div className="absolute left-3 bottom-0.5 flex flex-col items-center rotate-[-10deg] z-10 group-hover:rotate-[-6deg] group-hover:scale-105 transition-all duration-300">
+                                <div className="w-9 h-2 bg-emerald-505 rounded-t-sm border border-emerald-600/20" />
+                                <div className="w-10 h-2 bg-emerald-100 rounded-sm border border-emerald-200" />
+                                <div className="w-11 h-3 bg-amber-100 rounded-b-sm border border-amber-200 shadow-sm" />
+                              </div>
+
+                              {/* Center Book Open circle */}
+                              <div className="relative w-20 h-20 rounded-full bg-gradient-to-tr from-emerald-150 via-emerald-100 to-emerald-50 flex items-center justify-center border border-emerald-200 shadow-md shadow-emerald-500/5 z-20 group-hover:scale-[1.05] transition-transform duration-300">
+                                <div className="w-16 h-16 rounded-full bg-white flex items-center justify-center shadow-inner">
+                                  <BookOpen className="w-9 h-9 text-emerald-600" />
+                                </div>
+                              </div>
+
+                              {/* Right Checklist widget */}
+                              <div className="absolute right-4 bottom-0 w-11 h-11 bg-[#e4f8f0] border border-emerald-100 rounded-xl shadow-sm flex items-center justify-center text-emerald-600 rotate-[10deg] z-10 group-hover:rotate-[6deg] group-hover:scale-105 transition-all duration-300">
+                                <Check className="w-5.5 h-5.5" />
+                              </div>
+                            </div>
+
+                            {/* The Wood Shelf */}
+                            <div className="w-48 h-2 bg-gradient-to-r from-[#dec6ad] via-[#e6c39f] to-[#dec6ad] rounded-full shadow-sm mt-2.5 z-30" />
                           </div>
                           
                           <div className="space-y-1.5 text-center">
