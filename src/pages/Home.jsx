@@ -1054,7 +1054,7 @@ export default function Home() {
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95, y: 10 }}
                 transition={{ type: 'spring', duration: 0.4 }}
-                className={`${authStep === 'role' ? 'w-full max-w-3xl' : 'w-full max-w-lg'} border border-slate-100 bg-white rounded-[28px] shadow-2xl p-8 text-slate-800 relative overflow-hidden z-10`}
+                className={`${authStep === 'role' ? 'w-full max-w-3xl' : 'w-full max-w-lg'} max-h-[90vh] overflow-y-auto border border-slate-100 bg-white rounded-[24px] sm:rounded-[28px] shadow-2xl p-5 sm:p-8 text-slate-800 relative overflow-hidden z-10`}
               >
                 {/* Close Button */}
                 <button
@@ -1408,170 +1408,59 @@ export default function Home() {
                   </div>
                 ) : (
                   <div className="space-y-6 relative z-10 text-left">
-                    {/* Floating illustrations */}
-                    <svg className="absolute -left-6 top-20 w-20 h-20 text-slate-200 pointer-events-none opacity-50" viewBox="0 0 100 100" fill="none">
+                    {/* Floating illustrations - hidden on mobile for cleaner height */}
+                    <svg className="absolute -left-6 top-20 w-20 h-20 text-slate-200 pointer-events-none opacity-50 hidden sm:block" viewBox="0 0 100 100" fill="none">
                       <path d="M10 80 Q 30 60, 80 40" stroke="currentColor" strokeWidth="1.5" strokeDasharray="3 3" fill="none" />
                       <path d="M80 40 L68 45 L72 37 Z" fill="currentColor" />
                     </svg>
 
-                    {/* Floating open book in top right corner */}
-                    <div className={`absolute right-0 top-2 opacity-20 rotate-12 pointer-events-none ${
+                    {/* Floating open book in top right corner - hidden on mobile */}
+                    <div className={`absolute right-0 top-2 opacity-20 rotate-12 pointer-events-none hidden sm:block ${
                       selectedRole?.id === 'student' ? 'text-emerald-500' : 'text-violet-500'
                     }`}>
                       <BookOpen className="w-16 h-16" />
                     </div>
 
-                    <div className="flex items-start gap-4 pb-2">
-                      <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 border ${
+                    <div className="flex items-center gap-3.5 pb-2">
+                      <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 border ${
                         selectedRole?.id === 'student'
                           ? 'bg-emerald-50 text-emerald-600 border-emerald-100'
                           : 'bg-violet-50 text-violet-600 border-violet-100'
                       }`}>
-                        {React.createElement(selectedRole?.icon || BookOpen, { className: "w-7 h-7" })}
+                        {React.createElement(selectedRole?.icon || BookOpen, { className: "w-6 h-6" })}
                       </div>
-                      <div className="space-y-1">
-                        <h3 className="text-2xl font-black text-slate-900 leading-tight">
-                          Login as{' '}
+                      <div className="space-y-0.5">
+                        <h3 className="text-xl font-black text-slate-900 leading-tight">
+                          Sign In
+                        </h3>
+                        <p className="text-slate-500 text-xs font-semibold">
+                          Continue to your{' '}
                           <span className={selectedRole?.id === 'student' ? 'text-emerald-600' : 'text-violet-600'}>
                             {selectedRole?.title}
                           </span>
-                        </h3>
-                        <p className="text-slate-505 text-xs">
-                          {otpSent
-                            ? 'Verify by entering the code sent to your email.'
-                            : 'Enter email to receive your passwordless one-time pass code.'
-                          }
                         </p>
                       </div>
                     </div>
 
-                    <div className="space-y-5 pt-2">
-                      {!otpSent ? (
-                        <>
-                          <div className="space-y-2">
-                            <Label htmlFor="email" className="text-xs font-bold uppercase tracking-wider text-slate-400">Email Address</Label>
-                            <div className="relative">
-                              <Mail className={`absolute left-3.5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 ${
-                                selectedRole?.id === 'student' ? 'text-emerald-500' : 'text-violet-500'
-                              }`} />
-                              <Input
-                                id="email"
-                                type="email"
-                                placeholder="your.email@example.com"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                className={`pl-11 h-11 bg-slate-50 border-slate-205 text-sm text-slate-900 rounded-xl focus-visible:ring-2 ${
-                                  selectedRole?.id === 'student'
-                                    ? 'focus-visible:ring-emerald-500 focus-visible:border-emerald-500'
-                                    : 'focus-visible:ring-violet-500 focus-visible:border-violet-500'
-                                }`}
-                                onKeyPress={(e) => e.key === 'Enter' && handleSendOTP()}
-                              />
-                            </div>
-                          </div>
-
-                          <Button
-                            onClick={handleSendOTP}
-                            disabled={authLoading}
-                            className={`w-full text-white font-bold h-11 rounded-xl transition-all shadow-md ${
-                              selectedRole?.id === 'student'
-                                ? 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-600/15'
-                                : 'bg-violet-600 hover:bg-violet-700 shadow-violet-600/15'
-                            }`}
-                          >
-                            {authLoading ? 'Sending OTP...' : 'Send OTP →'}
-                          </Button>
-
-                      <div className="relative py-1">
-                        <div className="absolute inset-0 flex items-center">
-                          <div className="w-full border-t border-slate-200"></div>
-                        </div>
-                        <div className="relative flex justify-center text-[10px] font-bold uppercase tracking-widest bg-white">
-                          <span className="px-3 text-slate-400">Or Continue With</span>
-                        </div>
-                      </div>
-
-                      <div className="flex justify-center w-full">
+                    <div className="space-y-5 pt-3 flex flex-col items-center">
+                      <div className="flex justify-center w-full min-h-[44px]">
                         <GoogleLogin
                           onSuccess={handleGoogleLoginSuccess}
                           onError={handleGoogleLoginError}
                           theme="outline"
                           size="large"
-                          width="350px"
+                          width="280px"
                         />
                       </div>
 
-                          <Button
-                            variant="ghost"
-                            onClick={() => setAuthStep('role')}
-                            className="w-full text-xs font-bold text-violet-600 hover:text-violet-700 hover:bg-violet-50 rounded-xl flex items-center justify-center gap-1.5"
-                          >
-                            <RefreshCw className="w-3.5 h-3.5" />
-                            <span>Change Role →</span>
-                          </Button>
-                        </>
-                      ) : (
-                        <>
-                          <div className="space-y-2">
-                            <Label htmlFor="otp" className="text-xs font-bold uppercase tracking-wider text-slate-400">Enter Verification Code</Label>
-                            <div className="relative">
-                              <Lock className={`absolute left-3.5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 ${
-                                selectedRole?.id === 'student' ? 'text-emerald-500' : 'text-violet-500'
-                              }`} />
-                              <Input
-                                id="otp"
-                                type="text"
-                                placeholder="000000"
-                                maxLength={6}
-                                value={otp}
-                                onChange={(e) => setOTP(e.target.value.replace(/\D/g, ''))}
-                                className={`pl-11 h-11 bg-slate-50 border-slate-200 text-center text-xl tracking-[0.4em] font-mono font-bold text-slate-900 rounded-xl focus-visible:ring-2 ${
-                                  selectedRole?.id === 'student'
-                                    ? 'focus-visible:ring-emerald-500 focus-visible:border-emerald-500'
-                                    : 'focus-visible:ring-violet-500 focus-visible:border-violet-500'
-                                }`}
-                                onKeyPress={(e) => e.key === 'Enter' && handleVerifyOTP()}
-                              />
-                            </div>
-                            <p className="text-xs text-slate-550 font-medium">
-                              Sent to: <span className="text-slate-700 font-semibold">{email}</span>
-                            </p>
-                          </div>
-
-                          <div className="flex gap-3 pt-1">
-                            <Button
-                              variant="outline"
-                              onClick={() => setOtpSent(false)}
-                              className="flex-1 rounded-xl h-11 border-slate-200 text-slate-605 hover:bg-slate-50 font-bold"
-                            >
-                              Back
-                            </Button>
-                            <Button
-                              onClick={handleVerifyOTP}
-                              disabled={authLoading}
-                              className={`flex-1 text-white font-bold h-11 rounded-xl transition-all shadow-md ${
-                                selectedRole?.id === 'student'
-                                  ? 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-600/15'
-                                  : 'bg-violet-600 hover:bg-violet-700 shadow-violet-600/15'
-                              }`}
-                            >
-                              {authLoading ? 'Verifying...' : 'Verify'}
-                            </Button>
-                          </div>
-                          <Button
-                            variant="ghost"
-                            onClick={handleSendOTP}
-                            className={`w-full text-xs font-bold rounded-xl ${
-                              selectedRole?.id === 'student'
-                                ? 'text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50'
-                                : 'text-violet-600 hover:text-violet-700 hover:bg-violet-50'
-                            }`}
-                            disabled={authLoading}
-                          >
-                            Resend Code
-                          </Button>
-                        </>
-                      )}
+                      <Button
+                        variant="ghost"
+                        onClick={() => setAuthStep('role')}
+                        className="w-full max-w-[280px] text-xs font-bold text-slate-500 hover:text-slate-700 hover:bg-slate-50 rounded-xl flex items-center justify-center gap-1.5 h-11 border border-slate-100"
+                      >
+                        <RefreshCw className="w-3.5 h-3.5" />
+                        <span>Go Back / Change Role</span>
+                      </Button>
                     </div>
                   </div>
                 )}
