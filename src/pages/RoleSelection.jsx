@@ -26,27 +26,30 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/lib/AuthContext';
+
 const roles = [
   {
     id: 'instructor',
-    title: 'Instructor',
-    subtitle: 'Teach & Create Courses',
-    description: 'Create courses, manage students, and track your teaching success',
+    title: 'Instructor Partner',
+    subtitle: 'Teach & Build Curriculum',
+    description: 'Design courses, publish levels, track teaching analytics, and manage class structures.',
     icon: GraduationCap,
-    color: 'from-violet-500 to-purple-600',
-    iconBg: 'bg-violet-100 dark:bg-violet-900/30',
-    iconColor: 'text-violet-600',
+    color: 'from-violet-600 to-purple-650',
+    iconBg: 'bg-violet-500/10 border-violet-500/20',
+    iconColor: 'text-violet-400',
+    btnBg: 'bg-violet-600 hover:bg-violet-700',
     route: 'InstructorDashboard'
   },
   {
     id: 'student',
-    title: 'Student',
-    subtitle: 'Learn & Grow',
-    description: 'Access courses, track progress, and earn certificates',
+    title: 'Student Learner',
+    subtitle: 'Fluency & Practice Center',
+    description: 'Immerse yourself in active study materials, track progress loops, and earn certifications.',
     icon: BookOpen,
     color: 'from-emerald-500 to-teal-600',
-    iconBg: 'bg-emerald-100 dark:bg-emerald-900/30',
-    iconColor: 'text-emerald-600',
+    iconBg: 'bg-emerald-500/10 border-emerald-500/20',
+    iconColor: 'text-emerald-450',
+    btnBg: 'bg-emerald-600 hover:bg-emerald-700',
     route: 'StudentDashboard'
   }
 ];
@@ -60,6 +63,7 @@ export default function RoleSelection() {
   const [otpSent, setOtpSent] = useState(false);
   const [loading, setLoading] = useState(false);
   const { checkUserAuth, user } = useAuth();
+
   const handleRoleSelect = (role) => {
     setSelectedRole(role);
     setShowOTPDialog(true);
@@ -72,16 +76,19 @@ export default function RoleSelection() {
       toast.error('Please enter your email');
       return;
     }
-    await WWClient.functions.invoke('sendOTP', {
-      email: email,
-      service_type: selectedRole.id
-    });
-
     setLoading(true);
-    // Simulate sending OTP
-    setOtpSent(true);
-    setLoading(false);
-    toast.success('OTP sent to your email!');
+    try {
+      await WWClient.functions.invoke('sendOTP', {
+        email: email,
+        service_type: selectedRole.id
+      });
+      setOtpSent(true);
+      toast.success('OTP sent to your email!');
+    } catch (e) {
+      toast.error('Failed to send OTP. Please check your network.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleVerifyOTP = async () => {
@@ -89,71 +96,33 @@ export default function RoleSelection() {
       toast.error('Please enter a valid 6-digit OTP');
       return;
     }
-    const data = await WWClient.functions.invoke('verifyOTP', {
-      email,
-      otp: otp.trim()
-    });
-
     setLoading(true);
+    try {
+      const data = await WWClient.functions.invoke('verifyOTP', {
+        email,
+        otp: otp.trim()
+      });
 
-    if (data?.success) {
-      await checkUserAuth();
+      if (data?.success) {
+        await checkUserAuth();
+        const { role, profileCompleted } = data.user;
 
-      const { role, profileCompleted } = data.user;
-
-      if (role === 'instructor') {
-        navigate(profileCompleted ? '/InstructorDashboard' : '/InstructorOnboarding');
+        if (role === 'instructor') {
+          navigate(profileCompleted ? '/InstructorDashboard' : '/InstructorOnboarding');
+        } else if (role === 'student') {
+          navigate(profileCompleted ? '/StudentDashboard' : '/StudentOnboarding');
+        } else {
+          navigate('/');
+        }
+        toast.success('OTP verified! Redirecting...');
+      } else {
+        toast.error('Invalid OTP. Please try again.');
       }
-      else if (role === 'student') {
-        navigate(profileCompleted ? '/StudentDashboard' : '/StudentOnboarding');
-      }
-      else {
-        // fallback (optional)
-        navigate('/');
-      }
-
-      toast.success('OTP verified! Redirecting...');
+    } catch (e) {
+      toast.error('Verification failed. Try again.');
+    } finally {
+      setLoading(false);
     }
-
-
-    // Simulate OTP verification
-    // setTimeout(async () => {
-    //   try {
-    //     // Check if user is authenticated
-    //     const isAuth = await WWClient.auth.isAuthenticated();
-
-    //     if (isAuth) {
-    //       // User is logged in, check profile completion
-    //       const user = await WWClient.auth.me();
-
-    //       // Check if profile is complete based on role
-    //       if (selectedRole.id === 'instructor') {
-    //         // Check if instructor profile exists
-    //         const instructorProfiles = await WWClient.entities.InstructorProfile.filter({ user_id: user.id });
-    //         if (instructorProfiles.length === 0) {
-    //           // No profile, redirect to onboarding
-    //           navigate(createPageUrl('InstructorOnboarding'));
-    //           return;
-    //         }
-    //       } else if (selectedRole.id === 'student') {
-    //         // Check if student completed onboarding
-    //         if (!user.onboarding_completed) {
-    //           // Not completed, redirect to onboarding
-    //           navigate(createPageUrl('StudentOnboarding'));
-    //           return;
-    //         }
-    //       }
-
-    //       navigate(createPageUrl(selectedRole.route));
-    //     } else {
-    //       // Redirect to Base44 login with return URL
-    //       WWClient.auth.redirectToLogin(createPageUrl(selectedRole.route));
-    //     }
-    //   } catch (error) {
-    //     toast.error('Authentication failed. Please try again.');
-    //     setLoading(false);
-    //   }
-    // }, 1500);
   };
 
   const handleGoogleLoginSuccess = async (credentialResponse) => {
@@ -190,61 +159,69 @@ export default function RoleSelection() {
 
   return (
     <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center p-4">
-        {/* Background Pattern */}
-        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAxMCAwIEwgMCAwIDAgMTAiIGZpbGw9Im5vbmUiIHN0cm9rZT0icmdiYSgyNTUsMjU1LDI1NSwwLjAzKSIgc3Ryb2tlLXdpZHRoPSIxIi8+PC9wYXR0ZXJuPjwvZGVmcz48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJ1cmwoI2dyaWQpIi8+PC9zdmc+')] opacity-50"></div>
+      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-4 relative overflow-hidden">
+        {/* Glowing gradient elements */}
+        <div className="absolute top-1/4 left-1/4 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-violet-600/10 rounded-full blur-[100px] pointer-events-none" />
+        <div className="absolute bottom-1/4 right-1/4 translate-x-1/2 translate-y-1/2 w-[500px] h-[500px] bg-emerald-600/5 rounded-full blur-[120px] pointer-events-none" />
 
-        <div className="max-w-6xl w-full relative z-10">
-          {/* Header */}
+        {/* Grid pattern overlay */}
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#0f172a_1px,transparent_1px),linear-gradient(to_bottom,#0f172a_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)] opacity-40 pointer-events-none" />
+
+        <div className="max-w-4xl w-full relative z-10 space-y-12">
+          {/* Brand logo header */}
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-center mb-12"
+            className="text-center space-y-3"
           >
-            <div className="flex items-center justify-center gap-3 mb-4">
-              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shadow-lg">
-                <svg className="w-7 h-7 text-white" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M12 2L3 7V17L12 22L21 17V7L12 2Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            <div className="flex items-center justify-center gap-3 mb-2">
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-violet-600 to-purple-600 flex items-center justify-center shadow-lg shadow-violet-500/20">
+                <svg className="w-6 h-6 text-white" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M12 2L3 7V17L12 22L21 17V7L12 2Z" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
                   <path d="M12 12L3 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                   <path d="M12 12V22" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                   <path d="M12 12L21 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
               </div>
-              <h1 className="text-3xl md:text-4xl font-bold text-white">Global Tongue</h1>
+              <h1 className="text-3xl font-extrabold text-white tracking-tight">Global Tongue</h1>
             </div>
-            <p className="text-lg text-slate-300">Select your role to get started</p>
+            <p className="text-slate-400 font-medium text-sm">Select your gateway to begin</p>
           </motion.div>
 
-          {/* Role Cards */}
-          <div className="grid md:grid-cols-2 gap-6">
+          {/* Core Roles Grid */}
+          <div className="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto">
             {roles.map((role, index) => {
               const Icon = role.icon;
               return (
                 <motion.div
                   key={role.id}
-                  initial={{ opacity: 0, y: 20 }}
+                  initial={{ opacity: 0, y: 15 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1 }}
+                  transition={{ delay: index * 0.08 }}
+                  className="h-full"
                 >
                   <Card
-                    className="border-0 bg-slate-800/50 backdrop-blur-sm hover:bg-slate-800/70 transition-all duration-300 cursor-pointer group hover:scale-105"
+                    className="border border-slate-800/80 bg-slate-900/50 hover:bg-slate-900/80 transition-all duration-300 cursor-pointer group hover:scale-[1.02] rounded-2xl h-full flex flex-col justify-between"
                     onClick={() => handleRoleSelect(role)}
                   >
-                    <CardContent className="p-6">
-                      <div className={`w-16 h-16 rounded-2xl ${role.iconBg} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
-                        <Icon className={`w-8 h-8 ${role.iconColor}`} />
+                    <CardContent className="p-6 flex flex-col h-full justify-between space-y-6">
+                      <div className="space-y-4">
+                        <div className={`w-14 h-14 rounded-2xl ${role.iconBg} border flex items-center justify-center group-hover:scale-105 transition-transform`}>
+                          <Icon className={`w-7 h-7 ${role.iconColor}`} />
+                        </div>
+                        <div className="space-y-1">
+                          <h3 className="text-xl font-bold text-white tracking-tight">{role.title}</h3>
+                          <p className={`text-xs font-bold uppercase tracking-wider bg-gradient-to-r ${role.color} bg-clip-text text-transparent`}>
+                            {role.subtitle}
+                          </p>
+                        </div>
+                        <p className="text-sm text-slate-400 leading-relaxed font-light">{role.description}</p>
                       </div>
 
-                      <h3 className="text-xl font-bold text-white mb-1">{role.title}</h3>
-                      <p className={`text-sm font-medium bg-gradient-to-r ${role.color} bg-clip-text text-transparent mb-3`}>
-                        {role.subtitle}
-                      </p>
-                      <p className="text-sm text-slate-400 mb-4">{role.description}</p>
-
                       <Button
-                        className={`w-full bg-gradient-to-r ${role.color} hover:opacity-90 text-white`}
+                        className={`w-full ${role.btnBg} text-white font-bold h-11 rounded-xl shadow-md transition-all flex items-center justify-center`}
                       >
-                        Get Started
+                        Enter Platform
                         <ArrowRight className="w-4 h-4 ml-2" />
                       </Button>
                     </CardContent>
@@ -253,87 +230,82 @@ export default function RoleSelection() {
               );
             })}
           </div>
-
-          {/* Footer */}
-          {/* <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.5 }}
-              className="text-center text-slate-400 mt-8"
-            >
-              Don't have an account? <button className="text-violet-400 hover:text-violet-300 font-medium">Sign up</button>
-            </motion.p> */}
         </div>
 
-        {/* OTP Dialog */}
+        {/* OTP Auth Dialog */}
         <Dialog open={showOTPDialog} onOpenChange={setShowOTPDialog}>
-          <DialogContent className="sm:max-w-md">
-            <DialogHeader>
-              <DialogTitle className="flex items-center gap-2">
+          <DialogContent className="sm:max-w-md border border-slate-850 bg-slate-900 text-white rounded-2xl">
+            <DialogHeader className="pb-2">
+              <DialogTitle className="flex items-center gap-2.5 text-base font-bold">
                 {selectedRole && (
                   <>
-                    {React.createElement(selectedRole.icon, { className: `w-5 h-5 ${selectedRole.iconColor}` })}
-                    Login as {selectedRole.title}
+                    <div className={`w-8 h-8 rounded-lg ${selectedRole.iconBg} border flex items-center justify-center shrink-0`}>
+                      {React.createElement(selectedRole.icon, { className: `w-4.5 h-4.5 ${selectedRole.iconColor}` })}
+                    </div>
+                    <span>Login as {selectedRole.title}</span>
                   </>
                 )}
               </DialogTitle>
-              <DialogDescription>
+              <DialogDescription className="text-slate-400 text-xs">
                 {otpSent
-                  ? 'Enter the 6-digit OTP sent to your email'
-                  : 'Enter your email to receive an OTP'
+                  ? 'Verify by entering the code sent to your email.'
+                  : 'Receive a secure, passwordless one-time pass code.'
                 }
               </DialogDescription>
             </DialogHeader>
 
-            <div className="space-y-4 py-4">
+            <div className="space-y-5 py-2">
               {!otpSent ? (
                 <>
                   <div className="space-y-2">
-                    <Label htmlFor="email">Email Address</Label>
+                    <Label htmlFor="email" className="text-xs font-bold uppercase tracking-wider text-slate-400">Email Address</Label>
                     <div className="relative">
-                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                      <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
                       <Input
                         id="email"
                         type="email"
                         placeholder="your.email@example.com"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        className="pl-10"
+                        className="pl-11 h-11 bg-slate-950 border-slate-800 text-sm text-white focus-visible:ring-violet-500 focus-visible:border-violet-500 rounded-xl"
                         onKeyPress={(e) => e.key === 'Enter' && handleSendOTP()}
                       />
                     </div>
                   </div>
+
                   <Button
                     onClick={handleSendOTP}
                     disabled={loading}
-                    className={`w-full bg-gradient-to-r ${selectedRole?.color}`}
+                    className={`w-full bg-violet-600 hover:bg-violet-755 text-white font-bold h-11 rounded-xl transition-all shadow-md shadow-violet-650/10`}
                   >
                     {loading ? 'Sending OTP...' : 'Send OTP'}
                   </Button>
 
-                  <div className="relative">
+                  <div className="relative py-2">
                     <div className="absolute inset-0 flex items-center">
-                      <div className="w-full border-t border-slate-600"></div>
+                      <div className="w-full border-t border-slate-800"></div>
                     </div>
-                    <div className="relative flex justify-center text-sm">
-                      <span className="px-2 bg-slate-900 text-slate-400">Or</span>
+                    <div className="relative flex justify-center text-[10px] font-bold uppercase tracking-widest">
+                      <span className="px-3 bg-slate-900 text-slate-500">Or Continue With</span>
                     </div>
                   </div>
 
-                  <GoogleLogin
-                    onSuccess={handleGoogleLoginSuccess}
-                    onError={handleGoogleLoginError}
-                    theme="dark"
-                    size="large"
-                    width="100%"
-                  />
+                  <div className="flex justify-center w-full">
+                    <GoogleLogin
+                      onSuccess={handleGoogleLoginSuccess}
+                      onError={handleGoogleLoginError}
+                      theme="dark"
+                      size="large"
+                      width="384px"
+                    />
+                  </div>
                 </>
               ) : (
                 <>
-                  <div className="space-y-2">
-                    <Label htmlFor="otp">Enter OTP</Label>
+                  <div className="space-y-2.5">
+                    <Label htmlFor="otp" className="text-xs font-bold uppercase tracking-wider text-slate-400">Enter Verification Code</Label>
                     <div className="relative">
-                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                      <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
                       <Input
                         id="otp"
                         type="text"
@@ -341,37 +313,38 @@ export default function RoleSelection() {
                         maxLength={6}
                         value={otp}
                         onChange={(e) => setOTP(e.target.value.replace(/\D/g, ''))}
-                        className="pl-10 text-center text-2xl tracking-widest font-mono"
+                        className="pl-11 h-11 bg-slate-950 border-slate-800 text-center text-xl tracking-[0.4em] font-mono font-bold text-white focus-visible:ring-violet-500 rounded-xl"
                         onKeyPress={(e) => e.key === 'Enter' && handleVerifyOTP()}
                       />
                     </div>
-                    <p className="text-xs text-slate-500">
-                      OTP sent to {email}
+                    <p className="text-xs text-slate-500 font-medium">
+                      Sent to: <span className="text-slate-350">{email}</span>
                     </p>
                   </div>
-                  <div className="flex gap-2">
+                  
+                  <div className="flex gap-3 pt-2">
                     <Button
                       variant="outline"
                       onClick={() => setOtpSent(false)}
-                      className="flex-1"
+                      className="flex-1 rounded-xl h-11 border-slate-800 hover:bg-slate-850 hover:text-white font-bold text-slate-300"
                     >
-                      Change Email
+                      Back
                     </Button>
                     <Button
                       onClick={handleVerifyOTP}
                       disabled={loading}
-                      className={`flex-1 bg-gradient-to-r ${selectedRole?.color}`}
+                      className={`flex-1 bg-violet-600 hover:bg-violet-755 text-white font-bold h-11 rounded-xl transition-all shadow-md shadow-violet-650/10`}
                     >
-                      {loading ? 'Verifying...' : 'Verify & Login'}
+                      {loading ? 'Verifying...' : 'Verify'}
                     </Button>
                   </div>
                   <Button
                     variant="ghost"
                     onClick={handleSendOTP}
-                    className="w-full text-sm"
+                    className="w-full text-xs font-semibold text-slate-400 hover:text-white"
                     disabled={loading}
                   >
-                    Resend OTP
+                    Resend Code
                   </Button>
                 </>
               )}

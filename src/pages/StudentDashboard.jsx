@@ -135,157 +135,125 @@ export default function StudentDashboard() {
   if (loading) return <LoadingPage />;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-violet-50/30 to-slate-50 dark:from-slate-950 dark:via-violet-950/20 dark:to-slate-950">
+    <div className="min-h-screen bg-slate-50/50 dark:bg-slate-950 transition-colors duration-300">
       <Sidebar userRole="student" currentPage="StudentDashboard" onLogout={handleLogout} />
       
       <div className="md:pl-[260px]">
         <Header user={user} notifications={notifications} />
         
-        <main className="p-6 md:p-10 max-w-[1600px] mx-auto">
-          {/* Welcome Section */}
+        <main className="p-4 sm:p-6 md:p-8 lg:p-10 max-w-[1600px] mx-auto space-y-8">
+          {/* Welcome Header Section */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mb-8"
+            className="flex flex-col sm:flex-row sm:items-center justify-between gap-4"
           >
-            <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-300 bg-clip-text text-transparent mb-2">
-              Welcome back, {user?.full_name?.split(' ')[0] || 'Learner'}! 👋
-            </h1>
-            <p className="text-slate-500 dark:text-slate-400 text-lg">
-              Keep up the great work on your language learning journey
-            </p>
+            <div>
+              <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+                Welcome back, {user?.full_name?.split(' ')[0] || 'Learner'}! 👋
+              </h1>
+              <p className="text-slate-500 dark:text-slate-405 text-sm mt-1 font-light">
+                Ready to make progress on your language tracks today?
+              </p>
+            </div>
+            <Link to={createPageUrl('CourseCatalog')}>
+              <Button className="bg-violet-600 hover:bg-violet-755 text-white font-bold rounded-xl shadow-md shadow-violet-650/15">
+                Explore New Courses
+              </Button>
+            </Link>
           </motion.div>
 
-          {/* Gamification Section */}
-          <div className="grid lg:grid-cols-3 gap-6 mb-12">
+          {/* Gamification Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
+              initial={{ opacity: 0, scale: 0.96 }}
               animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.1 }}
+              transition={{ delay: 0.05 }}
             >
               <PointsCard userPoints={userPoints} rank={currentUserRank} />
             </motion.div>
             
             <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
+              initial={{ opacity: 0, scale: 0.96 }}
               animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.2 }}
+              transition={{ delay: 0.1 }}
               className="lg:col-span-2"
             >
               <BadgesSection userBadges={userBadges} allBadges={allBadges.slice(0, 10)} />
             </motion.div>
           </div>
 
-          {/* Quick Access to Live Sessions */}
+          {/* Quick Access to Live Sessions Banner */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="mb-6"
+            transition={{ delay: 0.15 }}
           >
             <Link to={createPageUrl('StudentLiveSessions')}>
-              <div className="bg-gradient-to-r from-emerald-500 to-teal-500 rounded-2xl p-6 text-white shadow-lg hover:shadow-xl transition-all hover:scale-[1.02] cursor-pointer">
-                <div className="flex items-center justify-between">
+              <div className="bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-700 rounded-2xl p-6 text-white shadow-lg shadow-violet-600/10 hover:shadow-xl hover:shadow-violet-600/20 transition-all duration-300 hover:scale-[1.01] cursor-pointer relative overflow-hidden group">
+                <div className="absolute inset-0 opacity-15 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-white via-transparent to-transparent pointer-events-none" />
+                <div className="flex items-center justify-between relative z-10">
                   <div className="flex items-center gap-4">
-                    <div className="w-14 h-14 bg-white/20 rounded-xl flex items-center justify-center">
-                      <Video className="w-8 h-8" />
+                    <div className="w-12 h-12 bg-white/15 backdrop-blur-md rounded-xl flex items-center justify-center border border-white/10 shrink-0">
+                      <Video className="w-6 h-6 text-white" />
                     </div>
                     <div>
-                      <h3 className="text-2xl font-bold mb-1">Join Live Sessions</h3>
-                      <p className="text-emerald-100">Access all your scheduled live classes</p>
+                      <h3 className="text-xl font-bold tracking-tight">Active Live Sessions Hub</h3>
+                      <p className="text-violet-100 text-xs mt-0.5 font-medium">Access scheduled native speaker Google Meet classes</p>
                     </div>
                   </div>
-                  <ChevronRight className="w-8 h-8" />
+                  <ChevronRight className="w-6 h-6 group-hover:translate-x-1.5 transition-transform duration-200" />
                 </div>
               </div>
             </Link>
           </motion.div>
 
-          {/* Stats Grid */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-12">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.1 }}
-              className="bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl rounded-2xl p-6 border border-slate-200/50 dark:border-slate-800/50 shadow-sm hover:shadow-md transition-shadow"
-            >
-              <div className="flex items-start justify-between mb-4">
-                <div className="p-3 rounded-xl bg-violet-100 dark:bg-violet-900/30">
-                  <BookOpen className="w-6 h-6 text-violet-600 dark:text-violet-400" />
-                </div>
-              </div>
-              <div className="space-y-1">
-                <p className="text-sm text-slate-500 dark:text-slate-400">Enrolled Courses</p>
-                <p className="text-3xl font-bold text-slate-900 dark:text-white">{enrollments.length}</p>
-              </div>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.2 }}
-              className="bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl rounded-2xl p-6 border border-slate-200/50 dark:border-slate-800/50 shadow-sm hover:shadow-md transition-shadow"
-            >
-              <div className="flex items-start justify-between mb-4">
-                <div className="p-3 rounded-xl bg-blue-100 dark:bg-blue-900/30">
-                  <Clock className="w-6 h-6 text-blue-600 dark:text-blue-400" />
-                </div>
-              </div>
-              <div className="space-y-1">
-                <p className="text-sm text-slate-500 dark:text-slate-400">In Progress</p>
-                <p className="text-3xl font-bold text-slate-900 dark:text-white">{activeEnrollments.length}</p>
-              </div>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.3 }}
-              className="bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl rounded-2xl p-6 border border-slate-200/50 dark:border-slate-800/50 shadow-sm hover:shadow-md transition-shadow"
-            >
-              <div className="flex items-start justify-between mb-4">
-                <div className="p-3 rounded-xl bg-emerald-100 dark:bg-emerald-900/30">
-                  <Award className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
-                </div>
-              </div>
-              <div className="space-y-1">
-                <p className="text-sm text-slate-500 dark:text-slate-400">Completed</p>
-                <p className="text-3xl font-bold text-slate-900 dark:text-white">{completedEnrollments.length}</p>
-              </div>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.4 }}
-              className="bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl rounded-2xl p-6 border border-slate-200/50 dark:border-slate-800/50 shadow-sm hover:shadow-md transition-shadow"
-            >
-              <div className="flex items-start justify-between mb-4">
-                <div className="p-3 rounded-xl bg-amber-100 dark:bg-amber-900/30">
-                  <TrendingUp className="w-6 h-6 text-amber-600 dark:text-amber-400" />
-                </div>
-              </div>
-              <div className="space-y-1">
-                <p className="text-sm text-slate-500 dark:text-slate-400">Certificates</p>
-                <p className="text-3xl font-bold text-slate-900 dark:text-white">{completedEnrollments.filter(e => e.certificate_issued).length}</p>
-              </div>
-            </motion.div>
+          {/* Stats Summary Widgets */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+            {[
+              { label: 'Enrolled Courses', value: enrollments.length, icon: BookOpen, bg: 'bg-violet-50 text-violet-600 dark:bg-violet-950/40 dark:text-violet-405' },
+              { label: 'In Progress', value: activeEnrollments.length, icon: Clock, bg: 'bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-405' },
+              { label: 'Completed Levels', value: completedEnrollments.length, icon: Award, bg: 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-450' },
+              { label: 'Certificates Issued', value: completedEnrollments.filter(e => e.certificate_issued).length, icon: TrendingUp, bg: 'bg-amber-50 text-amber-600 dark:bg-amber-950/40 dark:text-amber-450' },
+            ].map((stat, idx) => {
+              const Icon = stat.icon;
+              return (
+                <motion.div
+                  key={stat.label}
+                  initial={{ opacity: 0, y: 15 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: idx * 0.05 }}
+                  className="bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800/80 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all duration-200"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className={`p-2.5 rounded-xl ${stat.bg} shrink-0`}>
+                      <Icon className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <p className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">{stat.label}</p>
+                      <p className="text-2xl font-black text-slate-900 dark:text-white mt-0.5">{stat.value}</p>
+                    </div>
+                  </div>
+                </motion.div>
+              );
+            })}
           </div>
 
-          <div className="grid lg:grid-cols-3 gap-6">
-            {/* Continue Learning */}
-            <div className="lg:col-span-2 space-y-6">
-              <Card className="border-slate-200/50 dark:border-slate-800/50 shadow-sm bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl">
-                <CardHeader className="flex flex-row items-center justify-between pb-2">
-                  <CardTitle className="text-xl font-semibold text-slate-900 dark:text-white">Continue Learning</CardTitle>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Learning catalog & schedule */}
+            <div className="lg:col-span-2 space-y-8">
+              {/* Continue Learning card */}
+              <Card className="border border-slate-200 dark:border-slate-800 shadow-sm bg-white dark:bg-slate-900 rounded-2xl overflow-hidden">
+                <CardHeader className="flex flex-row items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800/60">
+                  <CardTitle className="text-lg font-bold text-slate-850 dark:text-white">Continue Learning</CardTitle>
                   <Link to={createPageUrl('MyLearning')}>
-                    <Button variant="ghost" size="sm" className="text-violet-600 hover:text-violet-700 hover:bg-violet-50 dark:hover:bg-violet-900/20">
+                    <Button variant="ghost" size="sm" className="text-violet-650 hover:text-violet-755 hover:bg-violet-50 dark:hover:bg-violet-950/30 font-bold rounded-lg text-xs">
                       View All
                       <ChevronRight className="w-4 h-4 ml-1" />
                     </Button>
                   </Link>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="p-6">
                   {activeEnrollments.length === 0 ? (
                     <EmptyState
                       icon={BookOpen}
@@ -296,33 +264,33 @@ export default function StudentDashboard() {
                       onAction={() => window.location.href = createPageUrl('CourseCatalog')}
                     />
                   ) : (
-                    <div className="space-y-4">
+                    <div className="space-y-4.5">
                       {activeEnrollments.slice(0, 3).map((enrollment, index) => (
                         <motion.div
                           key={enrollment.id}
-                          initial={{ opacity: 0, x: -20 }}
+                          initial={{ opacity: 0, x: -10 }}
                           animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: index * 0.1 }}
+                          transition={{ delay: index * 0.05 }}
                         >
                           <Link to={createPageUrl(`CoursePlayer?enrollmentId=${enrollment.id}`)}>
-                            <div className="flex items-center gap-4 p-4 rounded-xl bg-slate-50 dark:bg-slate-700/50 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors group">
-                              <div className="relative w-20 h-20 rounded-xl overflow-hidden flex-shrink-0">
+                            <div className="flex items-center gap-4 p-4 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 hover:bg-violet-50/20 dark:hover:bg-violet-950/10 hover:border-violet-100 dark:hover:border-violet-900/50 transition-all duration-200 group">
+                              <div className="relative w-16 h-16 rounded-xl overflow-hidden flex-shrink-0 border border-slate-200 dark:border-slate-800">
                                 <img
                                   src={`https://images.unsplash.com/photo-1546410531-bb4caa6b424d?w=100&h=100&fit=crop`}
                                   alt={enrollment.course_title}
                                   className="w-full h-full object-cover"
                                 />
                                 <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                  <Play className="w-6 h-6 text-white" />
+                                  <Play className="w-5 h-5 text-white fill-white" />
                                 </div>
                               </div>
-                              <div className="flex-1 min-w-0">
-                                <h4 className="font-semibold text-slate-900 dark:text-white truncate group-hover:text-violet-600 transition-colors">
+                              <div className="flex-1 min-w-0 space-y-2">
+                                <h4 className="font-bold text-slate-850 dark:text-white truncate group-hover:text-violet-650 transition-colors text-sm">
                                   {enrollment.course_title}
                                 </h4>
-                                <div className="flex items-center gap-4 mt-2">
-                                  <Progress value={enrollment.progress_percentage || 0} className="flex-1 h-2" />
-                                  <span className="text-sm font-medium text-slate-600 dark:text-slate-400 w-12">
+                                <div className="flex items-center gap-4">
+                                  <Progress value={enrollment.progress_percentage || 0} className="flex-1 h-1.5 bg-slate-200 dark:bg-slate-800 [&>div]:bg-violet-650" />
+                                  <span className="text-xs font-bold text-slate-500 w-8">
                                     {enrollment.progress_percentage || 0}%
                                   </span>
                                 </div>
@@ -336,18 +304,18 @@ export default function StudentDashboard() {
                 </CardContent>
               </Card>
 
-              {/* Upcoming Classes */}
-              <Card className="border-slate-200/50 dark:border-slate-800/50 shadow-sm bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl">
-                <CardHeader className="flex flex-row items-center justify-between pb-2">
-                  <CardTitle className="text-xl font-semibold text-slate-900 dark:text-white">Upcoming Live Classes</CardTitle>
+              {/* Upcoming Live Classes Card */}
+              <Card className="border border-slate-200 dark:border-slate-800 shadow-sm bg-white dark:bg-slate-900 rounded-2xl overflow-hidden">
+                <CardHeader className="flex flex-row items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800/60">
+                  <CardTitle className="text-lg font-bold text-slate-850 dark:text-white">Upcoming Classes</CardTitle>
                   <Link to={createPageUrl('StudentSchedule')}>
-                    <Button variant="ghost" size="sm">
-                      View Calendar
+                    <Button variant="ghost" size="sm" className="text-slate-500 hover:text-slate-800 rounded-lg text-xs font-bold">
+                      Calendar
                       <ChevronRight className="w-4 h-4 ml-1" />
                     </Button>
                   </Link>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="p-6">
                   {(() => {
                     const upcomingLessons = allLessons
                       .filter(l => l.type === 'live' && l.live_class_link && l.live_class_date)
@@ -357,9 +325,9 @@ export default function StudentDashboard() {
 
                     if (upcomingLessons.length === 0) {
                       return (
-                        <div className="text-center py-8 text-slate-500 dark:text-slate-400">
-                          <Calendar className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                          <p>No upcoming classes scheduled</p>
+                        <div className="text-center py-8 text-slate-400 dark:text-slate-500 space-y-2">
+                          <Calendar className="w-10 h-10 mx-auto opacity-40" />
+                          <p className="text-sm font-medium">No live classes scheduled</p>
                         </div>
                       );
                     }
@@ -371,42 +339,41 @@ export default function StudentDashboard() {
                           return (
                             <motion.div
                               key={lesson.id}
-                              initial={{ opacity: 0, x: -20 }}
+                              initial={{ opacity: 0, x: -10 }}
                               animate={{ opacity: 1, x: 0 }}
-                              transition={{ delay: index * 0.1 }}
-                              className="p-4 bg-violet-50 dark:bg-violet-900/20 rounded-xl border border-violet-200 dark:border-violet-800"
+                              transition={{ delay: index * 0.05 }}
+                              className="p-4 bg-violet-50/50 dark:bg-violet-950/15 border border-violet-100/50 dark:border-violet-900/50 rounded-xl flex items-center justify-between gap-4"
                             >
-                              <div className="flex items-start justify-between gap-3">
-                                <div className="flex-1">
-                                  <h4 className="font-semibold text-slate-900 dark:text-white text-sm mb-1">
-                                    {lesson.title}
-                                  </h4>
-                                  <p className="text-xs text-slate-600 dark:text-slate-400 mb-2">
-                                    {enrollment?.course_title}
-                                  </p>
-                                  <div className="flex items-center gap-2 text-xs text-slate-500">
-                                    <CalendarDays className="w-3 h-3" />
-                                    <span>
-                                      {new Date(lesson.live_class_date).toLocaleString('en-US', { 
-                                        month: 'short', 
-                                        day: 'numeric', 
-                                        hour: '2-digit', 
-                                        minute: '2-digit' 
-                                      })}
-                                    </span>
-                                  </div>
+                              <div className="min-w-0 flex-1">
+                                <h4 className="font-bold text-slate-900 dark:text-white text-sm truncate">
+                                  {lesson.title}
+                                </h4>
+                                <p className="text-xs text-slate-500 truncate mt-0.5 font-medium">
+                                  {enrollment?.course_title}
+                                </p>
+                                <div className="flex items-center gap-1.5 text-xs text-slate-400 mt-2 font-bold uppercase tracking-wider text-[10px]">
+                                  <CalendarDays className="w-3.5 h-3.5 text-violet-500" />
+                                  <span>
+                                    {new Date(lesson.live_class_date).toLocaleString('en-US', { 
+                                      month: 'short', 
+                                      day: 'numeric', 
+                                      hour: '2-digit', 
+                                      minute: '2-digit' 
+                                    })}
+                                  </span>
                                 </div>
-                                <a 
-                                  href={lesson.live_class_link} 
-                                  target="_blank" 
-                                  rel="noopener noreferrer"
-                                >
-                                  <Button size="sm" className="bg-violet-600 hover:bg-violet-700">
-                                    <ExternalLink className="w-3 h-3 mr-1" />
-                                    Join
-                                  </Button>
-                                </a>
                               </div>
+                              <a 
+                                href={lesson.live_class_link} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="shrink-0"
+                              >
+                                <Button size="sm" className="bg-violet-600 hover:bg-violet-755 text-white font-bold rounded-lg shadow-sm h-9 px-3">
+                                  <ExternalLink className="w-3.5 h-3.5 mr-1.5" />
+                                  Join
+                                </Button>
+                              </a>
                             </motion.div>
                           );
                         })}
@@ -417,7 +384,7 @@ export default function StudentDashboard() {
               </Card>
             </div>
 
-            {/* Right Sidebar */}
+            {/* Right Sidebar Widgets */}
             <div className="space-y-6">
               {/* Leaderboard */}
               <Leaderboard 
@@ -426,68 +393,63 @@ export default function StudentDashboard() {
                 currentUserRank={currentUserRank > 10 ? currentUserRank : null}
               />
 
-              {/* Overall Progress */}
-              <Card className="border-slate-200/50 dark:border-slate-800/50 shadow-sm bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-xl font-semibold text-slate-900 dark:text-white">Overall Progress</CardTitle>
+              {/* Progress Ring Widget */}
+              <Card className="border border-slate-200 dark:border-slate-800 shadow-sm bg-white dark:bg-slate-900 rounded-2xl overflow-hidden">
+                <CardHeader className="pb-2 border-b border-slate-105 dark:border-slate-800/40">
+                  <CardTitle className="text-sm font-bold text-slate-850 dark:text-white">Overall Progress</CardTitle>
                 </CardHeader>
-                <CardContent className="flex flex-col items-center">
-                  <ProgressRing progress={totalProgress} size={140} />
-                  <p className="mt-4 text-slate-600 dark:text-slate-400 text-center">
+                <CardContent className="p-6 flex flex-col items-center justify-center">
+                  <ProgressRing progress={totalProgress} size={140} strokeWidth={10} />
+                  <p className="mt-4 text-xs font-semibold text-slate-500 dark:text-slate-400 text-center leading-relaxed">
                     {totalProgress > 0 
-                      ? `Great progress! Keep it up!`
-                      : `Start learning to see your progress`
+                      ? `You are doing great! Complete more exercises to push higher.`
+                      : `Get started by launching a learning lesson module.`
                     }
                   </p>
                 </CardContent>
               </Card>
 
-              {/* Learning Streak */}
-              <Card className="border-0 shadow-lg bg-gradient-to-br from-orange-500 to-red-500 text-white">
-                <CardContent className="p-6">
+              {/* Glowing Streak Card */}
+              <Card className="border border-orange-550/20 bg-gradient-to-br from-orange-500 via-orange-600 to-red-600 text-white rounded-2xl shadow-lg shadow-orange-500/15 overflow-hidden relative">
+                <div className="absolute inset-0 opacity-10 bg-[radial-gradient(ellipse_at_bottom_left,_var(--tw-gradient-stops))] from-white to-transparent pointer-events-none" />
+                <CardContent className="p-6 relative z-10">
                   <div className="flex items-center gap-4">
-                    <div className="w-14 h-14 rounded-2xl bg-white/20 flex items-center justify-center">
-                      <Flame className="w-7 h-7" />
+                    <div className="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
+                      <Flame className="w-6 h-6 text-white" />
                     </div>
                     <div>
-                      <p className="text-orange-100">Learning Streak</p>
-                      <p className="text-3xl font-bold">0 Days</p>
+                      <p className="text-orange-105 text-xs font-bold uppercase tracking-wider">Active Streak</p>
+                      <p className="text-3xl font-black tracking-tight">0 Days</p>
                     </div>
                   </div>
-                  <p className="mt-4 text-orange-100 text-sm">
-                    Complete a lesson today to start your streak!
+                  <p className="mt-4 text-orange-100 text-xs font-medium leading-relaxed">
+                    Finish any course lecture or practice question deck today to establish your daily learning streak!
                   </p>
                 </CardContent>
               </Card>
 
-              {/* Quick Actions */}
-              <Card className="border-slate-200/50 dark:border-slate-800/50 shadow-sm bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-xl font-semibold text-slate-900 dark:text-white">Quick Actions</CardTitle>
+              {/* Simple Quick Actions */}
+              <Card className="border border-slate-200 dark:border-slate-800 shadow-sm bg-white dark:bg-slate-900 rounded-2xl overflow-hidden">
+                <CardHeader className="pb-2 border-b border-slate-105 dark:border-slate-800/40">
+                  <CardTitle className="text-sm font-bold text-slate-850 dark:text-white">Quick Actions</CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-2">
+                <CardContent className="p-4 space-y-2">
                   <Link to={createPageUrl('CourseCatalog')}>
-                    <Button variant="outline" className="w-full justify-start">
-                      <BookOpen className="w-4 h-4 mr-2" />
-                      Browse Courses
+                    <Button variant="outline" className="w-full justify-start rounded-xl h-10 border-slate-200 dark:border-slate-800 text-xs font-bold hover:bg-slate-50 dark:hover:bg-slate-800">
+                      <BookOpen className="w-4 h-4 mr-2.5 text-slate-500" />
+                      Browse Catalog
                     </Button>
                   </Link>
                   <Link to={createPageUrl('MyCertificates')}>
-                    <Button variant="outline" className="w-full justify-start">
-                      <Award className="w-4 h-4 mr-2" />
+                    <Button variant="outline" className="w-full justify-start rounded-xl h-10 border-slate-200 dark:border-slate-800 text-xs font-bold hover:bg-slate-50 dark:hover:bg-slate-800">
+                      <Award className="w-4 h-4 mr-2.5 text-slate-500" />
                       My Certificates
                     </Button>
                   </Link>
                   <Link to={createPageUrl('StudentLiveSessions')}>
-                    <Button variant="outline" className="w-full justify-start bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20 border-emerald-200 dark:border-emerald-800 hover:from-emerald-100 hover:to-teal-100">
-                      <Video className="w-4 h-4 mr-2 text-emerald-600" />
-                      <span className="text-emerald-700 dark:text-emerald-400">Live Sessions</span>
-                    </Button>
-                  </Link>
-                  <Link to={createPageUrl('Messages')}>
-                    <Button variant="outline" className="w-full justify-start">
-                      <Star className="w-4 h-4 mr-2" />
-                      Messages
+                    <Button variant="outline" className="w-full justify-start rounded-xl h-10 bg-emerald-500/10 border-emerald-500/20 hover:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 text-xs font-bold">
+                      <Video className="w-4 h-4 mr-2.5" />
+                      Launch Live Class
                     </Button>
                   </Link>
                 </CardContent>

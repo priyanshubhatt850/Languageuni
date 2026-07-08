@@ -10,7 +10,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import CourseCard from '@/components/common/CourseCard';
 import { useTheme } from '@/components/ui/ThemeProvider';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   Globe,
   Play,
@@ -29,12 +29,12 @@ import {
   Sun,
   Search,
   Zap,
-  Brain,
-  Target,
+  Heart,
+  Shield,
   ChevronDown,
   TrendingUp,
-  Heart,
-  Shield
+  MessageSquare,
+  Sparkle
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
@@ -142,6 +142,129 @@ const dummyLanguages = [
   { id: 5, name: "Italian", flag: "🇮🇹", instructor_count: 4 },
   { id: 6, name: "Japanese", flag: "🇯🇵", instructor_count: 5 },
 ];
+
+function InteractivePracticeCard() {
+  const [selectedOption, setSelectedOption] = useState(null);
+  const [showExplanation, setShowExplanation] = useState(false);
+
+  const handleSelect = (option) => {
+    setSelectedOption(option);
+    setShowExplanation(true);
+  };
+
+  const reset = () => {
+    setSelectedOption(null);
+    setShowExplanation(false);
+  };
+
+  return (
+    <Card className="w-full max-w-[380px] border border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 shadow-xl rounded-2xl overflow-hidden backdrop-blur-md">
+      <CardContent className="p-6 space-y-5">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+            <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">Interactive Partner</span>
+          </div>
+          <Badge variant="secondary" className="bg-violet-50 dark:bg-violet-950 text-violet-650 dark:text-violet-300 border-none font-medium text-[11px] rounded-lg">
+            Spanish A1
+          </Badge>
+        </div>
+
+        {/* Chat message bubbles */}
+        <div className="space-y-3">
+          <div className="flex items-start gap-2.5">
+            <Avatar className="w-7 h-7 border border-slate-100">
+              <AvatarFallback className="bg-violet-100 text-violet-700 text-xs font-bold">AI</AvatarFallback>
+            </Avatar>
+            <div className="bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 p-3 rounded-2xl rounded-tl-none text-sm max-w-[80%] leading-relaxed">
+              👋 ¡Hola! Let's practice. How do you say <span className="font-semibold text-violet-650 dark:text-violet-400">"Good morning"</span> in Spanish? 🇪🇸
+            </div>
+          </div>
+
+          <AnimatePresence>
+            {selectedOption && (
+              <motion.div
+                initial={{ opacity: 0, y: 5 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="flex items-start gap-2.5 justify-end"
+              >
+                <div className={`p-3 rounded-2xl rounded-tr-none text-sm max-w-[80%] text-white leading-relaxed ${
+                  selectedOption === 'A' 
+                    ? 'bg-emerald-500 shadow-md shadow-emerald-500/10' 
+                    : 'bg-rose-500 shadow-md shadow-rose-500/10'
+                }`}>
+                  {selectedOption === 'A' ? 'Buenos días ☀️' : selectedOption === 'B' ? 'Buenas noches 🌙' : 'Adiós 👋'}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+
+        {/* Options */}
+        {!showExplanation ? (
+          <div className="space-y-2 pt-2">
+            <button
+              onClick={() => handleSelect('A')}
+              className="w-full text-left p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 hover:border-violet-500/40 hover:bg-violet-50/30 dark:hover:bg-violet-950/20 text-sm font-medium text-slate-700 dark:text-slate-300 transition-all duration-200 flex items-center justify-between group"
+            >
+              <span>A) Buenos días</span>
+              <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-violet-500 transition-colors" />
+            </button>
+            <button
+              onClick={() => handleSelect('B')}
+              className="w-full text-left p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 hover:border-violet-500/40 hover:bg-violet-50/30 dark:hover:bg-violet-950/20 text-sm font-medium text-slate-700 dark:text-slate-300 transition-all duration-200 flex items-center justify-between group"
+            >
+              <span>B) Buenas noches</span>
+              <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-violet-500 transition-colors" />
+            </button>
+            <button
+              onClick={() => handleSelect('C')}
+              className="w-full text-left p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 hover:border-violet-500/40 hover:bg-violet-50/30 dark:hover:bg-violet-950/20 text-sm font-medium text-slate-700 dark:text-slate-300 transition-all duration-200 flex items-center justify-between group"
+            >
+              <span>C) Adiós</span>
+              <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-violet-500 transition-colors" />
+            </button>
+          </div>
+        ) : (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="p-4 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/60 space-y-3"
+          >
+            <div className="flex items-center gap-2">
+              {selectedOption === 'A' ? (
+                <>
+                  <Check className="w-5 h-5 text-emerald-500" />
+                  <span className="font-bold text-sm text-slate-850 dark:text-white">¡Excelente! Correct!</span>
+                </>
+              ) : (
+                <>
+                  <X className="w-5 h-5 text-rose-500" />
+                  <span className="font-bold text-sm text-slate-850 dark:text-white">Oops, incorrect</span>
+                </>
+              )}
+            </div>
+            <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+              {selectedOption === 'A' 
+                ? '"Buenos días" translates directly to "Good morning". It is the standard greeting used until noon.' 
+                : selectedOption === 'B' 
+                  ? '"Buenas noches" translates to "Good evening" or "Good night". Try again to find the morning greeting.'
+                  : '"Adiós" is a parting farewell meaning "Goodbye". Try again to greet the day.'
+              }
+            </p>
+            <Button
+              size="sm"
+              onClick={reset}
+              className="w-full bg-violet-600 hover:bg-violet-755 text-white h-9 rounded-lg text-xs"
+            >
+              {selectedOption === 'A' ? 'Practice Again' : 'Try Again'}
+            </Button>
+          </motion.div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
 
 export default function Home() {
   const { theme, setTheme } = useTheme();
@@ -251,133 +374,99 @@ export default function Home() {
         {/* Radial Accents */}
         <div className="absolute top-20 right-0 w-[500px] h-[500px] bg-gradient-to-br from-violet-400/20 to-purple-400/10 dark:from-violet-600/10 dark:to-purple-600/5 rounded-full blur-3xl" />
         <div className="absolute -bottom-32 -left-32 w-[600px] h-[600px] bg-gradient-to-tr from-blue-400/15 to-violet-400/10 dark:from-blue-600/5 dark:to-violet-600/5 rounded-full blur-3xl" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] bg-gradient-to-br from-purple-300/10 to-pink-300/10 dark:from-purple-600/5 dark:to-pink-600/5 rounded-full blur-3xl" />
+        
+        <div className="max-w-7xl mx-auto relative px-2 sm:px-4">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center text-center lg:text-left">
+            {/* Left text column */}
+            <div className="lg:col-span-7 space-y-6">
+              <motion.div
+                initial={{ scale: 0.95, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ duration: 0.6 }}
+              >
+                <Badge className="inline-flex bg-violet-100 dark:bg-violet-950/50 text-violet-700 dark:text-violet-300 border border-violet-200 dark:border-violet-800/50 px-4 py-1.5 rounded-full">
+                  <Sparkles className="w-3.5 h-3.5 mr-2 text-violet-500 dark:text-violet-400" />
+                  <span className="font-semibold text-xs tracking-wide">Trusted by 50K+ learners worldwide</span>
+                </Badge>
+              </motion.div>
 
-        <div className="max-w-7xl mx-auto relative text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            className="space-y-6"
-          >
-            <motion.div
-              initial={{ scale: 0.95 }}
-              animate={{ scale: 1 }}
-              transition={{ duration: 0.6 }}
-            >
-              <Badge className="mb-4 inline-flex bg-violet-100 dark:bg-violet-950/50 text-violet-700 dark:text-violet-300 border border-violet-200 dark:border-violet-800/50 px-4 py-1.5 rounded-full hover:bg-violet-200/70 dark:hover:bg-violet-900/40 transition-all">
-                <Sparkles className="w-3.5 h-3.5 mr-2 text-violet-500 dark:text-violet-400" />
-                <span className="font-semibold text-xs tracking-wide">Trusted by 50K+ learners worldwide</span>
-              </Badge>
-            </motion.div>
+              <h1 className="text-5xl sm:text-6xl md:text-7xl font-black leading-[1.05] tracking-tight">
+                <span className="bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 dark:from-violet-400 dark:via-purple-400 dark:to-indigo-400 bg-clip-text text-transparent">
+                  Master Languages
+                </span>
+                <br />
+                <span className="text-slate-900 dark:text-white">
+                  With Confidence
+                </span>
+              </h1>
 
-            <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-black leading-[1.05] tracking-tight">
-              <span className="bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 dark:from-violet-400 dark:via-purple-400 dark:to-indigo-400 bg-clip-text text-transparent">
-                Master Languages
-              </span>
-              <br />
-              <span className="text-slate-900 dark:text-white">
-                With Confidence
-              </span>
-            </h1>
+              <p className="text-lg sm:text-xl text-slate-500 dark:text-slate-400 max-w-2xl mx-auto lg:mx-0 leading-relaxed font-light">
+                Learn from world-class instructors with immersive live classes, interactive sessions, and personalized guidance
+              </p>
 
-            <p className="text-lg sm:text-xl md:text-2xl text-slate-500 dark:text-slate-400 max-w-3xl mx-auto leading-relaxed font-light px-4">
-              Learn from world-class instructors with immersive live classes, interactive sessions, and personalized guidance
-            </p>
-
-            {/* Search and Filter Section */}
-            <div className="max-w-3xl mx-auto mt-10 mb-8 px-2 sm:px-4">
+              {/* Action Buttons */}
               <motion.div
                 initial={{ y: 20, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
-                transition={{ delay: 0.3 }}
+                transition={{ delay: 0.4 }}
+                className="flex flex-col sm:flex-row gap-3 justify-center lg:justify-start pt-2"
               >
-                <Card className="border border-slate-200 dark:border-slate-800 shadow-xl shadow-slate-200/60 dark:shadow-black/20 bg-white dark:bg-slate-900 rounded-2xl overflow-hidden hover:shadow-2xl hover:shadow-violet-100/40 dark:hover:shadow-black/30 transition-all duration-300">
-                  <CardContent className="p-4 sm:p-5">
-                    <div className="flex flex-col sm:flex-row gap-3">
-                      <div className="flex-1 relative group/search w-full">
-                        <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-hover/search:text-violet-500 transition-colors" />
-                        <Input
-                          placeholder="Search courses, languages..."
-                          className="pl-11 h-12 text-sm w-full bg-slate-50 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white placeholder-slate-400 focus-visible:ring-violet-500 focus-visible:border-violet-400 transition-all rounded-xl"
-                        />
-                      </div>
-                      <div className="flex flex-col sm:flex-row gap-3 shrink-0">
-                        <div className="relative w-full sm:w-[180px]">
-                          <select className="h-12 w-full pl-4 pr-10 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 text-slate-700 dark:text-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500 transition-all appearance-none">
-                            <option value="">All Languages</option>
-                            {languagesToShow.map(lang => (
-                              <option key={lang.id} value={lang.name}>{lang.flag} {lang.name}</option>
-                            ))}
-                          </select>
-                          <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-                        </div>
-                        <Link to={isAuthenticated ? `/CourseCatalog` : `/RoleSelection`} className="w-full sm:w-auto">
-                          <Button className="w-full sm:w-auto h-12 bg-violet-600 hover:bg-violet-700 text-white px-6 shadow-md shadow-violet-600/20 hover:shadow-lg hover:shadow-violet-600/30 transition-all rounded-xl font-semibold text-sm">
-                            <Search className="w-4 h-4 mr-2" />
-                            Search
-                          </Button>
-                        </Link>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                <Link to={createPageUrl('CourseCatalog')} className="w-full sm:w-auto">
+                  <Button size="lg" className="bg-violet-600 hover:bg-violet-700 text-white text-base px-8 w-full sm:w-auto shadow-lg shadow-violet-600/25 hover:shadow-xl hover:shadow-violet-600/40 hover:scale-[1.02] transition-all duration-300 font-semibold rounded-xl h-12">
+                    Explore Courses
+                    <ArrowRight className="w-4 h-4 ml-2" />
+                  </Button>
+                </Link>
+                <Button size="lg" variant="outline" className="text-base px-8 border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-55 dark:hover:bg-slate-900 rounded-xl transition-all w-full sm:w-auto font-semibold h-12">
+                  <Play className="w-4 h-4 mr-2" />
+                  See Demo
+                </Button>
+              </motion.div>
+
+              {/* Review Avatars */}
+              <motion.div
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.5 }}
+                className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-5 pt-8"
+              >
+                <div className="flex -space-x-3">
+                  {[1, 2, 3, 4, 5].map((i) => (
+                    <Avatar key={i} className="w-11 h-11 border-[3px] border-white dark:border-slate-950 shadow-md">
+                      <AvatarImage src={`https://i.pravatar.cc/120?img=${i + 10}`} />
+                      <AvatarFallback>U{i}</AvatarFallback>
+                    </Avatar>
+                  ))}
+                </div>
+                <div className="text-center sm:text-left">
+                  <div className="flex items-center gap-0.5 text-amber-500 justify-center sm:justify-start mb-0.5">
+                    {[1, 2, 3, 4, 5].map((i) => (
+                      <Star key={i} className="w-4 h-4 fill-current" />
+                    ))}
+                  </div>
+                  <p className="text-slate-500 dark:text-slate-400 font-medium text-sm">
+                    <span className="text-violet-600 dark:text-violet-400 font-bold">4.9/5</span> rating from 50K+ reviews
+                  </p>
+                </div>
               </motion.div>
             </div>
 
-            <motion.div
-              initial={{ y: 20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.4 }}
-              className="flex flex-col sm:flex-row gap-3 justify-center px-4"
-            >
-              <Link to={createPageUrl('CourseCatalog')} className="w-full sm:w-auto">
-                <Button size="lg" className="bg-violet-600 hover:bg-violet-700 text-white text-base px-8 w-full sm:w-auto shadow-lg shadow-violet-600/25 hover:shadow-xl hover:shadow-violet-600/40 hover:scale-[1.02] transition-all duration-300 font-semibold rounded-xl h-12">
-                  Explore Courses
-                  <ArrowRight className="w-4 h-4 ml-2" />
-                </Button>
-              </Link>
-              <Button size="lg" variant="outline" className="text-base px-8 border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-900 rounded-xl transition-all w-full sm:w-auto font-semibold h-12">
-                <Play className="w-4 h-4 mr-2" />
-                See Demo
-              </Button>
-            </motion.div>
-
-            <motion.div
-              initial={{ y: 20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.5 }}
-              className="flex flex-col sm:flex-row items-center justify-center gap-5 pt-8"
-            >
-              <div className="flex -space-x-3">
-                {[1, 2, 3, 4, 5].map((i) => (
-                  <Avatar key={i} className="w-11 h-11 border-[3px] border-white dark:border-slate-950 shadow-md ring-0">
-                    <AvatarImage src={`https://i.pravatar.cc/120?img=${i + 10}`} />
-                    <AvatarFallback>U{i}</AvatarFallback>
-                  </Avatar>
-                ))}
-              </div>
-              <div className="text-center sm:text-left">
-                <div className="flex items-center gap-0.5 text-amber-500 justify-center sm:justify-start mb-0.5">
-                  {[1, 2, 3, 4, 5].map((i) => (
-                    <Star key={i} className="w-4 h-4 fill-current" />
-                  ))}
-                </div>
-                <p className="text-slate-500 dark:text-slate-400 font-medium text-sm">
-                  <span className="text-violet-600 dark:text-violet-400 font-bold">4.9/5</span> rating from 50K+ reviews
-                </p>
-              </div>
-            </motion.div>
-          </motion.div>
+            {/* Right Card Column (Signature Interactive Element) */}
+            <div className="lg:col-span-5 flex justify-center lg:justify-end">
+              <motion.div
+                initial={{ opacity: 0, x: 30 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.8, delay: 0.2 }}
+              >
+                <InteractivePracticeCard />
+              </motion.div>
+            </div>
+          </div>
         </div>
       </section>
 
       {/* Languages Section */}
       <section className="py-24 px-4 bg-slate-50 dark:bg-slate-900/50 relative transition-colors duration-300">
-        <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute top-0 right-0 w-96 h-96 bg-violet-100/50 dark:bg-violet-900/10 rounded-full blur-3xl" />
-          <div className="absolute bottom-0 left-0 w-96 h-96 bg-blue-100/50 dark:bg-blue-900/10 rounded-full blur-3xl" />
-        </div>
         <div className="max-w-7xl mx-auto relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -400,7 +489,7 @@ export default function Home() {
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 md:gap-5 px-2 sm:px-0">
             {languagesToShow.map((lang, index) => (
               <motion.div
-                key={lang.id}
+                key={lang.id || lang._id || index}
                 initial={{ opacity: 0, y: 15 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
@@ -412,9 +501,9 @@ export default function Home() {
                     whileHover={{ y: -6 }}
                     className="h-full"
                   >
-                    <Card className="border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-violet-300 dark:hover:border-violet-700 hover:shadow-xl hover:shadow-violet-100/50 dark:hover:shadow-violet-950/20 transition-all duration-300 cursor-pointer group rounded-2xl h-full">
+                    <Card className="border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-violet-300 dark:hover:border-violet-750 hover:shadow-xl hover:shadow-violet-100/50 dark:hover:shadow-violet-950/20 transition-all duration-300 cursor-pointer group rounded-2xl h-full">
                       <CardContent className="p-5 text-center flex flex-col items-center justify-center h-full space-y-3">
-                        <div className="w-16 h-16 rounded-2xl bg-slate-100 dark:bg-slate-800 group-hover:bg-violet-50 dark:group-hover:bg-violet-950/30 flex items-center justify-center transition-all duration-300 border border-slate-200 dark:border-slate-700 group-hover:border-violet-200 dark:group-hover:border-violet-800 shrink-0">
+                        <div className="w-16 h-16 rounded-2xl bg-slate-105 dark:bg-slate-800 group-hover:bg-violet-50 dark:group-hover:bg-violet-950/30 flex items-center justify-center transition-all duration-300 border border-slate-200 dark:border-slate-700 group-hover:border-violet-200 dark:group-hover:border-violet-800 shrink-0">
                           <span className="text-3xl group-hover:scale-110 transition-transform duration-300">{lang.flag}</span>
                         </div>
                         <p className="font-bold text-slate-800 dark:text-white group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors text-sm sm:text-base">
@@ -450,7 +539,7 @@ export default function Home() {
               </p>
             </div>
             <Link to={isAuthenticated ? `/CourseCatalog` : `/RoleSelection`} className="shrink-0">
-              <Button variant="outline" className="border-slate-200 dark:border-slate-800 hover:bg-violet-50 dark:hover:bg-violet-950/30 hover:text-violet-600 dark:hover:text-violet-400 hover:border-violet-200 dark:hover:border-violet-800 rounded-xl font-semibold transition-all">
+              <Button variant="outline" className="border-slate-200 dark:border-slate-800 hover:bg-violet-50 dark:hover:bg-violet-950/30 hover:text-violet-650 dark:hover:text-violet-400 hover:border-violet-200 dark:hover:border-violet-800 rounded-xl font-semibold transition-all">
                 View All Courses
                 <ChevronRight className="w-4 h-4 ml-1" />
               </Button>
@@ -499,15 +588,6 @@ export default function Home() {
               ))
             )}
           </div>
-
-          <div className="text-center mt-10 md:hidden">
-            <Link to={createPageUrl('CourseCatalog')} className="w-full">
-              <Button variant="outline" className="w-full h-12 rounded-xl border-slate-200 dark:border-slate-800">
-                View All Courses
-                <ChevronRight className="w-4 h-4 ml-1" />
-              </Button>
-            </Link>
-          </div>
         </div>
       </section>
 
@@ -550,7 +630,7 @@ export default function Home() {
                   <Card className="border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-violet-300 dark:hover:border-violet-700 hover:shadow-xl hover:shadow-violet-100/50 dark:hover:shadow-violet-950/20 transition-all duration-300 h-full rounded-2xl group overflow-hidden">
                     <CardContent className="p-7 flex flex-col h-full">
                       <motion.div
-                        className="w-14 h-14 rounded-2xl bg-violet-100 dark:bg-violet-950/40 border border-violet-200 dark:border-violet-800/50 flex items-center justify-center mb-5 group-hover:bg-violet-200 dark:group-hover:bg-violet-900/50 transition-colors"
+                        className="w-14 h-14 rounded-2xl bg-violet-105 dark:bg-violet-950/40 border border-violet-200 dark:border-violet-800/50 flex items-center justify-center mb-5 group-hover:bg-violet-200 dark:group-hover:bg-violet-900/50 transition-colors"
                         whileHover={{ scale: 1.05, rotate: -3 }}
                       >
                         <feature.icon className="w-7 h-7 text-violet-600 dark:text-violet-400 transition-colors" />
@@ -589,7 +669,7 @@ export default function Home() {
               </svg>
             </div>
 
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 sm:gap-10 relative z-10">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 relative z-10">
               {[
                 { value: '50K+', label: 'Active Learners', icon: Users },
                 { value: '500+', label: 'Expert Instructors', icon: GraduationCap },
