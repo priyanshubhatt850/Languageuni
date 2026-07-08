@@ -906,7 +906,7 @@ export default function Home() {
 
         {/* Reusable Auth Portal Modal Popup */}
         <Dialog open={showAuthModal} onOpenChange={setShowAuthModal}>
-          <DialogContent className={`${authStep === 'role' ? 'sm:max-w-3xl' : 'sm:max-w-lg'} border border-slate-100 bg-white rounded-[28px] shadow-2xl p-8 text-slate-800 relative overflow-hidden`}>
+          <DialogContent className={`${authStep === 'role' ? 'sm:max-w-3xl' : 'sm:max-w-lg'} border border-slate-100 bg-white rounded-[28px] shadow-2xl p-8 text-slate-800 relative overflow-hidden !opacity-100 !scale-100 !z-[100]`}>
             {authStep === 'role' ? (
               <div className="space-y-6 relative z-10">
                 {/* Floating illustrations */}
