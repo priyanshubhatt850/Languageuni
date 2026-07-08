@@ -43,7 +43,8 @@ import {
   ChevronDown,
   TrendingUp,
   Mail,
-  Lock
+  Lock,
+  X
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
