@@ -47,8 +47,11 @@ import {
   Calendar,
   BarChart3,
   RefreshCw,
-  X
+  X,
+  Upload,
+  User
 } from 'lucide-react';
+import { uploadImageToCloudinary } from '@/utils/cloudinaryUpload';
 import { useNavigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import { toast } from 'sonner';
@@ -166,12 +169,98 @@ export default function Home() {
 
   // Auth Popup Modal States
   const [showAuthModal, setShowAuthModal] = useState(false);
-  const [authStep, setAuthStep] = useState('role'); // 'role' | 'otp'
+  const [authStep, setAuthStep] = useState('role'); // 'role' | 'otp' | 'student-onboarding'
   const [selectedRole, setSelectedRole] = useState(null);
   const [email, setEmail] = useState('');
   const [otp, setOTP] = useState('');
   const [otpSent, setOtpSent] = useState(false);
   const [authLoading, setAuthLoading] = useState(false);
+
+  // Student Onboarding States
+  const [selectedLanguages, setSelectedLanguages] = useState([]);
+  const [interests, setInterests] = useState([]);
+  const [avatarUrl, setAvatarUrl] = useState('');
+  const [uploading, setUploading] = useState(false);
+
+  const languagesList = [
+    { name: "English", flag: "🇬🇧" },
+    { name: "Spanish", flag: "🇪🇸" },
+    { name: "French", flag: "🇫🇷" },
+    { name: "German", flag: "🇩🇪" },
+    { name: "Italian", flag: "🇮🇹" },
+    { name: "Japanese", flag: "🇯🇵" },
+    { name: "Korean", flag: "🇰🇷" },
+    { name: "Arabic", flag: "🇸🇦" }
+  ];
+
+  const interestOptions = ['Business', 'Travel', 'Conversation', 'Grammar', 'Exam Prep', 'Culture'];
+
+  const toggleLanguage = (lang) => {
+    if (selectedLanguages.includes(lang)) {
+      setSelectedLanguages(selectedLanguages.filter(l => l !== lang));
+    } else {
+      setSelectedLanguages([...selectedLanguages, lang]);
+    }
+  };
+
+  const toggleInterest = (interest) => {
+    if (interests.includes(interest)) {
+      setInterests(interests.filter(i => i !== interest));
+    } else {
+      setInterests([...interests, interest]);
+    }
+  };
+
+  const handleFileUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setUploading(true);
+    try {
+      const response = await uploadImageToCloudinary(file, {
+        folder: 'language-uni/student-avatars',
+        tags: ['student', 'avatar']
+      });
+      setAvatarUrl(response.file_url);
+      toast.success('Profile picture uploaded!');
+    } catch (error) {
+      console.error('Upload error:', error);
+      toast.error(error.message || 'Failed to upload image');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleCompleteOnboarding = async () => {
+    if (selectedLanguages.length === 0) {
+      toast.error('Please select at least one language you want to learn');
+      return;
+    }
+    setAuthLoading(true);
+    try {
+      await WWClient.auth.updateMe({
+        onboarding_completed: true,
+        profileCompleted: true,
+        learning_languages: selectedLanguages,
+        learning_interests: interests,
+        avatar_url: avatarUrl
+      });
+      toast.success('Welcome to Global Tongue!');
+      setShowAuthModal(false);
+      navigate('/StudentDashboard');
+    } catch (error) {
+      toast.error('Failed to save profile details. Please try again.');
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (isAuthenticated && user && !user.profileCompleted && user.role === 'student') {
+      setAuthStep('student-onboarding');
+      setShowAuthModal(true);
+    }
+  }, [isAuthenticated, user]);
 
   useEffect(() => {
     const handleError = (event) => {
@@ -260,16 +349,22 @@ export default function Home() {
       if (data?.success) {
         await checkUserAuth();
         const { role, profileCompleted } = data.user;
-        setShowAuthModal(false);
 
         if (role === 'instructor') {
           navigate(profileCompleted ? '/InstructorDashboard' : '/InstructorOnboarding');
+          setShowAuthModal(false);
         } else if (role === 'student') {
-          navigate(profileCompleted ? '/StudentDashboard' : '/StudentOnboarding');
+          if (profileCompleted) {
+            navigate('/StudentDashboard');
+            setShowAuthModal(false);
+          } else {
+            setAuthStep('student-onboarding');
+          }
         } else {
           navigate('/');
+          setShowAuthModal(false);
         }
-        toast.success('OTP verified! Redirecting...');
+        toast.success('OTP verified!');
       } else {
         toast.error('Invalid OTP. Please try again.');
       }
@@ -291,14 +386,20 @@ export default function Home() {
       if (data?.success) {
         await checkUserAuth();
         const { role, profileCompleted } = data.user;
-        setShowAuthModal(false);
 
         if (role === 'instructor') {
           navigate(profileCompleted ? '/InstructorDashboard' : '/InstructorOnboarding');
+          setShowAuthModal(false);
         } else if (role === 'student') {
-          navigate(profileCompleted ? '/StudentDashboard' : '/StudentOnboarding');
+          if (profileCompleted) {
+            navigate('/StudentDashboard');
+            setShowAuthModal(false);
+          } else {
+            setAuthStep('student-onboarding');
+          }
         } else {
           navigate('/');
+          setShowAuthModal(false);
         }
         toast.success('Google login successful!');
       }
@@ -1115,6 +1216,106 @@ export default function Home() {
                         </div>
                       </div>
                     </div>
+                  </div>
+                ) : authStep === 'student-onboarding' ? (
+                  <div className="space-y-5 relative z-10 text-left">
+                    {/* Header */}
+                    <div className="flex items-center gap-3.5 pb-2.5 border-b border-slate-105">
+                      <div className="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-100 flex items-center justify-center shrink-0">
+                        <BookOpen className="w-6 h-6" />
+                      </div>
+                      <div>
+                        <h3 className="text-xl font-black text-slate-900 leading-tight">Complete Your Profile</h3>
+                        <p className="text-slate-500 text-xs font-medium">Let's customize your language learning journey.</p>
+                      </div>
+                    </div>
+
+                    {/* Profile Photo Upload */}
+                    <div className="flex flex-col items-center py-1">
+                      <div className="relative group">
+                        {avatarUrl ? (
+                          <img
+                            src={avatarUrl}
+                            alt="Profile"
+                            className="w-16 h-16 rounded-full object-cover border-4 border-emerald-500 shadow-md"
+                          />
+                        ) : (
+                          <div className="w-16 h-16 rounded-full bg-slate-50 border-4 border-slate-100 flex items-center justify-center text-slate-400">
+                            <User className="w-8 h-8" />
+                          </div>
+                        )}
+                        <label className="absolute bottom-0 right-0 w-6 h-6 bg-emerald-600 rounded-full flex items-center justify-center cursor-pointer hover:bg-emerald-700 transition-colors shadow-md">
+                          <Upload className="w-3 h-3 text-white" />
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={handleFileUpload}
+                            disabled={uploading}
+                            className="hidden"
+                          />
+                        </label>
+                      </div>
+                      <p className="text-[10px] text-slate-500 font-bold mt-1.5">
+                        {uploading ? 'Uploading image...' : 'Upload Profile Picture (Optional)'}
+                      </p>
+                    </div>
+
+                    {/* Target Languages */}
+                    <div className="space-y-2">
+                      <Label className="text-xs font-bold uppercase tracking-wider text-slate-450">What languages do you want to learn?</Label>
+                      <div className="grid grid-cols-3 gap-2">
+                        {languagesList.map(lang => {
+                          const isSelected = selectedLanguages.includes(lang.name);
+                          return (
+                            <button
+                              key={lang.name}
+                              onClick={() => toggleLanguage(lang.name)}
+                              className={`py-2 px-2.5 rounded-xl border text-[11px] font-bold flex items-center justify-center gap-1.5 transition-all duration-200 ${
+                                isSelected
+                                  ? 'bg-emerald-605 border-emerald-605 text-white shadow-sm shadow-emerald-600/10'
+                                  : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300'
+                              }`}
+                            >
+                              <span>{lang.flag}</span>
+                              <span>{lang.name}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Interests */}
+                    <div className="space-y-2">
+                      <Label className="text-xs font-bold uppercase tracking-wider text-slate-450">What are you interested in?</Label>
+                      <div className="grid grid-cols-2 gap-2">
+                        {interestOptions.map(interest => {
+                          const isSelected = interests.includes(interest);
+                          return (
+                            <button
+                              key={interest}
+                              onClick={() => toggleInterest(interest)}
+                              className={`py-2 px-3 rounded-xl border text-[11px] font-bold flex items-center justify-center gap-1.5 transition-all duration-200 ${
+                                isSelected
+                                  ? 'bg-emerald-600 border-emerald-600 text-white shadow-sm shadow-emerald-600/10'
+                                  : 'bg-white border-slate-205 text-slate-700 hover:bg-slate-50 hover:border-slate-300'
+                              }`}
+                            >
+                              {isSelected && <Check className="w-3.5 h-3.5" />}
+                              <span>{interest}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Complete Onboarding Button */}
+                    <Button
+                      onClick={handleCompleteOnboarding}
+                      disabled={authLoading || uploading}
+                      className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold h-11 rounded-xl transition-all shadow-md shadow-emerald-600/15 mt-3"
+                    >
+                      {authLoading ? 'Saving preferences...' : 'Start Learning →'}
+                    </Button>
                   </div>
                 ) : (
                   <div className="space-y-6 relative z-10 text-left">
