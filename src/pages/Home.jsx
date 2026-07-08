@@ -282,6 +282,9 @@ export default function Home() {
   const { isAuthenticated, user, authError, checkUserAuth } = useAuth();
   const navigate = useNavigate();
 
+  // Debug Logs
+  const [debugLog, setDebugLog] = useState("Debug Logs Started:");
+
   // Auth Popup Modal States
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [authStep, setAuthStep] = useState('role'); // 'role' | 'otp'
@@ -315,6 +318,7 @@ export default function Home() {
 
   const openPortal = () => {
     toast("Opening Portal...");
+    setDebugLog(prev => prev + "\n" + "openPortal executed");
     setAuthStep('role');
     setSelectedRole(null);
     setEmail('');
@@ -322,6 +326,14 @@ export default function Home() {
     setOtpSent(false);
     setShowAuthModal(true);
   };
+
+  useEffect(() => {
+    if (showAuthModal) {
+      setDebugLog(prev => prev + "\n" + "showAuthModal state set to true");
+    } else {
+      setDebugLog(prev => prev + "\n" + "showAuthModal state set to false");
+    }
+  }, [showAuthModal]);
 
   const handleRoleSelect = (role) => {
     setSelectedRole(role);
@@ -1230,6 +1242,11 @@ export default function Home() {
             )}
           </DialogContent>
         </Dialog>
+        
+        {/* Debug Console Overlay */}
+        <div className="fixed bottom-4 left-4 z-[99999] bg-black/90 text-emerald-450 p-4 rounded-xl text-xs font-mono whitespace-pre border border-slate-850 pointer-events-none max-w-sm max-h-40 overflow-auto shadow-2xl">
+          {debugLog}
+        </div>
       </div>
     </GoogleOAuthProvider>
   );
