@@ -43,7 +43,10 @@ import {
   ChevronDown,
   TrendingUp,
   Mail,
-  Lock
+  Lock,
+  Calendar,
+  BarChart3,
+  RefreshCw
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
@@ -903,88 +906,198 @@ export default function Home() {
 
         {/* Reusable Auth Portal Modal Popup */}
         <Dialog open={showAuthModal} onOpenChange={setShowAuthModal}>
-          <DialogContent className="sm:max-w-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-white rounded-2xl shadow-2xl p-6">
+          <DialogContent className={`${authStep === 'role' ? 'sm:max-w-3xl' : 'sm:max-w-lg'} border border-slate-100 bg-white rounded-[28px] shadow-2xl p-8 text-slate-800 relative overflow-hidden`}>
             {authStep === 'role' ? (
-              <div className="space-y-6">
-                <DialogHeader className="text-center">
-                  <DialogTitle className="text-2xl font-black tracking-tight text-slate-900 dark:text-white flex items-center justify-center gap-2">
-                    <img src="/logo.png" alt="Global Tongue logo" className="w-8 h-8 object-contain rounded-lg shrink-0" />
-                    <span>Global Tongue Portal</span>
-                  </DialogTitle>
-                  <DialogDescription className="text-slate-500 dark:text-slate-400 text-sm font-medium pt-1">
-                    Select your path to continue
-                  </DialogDescription>
-                </DialogHeader>
+              <div className="space-y-6 relative z-10">
+                {/* Floating illustrations */}
+                <svg className="absolute -left-6 -top-2 w-20 h-20 text-violet-100 pointer-events-none opacity-65" viewBox="0 0 100 100" fill="none">
+                  <path d="M30 90 C 20 60, 40 30, 80 10" stroke="currentColor" strokeWidth="1.5" fill="none" />
+                  <path d="M40 70 Q 25 65, 30 55 Q 40 60, 40 70 Z" fill="currentColor" />
+                  <path d="M50 50 Q 35 45, 40 35 Q 50 40, 50 50 Z" fill="currentColor" />
+                  <path d="M65 30 Q 55 20, 60 10 Q 70 18, 65 30 Z" fill="currentColor" />
+                </svg>
+                <svg className="absolute -right-6 top-4 w-24 h-24 text-violet-100/70 pointer-events-none opacity-65" viewBox="0 0 100 100" fill="none">
+                  <path d="M10 80 Q 40 40, 90 20" stroke="currentColor" strokeWidth="1.5" strokeDasharray="3 3" fill="none" />
+                  <path d="M90 20 L75 25 L80 15 Z" fill="currentColor" stroke="currentColor" strokeWidth="1" />
+                </svg>
 
-                <div className="grid grid-cols-1 gap-4">
+                <div className="flex flex-col items-center text-center space-y-2 mb-2">
+                  <img src="/logo.png" alt="Global Tongue logo" className="w-12 h-12 object-contain rounded-xl shrink-0" />
+                  <h3 className="text-3xl font-extrabold text-slate-900 tracking-tight">Global Tongue Portal</h3>
+                  <p className="text-slate-500 text-sm font-medium">Select your path to continue</p>
+                  <div className="w-12 h-1.5 bg-violet-500/80 rounded-full mt-1" />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
                   {/* Instructor Option */}
-                  <Card
-                    onClick={() => handleRoleSelect({ id: 'instructor', title: 'Instructor Partner', color: 'from-violet-600 to-purple-600', icon: GraduationCap, iconColor: 'text-violet-600' })}
-                    className="border border-slate-200 dark:border-slate-805 hover:border-violet-500 dark:hover:border-violet-500 hover:bg-slate-50/50 dark:hover:bg-slate-850/60 cursor-pointer transition-all duration-200 rounded-xl group"
+                  <div
+                    onClick={() => handleRoleSelect({ id: 'instructor', title: 'Instructor Partner', color: 'from-violet-600 to-purple-600', icon: GraduationCap, iconColor: 'text-violet-650' })}
+                    className="border border-slate-100 hover:border-violet-200 bg-white hover:bg-slate-50/20 hover:shadow-xl transition-all duration-300 rounded-[24px] p-6 cursor-pointer flex flex-col justify-between group relative overflow-hidden"
                   >
-                    <CardContent className="p-5 flex items-start gap-4">
-                      <div className="w-10 h-10 rounded-xl bg-violet-100 dark:bg-violet-950/40 border border-violet-200/50 dark:border-violet-900/50 flex items-center justify-center text-violet-600 dark:text-violet-400 shrink-0 group-hover:scale-105 transition-transform">
-                        <GraduationCap className="w-5 h-5" />
+                    <div className="space-y-4">
+                      {/* Shelf widget design */}
+                      <div className="relative w-24 h-24 mx-auto rounded-full bg-violet-50 flex items-center justify-center border border-violet-100 shrink-0">
+                        <GraduationCap className="w-10 h-10 text-violet-600 group-hover:scale-105 transition-transform" />
+                        <div className="absolute -left-4 bottom-2 w-8 h-8 rounded-lg bg-violet-100/90 flex items-center justify-center border border-violet-200 text-violet-600 shadow-sm">
+                          <Calendar className="w-4 h-4" />
+                        </div>
+                        <div className="absolute -right-4 bottom-2 w-8 h-8 rounded-lg bg-violet-100/90 flex items-center justify-center border border-violet-200 text-violet-600 shadow-sm">
+                          <BarChart3 className="w-4 h-4" />
+                        </div>
                       </div>
-                      <div className="space-y-1 text-left">
-                        <h4 className="font-bold text-slate-850 dark:text-white text-sm">Instructor Partner</h4>
-                        <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed font-light">Teach, publish learning levels, manage scheduled classes, and review earnings.</p>
+                      <div className="w-36 h-1.5 bg-amber-200/50 rounded-full mx-auto" />
+                      
+                      <div className="space-y-1.5 text-center">
+                        <h4 className="font-extrabold text-slate-800 text-base">Instructor Partner</h4>
+                        <p className="text-xs text-slate-500 leading-relaxed font-normal">Teach, publish learning levels, manage scheduled classes, and review earnings.</p>
                       </div>
-                    </CardContent>
-                  </Card>
+                    </div>
+
+                    <div className="flex justify-center gap-1.5 mt-4 mb-5">
+                      <div className="w-2.5 h-2.5 rounded-full bg-violet-500" />
+                      <div className="w-2.5 h-2.5 rounded-full bg-violet-200/60" />
+                      <div className="w-2.5 h-2.5 rounded-full bg-violet-200/60" />
+                    </div>
+
+                    <div className="py-2.5 px-4 rounded-xl border border-violet-200 text-violet-600 bg-white hover:bg-violet-50 hover:border-violet-300 transition-all duration-200 text-xs font-bold text-center flex items-center justify-center gap-2">
+                      <div className="w-6 h-6 rounded-full bg-violet-500 text-white flex items-center justify-center shrink-0">
+                        <ArrowRight className="w-3.5 h-3.5" />
+                      </div>
+                      <span>Continue as Instructor</span>
+                    </div>
+                  </div>
 
                   {/* Student Option */}
-                  <Card
+                  <div
                     onClick={() => handleRoleSelect({ id: 'student', title: 'Student Learner', color: 'from-emerald-500 to-teal-600', icon: BookOpen, iconColor: 'text-emerald-600' })}
-                    className="border border-slate-200 dark:border-slate-805 hover:border-emerald-500 dark:hover:border-emerald-500 hover:bg-slate-50/50 dark:hover:bg-slate-850/60 cursor-pointer transition-all duration-200 rounded-xl group"
+                    className="border border-slate-105 hover:border-emerald-200 bg-white hover:bg-slate-50/20 hover:shadow-xl transition-all duration-300 rounded-[24px] p-6 cursor-pointer flex flex-col justify-between group relative overflow-hidden"
                   >
-                    <CardContent className="p-5 flex items-start gap-4">
-                      <div className="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-950/40 border border-emerald-200/50 dark:border-emerald-900/50 flex items-center justify-center text-emerald-600 dark:text-emerald-400 shrink-0 group-hover:scale-105 transition-transform">
-                        <BookOpen className="w-5 h-5" />
+                    <div className="space-y-4">
+                      {/* Shelf widget design */}
+                      <div className="relative w-24 h-24 mx-auto rounded-full bg-emerald-50 flex items-center justify-center border border-emerald-100 shrink-0">
+                        <BookOpen className="w-10 h-10 text-emerald-600 group-hover:scale-105 transition-transform" />
+                        <div className="absolute -left-4 bottom-2 w-8 h-8 rounded-lg bg-emerald-100/90 flex items-center justify-center border border-emerald-200 text-emerald-600 shadow-sm">
+                          <BookOpen className="w-4 h-4" />
+                        </div>
+                        <div className="absolute -right-4 bottom-2 w-8 h-8 rounded-lg bg-emerald-100/90 flex items-center justify-center border border-emerald-200 text-emerald-600 shadow-sm">
+                          <Check className="w-4 h-4" />
+                        </div>
                       </div>
-                      <div className="space-y-1 text-left">
-                        <h4 className="font-bold text-slate-850 dark:text-white text-sm">Student Learner</h4>
-                        <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed font-light">Access core curriculum materials, practice decks, and verify language completions.</p>
+                      <div className="w-36 h-1.5 bg-amber-200/50 rounded-full mx-auto" />
+                      
+                      <div className="space-y-1.5 text-center">
+                        <h4 className="font-extrabold text-slate-800 text-base">Student Learner</h4>
+                        <p className="text-xs text-slate-500 leading-relaxed font-normal">Access core curriculum materials, practice decks, and verify language completions.</p>
                       </div>
-                    </CardContent>
-                  </Card>
+                    </div>
+
+                    <div className="flex justify-center gap-1.5 mt-4 mb-5">
+                      <div className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
+                      <div className="w-2.5 h-2.5 rounded-full bg-emerald-200/60" />
+                      <div className="w-2.5 h-2.5 rounded-full bg-emerald-200/60" />
+                    </div>
+
+                    <div className="py-2.5 px-4 rounded-xl border border-emerald-200 text-emerald-600 bg-white hover:bg-emerald-50 hover:border-emerald-300 transition-all duration-200 text-xs font-bold text-center flex items-center justify-center gap-2">
+                      <div className="w-6 h-6 rounded-full bg-emerald-500 text-white flex items-center justify-center shrink-0">
+                        <ArrowRight className="w-3.5 h-3.5" />
+                      </div>
+                      <span>Continue as Student</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Footer widgets */}
+                <div className="flex flex-col sm:flex-row items-center justify-between pt-5 mt-4 border-t border-slate-100 gap-4 text-xs font-semibold">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-lg bg-violet-50 text-violet-600 flex items-center justify-center shrink-0 border border-violet-100">
+                      <Shield className="w-4 h-4" />
+                    </div>
+                    <div className="text-left">
+                      <p className="font-extrabold text-slate-800">Trusted Learning</p>
+                      <p className="text-[10px] text-slate-450 font-normal">Safe & Secure</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 border border-emerald-100">
+                      <GraduationCap className="w-4 h-4" />
+                    </div>
+                    <div className="text-left">
+                      <p className="font-extrabold text-slate-800">Quality Education</p>
+                      <p className="text-[10px] text-slate-450 font-normal">Expert Instructors</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 border border-blue-100">
+                      <Award className="w-4 h-4" />
+                    </div>
+                    <div className="text-left">
+                      <p className="font-extrabold text-slate-800">Track Progress</p>
+                      <p className="text-[10px] text-slate-450 font-normal">Achieve Goals</p>
+                    </div>
+                  </div>
                 </div>
               </div>
             ) : (
-              <div className="space-y-5">
-                <DialogHeader className="pb-2">
-                  <DialogTitle className="flex items-center gap-2 text-base font-bold">
-                    {selectedRole && (
-                      <>
-                        <div className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center shrink-0 border border-slate-200 dark:border-slate-700">
-                          {React.createElement(selectedRole.icon, { className: `w-4.5 h-4.5 ${selectedRole.iconColor}` })}
-                        </div>
-                        <span className="text-slate-850 dark:text-white">Login as {selectedRole.title}</span>
-                      </>
-                    )}
-                  </DialogTitle>
-                  <DialogDescription className="text-slate-500 dark:text-slate-405 text-xs">
-                    {otpSent
-                      ? 'Verify by entering the code sent to your email.'
-                      : 'Enter email to receive your passwordless one-time pass code.'
-                    }
-                  </DialogDescription>
-                </DialogHeader>
+              <div className="space-y-6 relative z-10 text-left">
+                {/* Floating illustrations */}
+                <svg className="absolute -left-6 top-20 w-20 h-20 text-slate-200 pointer-events-none opacity-50" viewBox="0 0 100 100" fill="none">
+                  <path d="M10 80 Q 30 60, 80 40" stroke="currentColor" strokeWidth="1.5" strokeDasharray="3 3" fill="none" />
+                  <path d="M80 40 L68 45 L72 37 Z" fill="currentColor" />
+                </svg>
 
-                <div className="space-y-4">
+                {/* Floating open book in top right corner */}
+                <div className={`absolute right-0 top-2 opacity-20 rotate-12 pointer-events-none ${
+                  selectedRole?.id === 'student' ? 'text-emerald-500' : 'text-violet-500'
+                }`}>
+                  <BookOpen className="w-16 h-16" />
+                </div>
+
+                <div className="flex items-start gap-4 pb-2">
+                  <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 border ${
+                    selectedRole?.id === 'student'
+                      ? 'bg-emerald-50 text-emerald-600 border-emerald-100'
+                      : 'bg-violet-50 text-violet-600 border-violet-100'
+                  }`}>
+                    {React.createElement(selectedRole?.icon || BookOpen, { className: "w-7 h-7" })}
+                  </div>
+                  <div className="space-y-1">
+                    <h3 className="text-2xl font-black text-slate-900 leading-tight">
+                      Login as{' '}
+                      <span className={selectedRole?.id === 'student' ? 'text-emerald-600' : 'text-violet-600'}>
+                        {selectedRole?.title}
+                      </span>
+                    </h3>
+                    <p className="text-slate-500 text-xs">
+                      {otpSent
+                        ? 'Verify by entering the code sent to your email.'
+                        : 'Enter email to receive your passwordless one-time pass code.'
+                      }
+                    </p>
+                  </div>
+                </div>
+
+                <div className="space-y-5 pt-2">
                   {!otpSent ? (
                     <>
                       <div className="space-y-2">
                         <Label htmlFor="email" className="text-xs font-bold uppercase tracking-wider text-slate-400">Email Address</Label>
                         <div className="relative">
-                          <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                          <Mail className={`absolute left-3.5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 ${
+                            selectedRole?.id === 'student' ? 'text-emerald-500' : 'text-violet-500'
+                          }`} />
                           <Input
                             id="email"
                             type="email"
                             placeholder="your.email@example.com"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
-                            className="pl-11 h-11 bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-sm text-slate-900 dark:text-white rounded-xl focus-visible:ring-violet-500 focus-visible:border-violet-500"
+                            className={`pl-11 h-11 bg-slate-50 border-slate-205 text-sm text-slate-900 rounded-xl focus-visible:ring-2 ${
+                              selectedRole?.id === 'student'
+                                ? 'focus-visible:ring-emerald-500 focus-visible:border-emerald-500'
+                                : 'focus-visible:ring-violet-500 focus-visible:border-violet-500'
+                            }`}
                             onKeyPress={(e) => e.key === 'Enter' && handleSendOTP()}
                           />
                         </div>
@@ -993,17 +1106,21 @@ export default function Home() {
                       <Button
                         onClick={handleSendOTP}
                         disabled={authLoading}
-                        className="w-full bg-violet-600 hover:bg-violet-700 text-white font-bold h-11 rounded-xl transition-all shadow-md shadow-violet-600/10"
+                        className={`w-full text-white font-bold h-11 rounded-xl transition-all shadow-md ${
+                          selectedRole?.id === 'student'
+                            ? 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-600/15'
+                            : 'bg-violet-600 hover:bg-violet-700 shadow-violet-600/15'
+                        }`}
                       >
-                        {authLoading ? 'Sending OTP...' : 'Send OTP'}
+                        {authLoading ? 'Sending OTP...' : 'Send OTP →'}
                       </Button>
 
                       <div className="relative py-1">
                         <div className="absolute inset-0 flex items-center">
-                          <div className="w-full border-t border-slate-200 dark:border-slate-800"></div>
+                          <div className="w-full border-t border-slate-200"></div>
                         </div>
-                        <div className="relative flex justify-center text-[10px] font-bold uppercase tracking-widest bg-white dark:bg-slate-900">
-                          <span className="px-3 text-slate-400 dark:text-slate-500">Or Continue With</span>
+                        <div className="relative flex justify-center text-[10px] font-bold uppercase tracking-widest bg-white">
+                          <span className="px-3 text-slate-400">Or Continue With</span>
                         </div>
                       </div>
 
@@ -1011,7 +1128,7 @@ export default function Home() {
                         <GoogleLogin
                           onSuccess={handleGoogleLoginSuccess}
                           onError={handleGoogleLoginError}
-                          theme={theme === 'dark' ? 'dark' : 'outline'}
+                          theme="outline"
                           size="large"
                           width="350px"
                         />
@@ -1020,9 +1137,10 @@ export default function Home() {
                       <Button
                         variant="ghost"
                         onClick={() => setAuthStep('role')}
-                        className="w-full text-xs font-bold text-slate-500 hover:text-slate-950 dark:hover:text-white"
+                        className="w-full text-xs font-bold text-violet-600 hover:text-violet-700 hover:bg-violet-50 rounded-xl flex items-center justify-center gap-1.5"
                       >
-                        Change Role
+                        <RefreshCw className="w-3.5 h-3.5" />
+                        <span>Change Role →</span>
                       </Button>
                     </>
                   ) : (
@@ -1030,7 +1148,9 @@ export default function Home() {
                       <div className="space-y-2">
                         <Label htmlFor="otp" className="text-xs font-bold uppercase tracking-wider text-slate-400">Enter Verification Code</Label>
                         <div className="relative">
-                          <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                          <Lock className={`absolute left-3.5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 ${
+                            selectedRole?.id === 'student' ? 'text-emerald-500' : 'text-violet-500'
+                          }`} />
                           <Input
                             id="otp"
                             type="text"
@@ -1038,12 +1158,16 @@ export default function Home() {
                             maxLength={6}
                             value={otp}
                             onChange={(e) => setOTP(e.target.value.replace(/\D/g, ''))}
-                            className="pl-11 h-11 bg-slate-55 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-center text-xl tracking-[0.4em] font-mono font-bold text-slate-900 dark:text-white rounded-xl focus-visible:ring-violet-500"
+                            className={`pl-11 h-11 bg-slate-50 border-slate-200 text-center text-xl tracking-[0.4em] font-mono font-bold text-slate-900 rounded-xl focus-visible:ring-2 ${
+                              selectedRole?.id === 'student'
+                                ? 'focus-visible:ring-emerald-500 focus-visible:border-emerald-500'
+                                : 'focus-visible:ring-violet-500 focus-visible:border-violet-500'
+                            }`}
                             onKeyPress={(e) => e.key === 'Enter' && handleVerifyOTP()}
                           />
                         </div>
-                        <p className="text-xs text-slate-500 font-medium">
-                          Sent to: <span className="text-slate-650 dark:text-slate-400">{email}</span>
+                        <p className="text-xs text-slate-550 font-medium">
+                          Sent to: <span className="text-slate-700 font-semibold">{email}</span>
                         </p>
                       </div>
 
@@ -1051,14 +1175,18 @@ export default function Home() {
                         <Button
                           variant="outline"
                           onClick={() => setOtpSent(false)}
-                          className="flex-1 rounded-xl h-11 border-slate-200 dark:border-slate-800 font-bold"
+                          className="flex-1 rounded-xl h-11 border-slate-200 text-slate-600 hover:bg-slate-50 font-bold"
                         >
                           Back
                         </Button>
                         <Button
                           onClick={handleVerifyOTP}
                           disabled={authLoading}
-                          className="flex-1 bg-violet-600 hover:bg-violet-700 text-white font-bold h-11 rounded-xl transition-all shadow-md shadow-violet-600/10"
+                          className={`flex-1 text-white font-bold h-11 rounded-xl transition-all shadow-md ${
+                            selectedRole?.id === 'student'
+                              ? 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-600/15'
+                              : 'bg-violet-600 hover:bg-violet-700 shadow-violet-600/15'
+                          }`}
                         >
                           {authLoading ? 'Verifying...' : 'Verify'}
                         </Button>
@@ -1066,7 +1194,11 @@ export default function Home() {
                       <Button
                         variant="ghost"
                         onClick={handleSendOTP}
-                        className="w-full text-xs font-bold text-slate-500 hover:text-slate-950 dark:hover:text-white"
+                        className={`w-full text-xs font-bold rounded-xl ${
+                          selectedRole?.id === 'student'
+                            ? 'text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50'
+                            : 'text-violet-600 hover:text-violet-700 hover:bg-violet-50'
+                        }`}
                         disabled={authLoading}
                       >
                         Resend Code
