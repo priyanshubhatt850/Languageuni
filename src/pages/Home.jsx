@@ -424,14 +424,7 @@ export default function Home() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between h-16">
               <Link to={createPageUrl('Home')} className="flex items-center gap-2.5 group">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-600 to-purple-600 flex items-center justify-center shadow-lg shadow-violet-500/25 group-hover:shadow-violet-500/40 group-hover:scale-105 transition-all duration-300">
-                  <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M12 2L3 7V17L12 22L21 17V7L12 2Z" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-                    <path d="M12 12L3 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                    <path d="M12 12V22" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                    <path d="M12 12L21 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                </div>
+                <img src="/logo.png" alt="Global Tongue logo" className="w-10 h-10 object-contain rounded-xl shadow-lg shadow-violet-500/25 group-hover:shadow-violet-500/40 group-hover:scale-105 transition-all duration-300" />
                 <span className="font-bold text-xl tracking-tight text-slate-900 dark:text-white">Global Tongue</span>
               </Link>
 
@@ -980,14 +973,7 @@ export default function Home() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 md:gap-12 mb-12">
               <div>
                 <Link to={createPageUrl('Home')} className="flex items-center gap-2.5 mb-6 group">
-                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-600 to-purple-600 flex items-center justify-center shadow-lg shadow-violet-500/25">
-                    <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M12 2L3 7V17L12 22L21 17V7L12 2Z" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-                      <path d="M12 12L3 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                      <path d="M12 12V22" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                      <path d="M12 12L21 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                  </div>
+                  <img src="/logo.png" alt="Global Tongue logo" className="w-10 h-10 object-contain rounded-xl shadow-lg shadow-violet-500/25" />
                   <span className="font-bold text-xl tracking-tight">Global Tongue</span>
                 </Link>
                 <p className="text-slate-400 text-sm leading-relaxed max-w-sm">
@@ -1038,11 +1024,7 @@ export default function Home() {
               <div className="space-y-6">
                 <DialogHeader className="text-center">
                   <DialogTitle className="text-2xl font-black tracking-tight text-slate-900 dark:text-white flex items-center justify-center gap-2">
-                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-600 to-purple-600 flex items-center justify-center shrink-0">
-                      <svg className="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M12 2L3 7V17L12 22L21 17V7L12 2Z" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
-                    </div>
+                    <img src="/logo.png" alt="Global Tongue logo" className="w-8 h-8 object-contain rounded-lg shrink-0" />
                     <span>Global Tongue Portal</span>
                   </DialogTitle>
                   <DialogDescription className="text-slate-500 dark:text-slate-400 text-sm font-medium pt-1">

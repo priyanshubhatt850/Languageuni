@@ -175,14 +175,7 @@ export default function RoleSelection() {
             className="text-center space-y-3"
           >
             <div className="flex items-center justify-center gap-3 mb-2">
-              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-violet-600 to-purple-600 flex items-center justify-center shadow-lg shadow-violet-500/20">
-                <svg className="w-6 h-6 text-white" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M12 2L3 7V17L12 22L21 17V7L12 2Z" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-                  <path d="M12 12L3 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                  <path d="M12 12V22" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                  <path d="M12 12L21 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              </div>
+              <img src="/logo.png" alt="Global Tongue logo" className="w-12 h-12 object-contain rounded-2xl shadow-lg shadow-violet-500/20" />
               <h1 className="text-3xl font-extrabold text-white tracking-tight">Global Tongue</h1>
             </div>
             <p className="text-slate-400 font-medium text-sm">Select your gateway to begin</p>

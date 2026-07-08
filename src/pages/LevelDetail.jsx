@@ -420,11 +420,7 @@ export default function LevelDetail() {
                 <ArrowLeft className="w-5 h-5" />
               </Button>
               <Link to={createPageUrl('Home')} className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center">
-                  <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12 2L3 7V17L12 22L21 17V7L12 2Z" />
-                  </svg>
-                </div>
+                <img src="/logo.png" alt="Global Tongue logo" className="w-8 h-8 object-contain rounded-lg" />
                 <span className="font-semibold text-slate-900 dark:text-white">Global Tongue</span>
               </Link>
             </div>

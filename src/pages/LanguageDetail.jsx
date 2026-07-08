@@ -81,14 +81,7 @@ export default function LanguageDetail() {
                 <ArrowLeft className="w-5 h-5" />
               </Button>
               <Link to={createPageUrl('Home')} className="flex items-center gap-2">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-600 flex items-center justify-center shadow-lg">
-                  <svg className="w-6 h-6 text-white" viewBox="0 0 24 24" fill="none">
-                    <path d="M12 2L3 7V17L12 22L21 17V7L12 2Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                    <path d="M12 12L3 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                    <path d="M12 12V22" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                    <path d="M12 12L21 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                </div>
+                <img src="/logo.png" alt="Global Tongue logo" className="w-10 h-10 object-contain rounded-xl shadow-lg shadow-violet-500/25" />
                 <span className="font-bold text-xl text-slate-900 dark:text-white">Global Tongue</span>
               </Link>
             </div>
