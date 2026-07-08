@@ -1020,16 +1020,19 @@ export default function Home() {
 
         {/* Reusable Auth Portal Modal Popup */}
         <Dialog open={showAuthModal} onOpenChange={setShowAuthModal}>
-          <DialogContent className="sm:max-w-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-white rounded-2xl shadow-2xl p-6">
+          <DialogContent className="sm:max-w-2xl border border-slate-800/80 bg-slate-950 text-white rounded-2xl shadow-2xl p-7 overflow-hidden relative">
+            {/* Background glowing orb */}
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[350px] h-[350px] bg-violet-500/5 rounded-full blur-[100px] pointer-events-none" />
+            
             {authStep === 'role' ? (
-              <div className="space-y-6">
-                <DialogHeader className="text-center">
-                  <DialogTitle className="text-2xl font-black tracking-tight text-slate-900 dark:text-white flex items-center justify-center gap-2">
+              <div className="space-y-6 relative z-10">
+                <DialogHeader className="text-center md:text-left">
+                  <DialogTitle className="text-2xl font-extrabold tracking-tight text-white flex items-center justify-center md:justify-start gap-2.5">
                     <img src="/logo.png" alt="Global Tongue logo" className="w-8 h-8 object-contain rounded-lg shrink-0" />
                     <span>Global Tongue Portal</span>
                   </DialogTitle>
-                  <DialogDescription className="text-slate-500 dark:text-slate-400 text-sm font-medium pt-1">
-                    Select your path to continue
+                  <DialogDescription className="text-slate-400 text-sm font-medium pt-1">
+                    Select your gateway role to enter the platform
                   </DialogDescription>
                 </DialogHeader>
 
@@ -1056,38 +1059,46 @@ export default function Home() {
                   }
                 `}</style>
 
-                <div className="grid grid-cols-1 gap-4">
-                  {/* Instructor Option */}
-                  <Card
-                    onClick={() => handleRoleSelect({ id: 'instructor', title: 'Instructor Partner', color: 'from-violet-600 to-purple-600', icon: GraduationCap, iconColor: 'text-violet-600' })}
-                    className="border border-slate-200 dark:border-slate-805 hover:border-violet-500 dark:hover:border-violet-500 hover:bg-slate-50/50 dark:hover:bg-slate-850/60 cursor-pointer transition-all duration-300 hover:scale-[1.02] hover:shadow-xl hover:shadow-violet-500/5 rounded-xl group"
-                  >
-                    <CardContent className="p-5 flex items-start gap-4">
-                      <div className="w-10 h-10 rounded-xl bg-violet-100 dark:bg-violet-950/40 border border-violet-200/50 dark:border-violet-900/50 flex items-center justify-center text-violet-600 dark:text-violet-400 shrink-0 transition-transform">
-                        <GraduationCap className="w-5 h-5 animate-cap-toss" />
-                      </div>
-                      <div className="space-y-1 text-left">
-                        <h4 className="font-bold text-slate-850 dark:text-white text-sm group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors">Instructor Partner</h4>
-                        <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed font-light">Teach, publish learning levels, manage scheduled classes, and review earnings.</p>
-                      </div>
-                    </CardContent>
-                  </Card>
-
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5 pt-2">
                   {/* Student Option */}
-                  <Card
-                    onClick={() => handleRoleSelect({ id: 'student', title: 'Student Learner', color: 'from-emerald-500 to-teal-600', icon: BookOpen, iconColor: 'text-emerald-600' })}
-                    className="border border-slate-200 dark:border-slate-805 hover:border-emerald-500 dark:hover:border-emerald-500 hover:bg-slate-50/50 dark:hover:bg-slate-850/60 cursor-pointer transition-all duration-300 hover:scale-[1.02] hover:shadow-xl hover:shadow-emerald-500/5 rounded-xl group"
+                  <div
+                    onClick={() => handleRoleSelect({ id: 'student', title: 'Student Learner', color: 'from-emerald-500 to-teal-600', icon: BookOpen, iconColor: 'text-emerald-400' })}
+                    className="border border-slate-800 bg-slate-900/20 hover:bg-slate-900/50 hover:border-emerald-500/50 hover:shadow-lg hover:shadow-emerald-500/5 transition-all duration-300 rounded-2xl p-6 cursor-pointer flex flex-col justify-between h-full group relative overflow-hidden"
                   >
-                    <CardContent className="p-5 flex items-start gap-4">
-                      <div className="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-950/40 border border-emerald-200/50 dark:border-emerald-900/50 flex items-center justify-center text-emerald-600 dark:text-emerald-400 shrink-0 transition-transform">
-                        <BookOpen className="w-5 h-5 animate-book-flap" />
+                    <div className="space-y-4">
+                      <div className="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/25 flex items-center justify-center text-emerald-400 shrink-0">
+                        <BookOpen className="w-6 h-6 animate-book-flap" />
                       </div>
-                      <div className="space-y-1 text-left">
-                        <h4 className="font-bold text-slate-850 dark:text-white text-sm group-hover:text-emerald-600 dark:group-hover:text-emerald-405 transition-colors">Student Learner</h4>
-                        <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed font-light">Access core curriculum materials, practice decks, and verify language completions.</p>
+                      <div className="space-y-1.5 text-left">
+                        <h4 className="font-bold text-white text-base group-hover:text-emerald-400 transition-colors">Student Learner</h4>
+                        <p className="text-xs text-slate-400 leading-relaxed font-light">Access core study curricula, interactive practice decks, level completions, and native group reviews.</p>
                       </div>
-                    </CardContent>
-                  </Card>
+                    </div>
+                    <div className="mt-6 py-2.5 px-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 group-hover:bg-emerald-500 group-hover:text-white transition-all duration-200 text-xs font-bold text-center flex items-center justify-center gap-1.5">
+                      <span>Join Classroom</span>
+                      <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+                    </div>
+                  </div>
+
+                  {/* Instructor Option */}
+                  <div
+                    onClick={() => handleRoleSelect({ id: 'instructor', title: 'Instructor Partner', color: 'from-violet-600 to-purple-600', icon: GraduationCap, iconColor: 'text-violet-400' })}
+                    className="border border-slate-800 bg-slate-900/20 hover:bg-slate-900/50 hover:border-violet-500/50 hover:shadow-lg hover:shadow-violet-500/5 transition-all duration-300 rounded-2xl p-6 cursor-pointer flex flex-col justify-between h-full group relative overflow-hidden"
+                  >
+                    <div className="space-y-4">
+                      <div className="w-12 h-12 rounded-xl bg-violet-500/10 border border-violet-500/25 flex items-center justify-center text-violet-400 shrink-0">
+                        <GraduationCap className="w-6 h-6 animate-cap-toss" />
+                      </div>
+                      <div className="space-y-1.5 text-left">
+                        <h4 className="font-bold text-white text-base group-hover:text-violet-400 transition-colors">Instructor Partner</h4>
+                        <p className="text-xs text-slate-400 leading-relaxed font-light">Publish course levels, build custom curricula, manage live native class sessions, and track analytics.</p>
+                      </div>
+                    </div>
+                    <div className="mt-6 py-2.5 px-4 rounded-xl bg-violet-500/10 border border-violet-500/20 text-violet-400 group-hover:bg-violet-600 group-hover:text-white transition-all duration-200 text-xs font-bold text-center flex items-center justify-center gap-1.5">
+                      <span>Access Dashboard</span>
+                      <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+                    </div>
+                  </div>
                 </div>
               </div>
             ) : (
