@@ -43,8 +43,7 @@ import {
   ChevronDown,
   TrendingUp,
   Mail,
-  Lock,
-  X
+  Lock
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
@@ -282,9 +281,6 @@ export default function Home() {
   const { isAuthenticated, user, authError, checkUserAuth } = useAuth();
   const navigate = useNavigate();
 
-  // Debug Logs
-  const [debugLog, setDebugLog] = useState("Debug Logs Started:");
-
   // Auth Popup Modal States
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [authStep, setAuthStep] = useState('role'); // 'role' | 'otp'
@@ -317,8 +313,6 @@ export default function Home() {
   const coursetoshow = isAuthenticated ? a1Levels : dummyCourses;
 
   const openPortal = () => {
-    toast("Opening Portal...");
-    setDebugLog(prev => prev + "\n" + "openPortal executed");
     setAuthStep('role');
     setSelectedRole(null);
     setEmail('');
@@ -326,14 +320,6 @@ export default function Home() {
     setOtpSent(false);
     setShowAuthModal(true);
   };
-
-  useEffect(() => {
-    if (showAuthModal) {
-      setDebugLog(prev => prev + "\n" + "showAuthModal state set to true");
-    } else {
-      setDebugLog(prev => prev + "\n" + "showAuthModal state set to false");
-    }
-  }, [showAuthModal]);
 
   const handleRoleSelect = (role) => {
     setSelectedRole(role);
@@ -710,7 +696,7 @@ export default function Home() {
                 coursetoshow.map((level, index) => {
                   const allLanguages = [...languagesToShow];
                   const language = allLanguages.find(l => l._id === level.language_id) ||
-                    { name: 'Language', flag: '🌐' };
+                    { name: 'Language', flag: '≡ƒîÉ' };
                   const courseData = {
                     id: level._id,
                     title: `${language.name} - ${level.level_name}`,
@@ -1033,85 +1019,51 @@ export default function Home() {
 
         {/* Reusable Auth Portal Modal Popup */}
         <Dialog open={showAuthModal} onOpenChange={setShowAuthModal}>
-          <DialogContent className="sm:max-w-2xl border border-slate-800/80 bg-slate-950 text-white rounded-2xl shadow-2xl p-7 overflow-hidden relative !opacity-100 !scale-100 !visible !z-[99999]">
-            {/* Background glowing orb */}
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[350px] h-[350px] bg-violet-500/5 rounded-full blur-[100px] pointer-events-none" />
-            
+          <DialogContent className="sm:max-w-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-white rounded-2xl shadow-2xl p-6">
             {authStep === 'role' ? (
-              <div className="space-y-6 relative z-10">
-                <DialogHeader className="text-center md:text-left">
-                  <DialogTitle className="text-2xl font-extrabold tracking-tight text-white flex items-center justify-center md:justify-start gap-2.5">
+              <div className="space-y-6">
+                <DialogHeader className="text-center">
+                  <DialogTitle className="text-2xl font-black tracking-tight text-slate-900 dark:text-white flex items-center justify-center gap-2">
                     <img src="/logo.png" alt="Global Tongue logo" className="w-8 h-8 object-contain rounded-lg shrink-0" />
                     <span>Global Tongue Portal</span>
                   </DialogTitle>
-                  <DialogDescription className="text-slate-400 text-sm font-medium pt-1">
-                    Select your gateway role to enter the platform
+                  <DialogDescription className="text-slate-500 dark:text-slate-400 text-sm font-medium pt-1">
+                    Select your path to continue
                   </DialogDescription>
                 </DialogHeader>
 
-                <style>{`
-                  @keyframes book-page-flap {
-                    0%, 100% { transform: scaleX(1); }
-                    50% { transform: scaleX(0.7) skewY(-2deg); }
-                  }
-                  @keyframes cap-toss {
-                    0%, 100% { transform: translateY(0) rotate(0deg); }
-                    50% { transform: translateY(-4px) rotate(-8deg); }
-                  }
-                  .animate-book-flap {
-                    transform-origin: center;
-                  }
-                  .group:hover .animate-book-flap {
-                    animation: book-page-flap 0.6s ease-in-out infinite;
-                  }
-                  .animate-cap-toss {
-                    transform-origin: center;
-                  }
-                  .group:hover .animate-cap-toss {
-                    animation: cap-toss 0.7s ease-in-out infinite;
-                  }
-                `}</style>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-5 pt-2">
-                  {/* Student Option */}
-                  <div
-                    onClick={() => handleRoleSelect({ id: 'student', title: 'Student Learner', color: 'from-emerald-500 to-teal-600', icon: BookOpen, iconColor: 'text-emerald-400' })}
-                    className="border border-slate-800 bg-slate-900/20 hover:bg-slate-900/50 hover:border-emerald-500/50 hover:shadow-lg hover:shadow-emerald-500/5 transition-all duration-300 rounded-2xl p-6 cursor-pointer flex flex-col justify-between h-full group relative overflow-hidden"
-                  >
-                    <div className="space-y-4">
-                      <div className="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/25 flex items-center justify-center text-emerald-400 shrink-0">
-                        <BookOpen className="w-6 h-6 animate-book-flap" />
-                      </div>
-                      <div className="space-y-1.5 text-left">
-                        <h4 className="font-bold text-white text-base group-hover:text-emerald-400 transition-colors">Student Learner</h4>
-                        <p className="text-xs text-slate-400 leading-relaxed font-light">Access core study curricula, interactive practice decks, level completions, and native group reviews.</p>
-                      </div>
-                    </div>
-                    <div className="mt-6 py-2.5 px-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 group-hover:bg-emerald-500 group-hover:text-white transition-all duration-200 text-xs font-bold text-center flex items-center justify-center gap-1.5">
-                      <span>Join Classroom</span>
-                      <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
-                    </div>
-                  </div>
-
+                <div className="grid grid-cols-1 gap-4">
                   {/* Instructor Option */}
-                  <div
-                    onClick={() => handleRoleSelect({ id: 'instructor', title: 'Instructor Partner', color: 'from-violet-600 to-purple-600', icon: GraduationCap, iconColor: 'text-violet-400' })}
-                    className="border border-slate-800 bg-slate-900/20 hover:bg-slate-900/50 hover:border-violet-500/50 hover:shadow-lg hover:shadow-violet-500/5 transition-all duration-300 rounded-2xl p-6 cursor-pointer flex flex-col justify-between h-full group relative overflow-hidden"
+                  <Card
+                    onClick={() => handleRoleSelect({ id: 'instructor', title: 'Instructor Partner', color: 'from-violet-600 to-purple-600', icon: GraduationCap, iconColor: 'text-violet-600' })}
+                    className="border border-slate-200 dark:border-slate-805 hover:border-violet-500 dark:hover:border-violet-500 hover:bg-slate-50/50 dark:hover:bg-slate-850/60 cursor-pointer transition-all duration-200 rounded-xl group"
                   >
-                    <div className="space-y-4">
-                      <div className="w-12 h-12 rounded-xl bg-violet-500/10 border border-violet-500/25 flex items-center justify-center text-violet-400 shrink-0">
-                        <GraduationCap className="w-6 h-6 animate-cap-toss" />
+                    <CardContent className="p-5 flex items-start gap-4">
+                      <div className="w-10 h-10 rounded-xl bg-violet-100 dark:bg-violet-950/40 border border-violet-200/50 dark:border-violet-900/50 flex items-center justify-center text-violet-600 dark:text-violet-400 shrink-0 group-hover:scale-105 transition-transform">
+                        <GraduationCap className="w-5 h-5" />
                       </div>
-                      <div className="space-y-1.5 text-left">
-                        <h4 className="font-bold text-white text-base group-hover:text-violet-400 transition-colors">Instructor Partner</h4>
-                        <p className="text-xs text-slate-400 leading-relaxed font-light">Publish course levels, build custom curricula, manage live native class sessions, and track analytics.</p>
+                      <div className="space-y-1 text-left">
+                        <h4 className="font-bold text-slate-850 dark:text-white text-sm">Instructor Partner</h4>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed font-light">Teach, publish learning levels, manage scheduled classes, and review earnings.</p>
                       </div>
-                    </div>
-                    <div className="mt-6 py-2.5 px-4 rounded-xl bg-violet-500/10 border border-violet-500/20 text-violet-400 group-hover:bg-violet-600 group-hover:text-white transition-all duration-200 text-xs font-bold text-center flex items-center justify-center gap-1.5">
-                      <span>Access Dashboard</span>
-                      <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
-                    </div>
-                  </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Student Option */}
+                  <Card
+                    onClick={() => handleRoleSelect({ id: 'student', title: 'Student Learner', color: 'from-emerald-500 to-teal-600', icon: BookOpen, iconColor: 'text-emerald-600' })}
+                    className="border border-slate-200 dark:border-slate-805 hover:border-emerald-500 dark:hover:border-emerald-500 hover:bg-slate-50/50 dark:hover:bg-slate-850/60 cursor-pointer transition-all duration-200 rounded-xl group"
+                  >
+                    <CardContent className="p-5 flex items-start gap-4">
+                      <div className="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-950/40 border border-emerald-200/50 dark:border-emerald-900/50 flex items-center justify-center text-emerald-600 dark:text-emerald-400 shrink-0 group-hover:scale-105 transition-transform">
+                        <BookOpen className="w-5 h-5" />
+                      </div>
+                      <div className="space-y-1 text-left">
+                        <h4 className="font-bold text-slate-850 dark:text-white text-sm">Student Learner</h4>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed font-light">Access core curriculum materials, practice decks, and verify language completions.</p>
+                      </div>
+                    </CardContent>
+                  </Card>
                 </div>
               </div>
             ) : (
@@ -1242,11 +1194,6 @@ export default function Home() {
             )}
           </DialogContent>
         </Dialog>
-        
-        {/* Debug Console Overlay */}
-        <div className="fixed bottom-4 left-4 z-[99999] bg-black/90 text-emerald-450 p-4 rounded-xl text-xs font-mono whitespace-pre border border-slate-850 pointer-events-none max-w-sm max-h-40 overflow-auto shadow-2xl">
-          {debugLog}
-        </div>
       </div>
     </GoogleOAuthProvider>
   );
