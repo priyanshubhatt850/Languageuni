@@ -14,6 +14,7 @@ import MaterialViewer from '@/components/learning/MaterialViewer';
 import confetti from 'canvas-confetti';
 import {
   ArrowLeft,
+  ArrowRight,
   BookOpen,
   Headphones,
   PenTool,
