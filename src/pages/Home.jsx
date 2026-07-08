@@ -172,6 +172,20 @@ export default function Home() {
   const [otpSent, setOtpSent] = useState(false);
   const [authLoading, setAuthLoading] = useState(false);
 
+  useEffect(() => {
+    const handleError = (event) => {
+      const errorMsg = event.error ? event.error.stack : event.message;
+      fetch(`http://localhost:3000/log-frontend-error?msg=${encodeURIComponent(errorMsg)}`).catch(() => {});
+    };
+    window.addEventListener('error', handleError);
+    window.addEventListener('unhandledrejection', (event) => {
+      fetch(`http://localhost:3000/log-frontend-error?msg=${encodeURIComponent('Promise Rejection: ' + event.reason)}`).catch(() => {});
+    });
+    return () => {
+      window.removeEventListener('error', handleError);
+    };
+  }, []);
+
   const { data: languages = [] } = useQuery({
     queryKey: ['active-languages'],
     queryFn: async () => {
