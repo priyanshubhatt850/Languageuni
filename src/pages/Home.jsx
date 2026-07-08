@@ -1038,7 +1038,7 @@ export default function Home() {
         {/*        {/* Reusable Auth Portal Custom Modal Popup using Framer Motion */}
         <AnimatePresence>
           {showAuthModal && (
-            <div className="fixed inset-0 z-[999] flex items-center justify-center p-4">
+            <div className="fixed inset-0 z-[999] flex items-center justify-center p-0 sm:p-4">
               {/* Backdrop Overlay */}
               <motion.div
                 initial={{ opacity: 0 }}
@@ -1054,7 +1054,7 @@ export default function Home() {
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95, y: 10 }}
                 transition={{ type: 'spring', duration: 0.4 }}
-                className={`${authStep === 'role' ? 'w-full max-w-3xl' : 'w-full max-w-lg'} max-h-[90vh] overflow-y-auto border border-slate-100 bg-white rounded-[24px] sm:rounded-[28px] shadow-2xl p-5 sm:p-8 text-slate-800 relative overflow-hidden z-10`}
+                className={`${authStep === 'role' ? 'w-full max-w-3xl' : 'w-full max-w-lg'} w-full h-full sm:h-auto max-h-full sm:max-h-[90vh] overflow-y-auto border-0 sm:border border-slate-100 bg-white rounded-none sm:rounded-[28px] shadow-2xl p-5 sm:p-8 text-slate-800 relative overflow-hidden z-10`}
               >
                 {/* Close Button */}
                 <button
