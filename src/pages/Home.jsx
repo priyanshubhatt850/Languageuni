@@ -153,128 +153,7 @@ const dummyLanguages = [
   { id: 6, name: "Japanese", flag: "🇯🇵", instructor_count: 5 },
 ];
 
-function InteractivePracticeCard() {
-  const [selectedOption, setSelectedOption] = useState(null);
-  const [showExplanation, setShowExplanation] = useState(false);
 
-  const handleSelect = (option) => {
-    setSelectedOption(option);
-    setShowExplanation(true);
-  };
-
-  const reset = () => {
-    setSelectedOption(null);
-    setShowExplanation(false);
-  };
-
-  return (
-    <Card className="w-full max-w-[380px] border border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 shadow-xl rounded-2xl overflow-hidden backdrop-blur-md">
-      <CardContent className="p-6 space-y-5">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">Interactive Partner</span>
-          </div>
-          <Badge variant="secondary" className="bg-violet-50 dark:bg-violet-950 text-violet-750 dark:text-violet-300 border-none font-medium text-[11px] rounded-lg">
-            Spanish A1
-          </Badge>
-        </div>
-
-        {/* Chat message bubbles */}
-        <div className="space-y-3">
-          <div className="flex items-start gap-2.5">
-            <Avatar className="w-7 h-7 border border-slate-105">
-              <AvatarFallback className="bg-violet-100 text-violet-700 text-xs font-bold">AI</AvatarFallback>
-            </Avatar>
-            <div className="bg-slate-100 dark:bg-slate-800 text-slate-850 dark:text-slate-200 p-3 rounded-2xl rounded-tl-none text-sm max-w-[80%] leading-relaxed">
-              👋 ¡Hola! Let's practice. How do you say <span className="font-semibold text-violet-600 dark:text-violet-400">"Good morning"</span> in Spanish? 🇪🇸
-            </div>
-          </div>
-
-          <AnimatePresence>
-            {selectedOption && (
-              <motion.div
-                initial={{ opacity: 0, y: 5 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="flex items-start gap-2.5 justify-end"
-              >
-                <div className={`p-3 rounded-2xl rounded-tr-none text-sm max-w-[80%] text-white leading-relaxed ${
-                  selectedOption === 'A' 
-                    ? 'bg-emerald-500 shadow-md shadow-emerald-500/10' 
-                    : 'bg-rose-500 shadow-md shadow-rose-500/10'
-                }`}>
-                  {selectedOption === 'A' ? 'Buenos días ☀️' : selectedOption === 'B' ? 'Buenas noches 🌙' : 'Adiós 👋'}
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-
-        {/* Options */}
-        {!showExplanation ? (
-          <div className="space-y-2 pt-2">
-            <button
-              onClick={() => handleSelect('A')}
-              className="w-full text-left p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 hover:border-violet-500/40 hover:bg-violet-50/30 dark:hover:bg-violet-950/20 text-sm font-medium text-slate-705 dark:text-slate-300 transition-all duration-200 flex items-center justify-between group"
-            >
-              <span>A) Buenos días</span>
-              <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-violet-500 transition-colors" />
-            </button>
-            <button
-              onClick={() => handleSelect('B')}
-              className="w-full text-left p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 hover:border-violet-500/40 hover:bg-violet-50/30 dark:hover:bg-violet-950/20 text-sm font-medium text-slate-705 dark:text-slate-300 transition-all duration-200 flex items-center justify-between group"
-            >
-              <span>B) Buenas noches</span>
-              <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-violet-500 transition-colors" />
-            </button>
-            <button
-              onClick={() => handleSelect('C')}
-              className="w-full text-left p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 hover:border-violet-500/40 hover:bg-violet-50/30 dark:hover:bg-violet-950/20 text-sm font-medium text-slate-705 dark:text-slate-300 transition-all duration-200 flex items-center justify-between group"
-            >
-              <span>C) Adiós</span>
-              <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-violet-500 transition-colors" />
-            </button>
-          </div>
-        ) : (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="p-4 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/60 space-y-3"
-          >
-            <div className="flex items-center gap-2">
-              {selectedOption === 'A' ? (
-                <>
-                  <Check className="w-5 h-5 text-emerald-500" />
-                  <span className="font-bold text-sm text-slate-800 dark:text-white">¡Excelente! Correct!</span>
-                </>
-              ) : (
-                <>
-                  <X className="w-5 h-5 text-rose-500" />
-                  <span className="font-bold text-sm text-slate-800 dark:text-white">Oops, incorrect</span>
-                </>
-              )}
-            </div>
-            <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-              {selectedOption === 'A' 
-                ? '"Buenos días" translates directly to "Good morning". It is the standard greeting used until noon.' 
-                : selectedOption === 'B' 
-                  ? '"Buenas noches" translates to "Good evening" or "Good night". Try again to find the morning greeting.'
-                  : '"Adiós" is a parting farewell meaning "Goodbye". Try again to greet the day.'
-              }
-            </p>
-            <Button
-              size="sm"
-              onClick={reset}
-              className="w-full bg-violet-600 hover:bg-violet-700 text-white h-9 rounded-lg text-xs"
-            >
-              {selectedOption === 'A' ? 'Practice Again' : 'Try Again'}
-            </Button>
-          </motion.div>
-        )}
-      </CardContent>
-    </Card>
-  );
-}
 
 export default function Home() {
   const { theme, setTheme } = useTheme();
@@ -579,14 +458,18 @@ export default function Home() {
                 </motion.div>
               </div>
 
-              {/* Right Card Column (Signature Interactive Element) */}
+              {/* Right Card Column (Premium Hero Illustration) */}
               <div className="lg:col-span-5 flex justify-center lg:justify-end">
                 <motion.div
-                  initial={{ opacity: 0, x: 30 }}
-                  animate={{ opacity: 1, x: 0 }}
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
                   transition={{ duration: 0.8, delay: 0.2 }}
                 >
-                  <InteractivePracticeCard />
+                  <img
+                    src="/hero_illustration.png"
+                    alt="Language Learning Illustration"
+                    className="w-full max-w-[480px] object-contain rounded-3xl shadow-2xl shadow-violet-500/10 hover:shadow-violet-500/20 hover:scale-[1.02] transition-all duration-500 border border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm"
+                  />
                 </motion.div>
               </div>
             </div>
