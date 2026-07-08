@@ -19,17 +19,20 @@ const levelColors = {
   C2: 'bg-purple-100 text-purple-700 border-purple-200 dark:bg-purple-900/30 dark:text-purple-300 dark:border-purple-800',
 };
 
-export default function CourseCard({ course, variant = 'default', delay = 0 }) {
+export default function CourseCard({ course, variant = 'default', delay = 0, onAuthRequired }) {
   const isCompact = variant === 'compact';
   const { isAuthenticated, user, authError, navigateToLogin } = useAuth();
   const navigate = useNavigate();
-  const handleClick = () => {
-
+  const handleClick = (e) => {
     if (isAuthenticated) {
-
       navigate(`/LevelDetail?id=${course.id}`);
     } else {
-      navigate(`/RoleSelection`);
+      e.preventDefault();
+      if (onAuthRequired) {
+        onAuthRequired();
+      } else {
+        navigate(`/RoleSelection`);
+      }
     }
   };
 
@@ -42,7 +45,6 @@ export default function CourseCard({ course, variant = 'default', delay = 0 }) {
         transition={{ delay: delay * 0.05 }}
         className="group h-full"
         onClick={handleClick}
-
       >
         <Card className="overflow-hidden border border-slate-100 dark:border-slate-800/50 shadow-sm hover:shadow-xl dark:hover:shadow-2xl dark:hover:shadow-purple-500/10 transition-all duration-300 bg-white dark:bg-slate-900 rounded-2xl h-full flex flex-col">
           {/* Thumbnail */}

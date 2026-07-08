@@ -579,7 +579,7 @@ export default function Home() {
                 coursetoshow.map((level, index) => {
                   const allLanguages = [...languagesToShow];
                   const language = allLanguages.find(l => l._id === level.language_id) ||
-                    { name: 'Language', flag: '≡ƒîÉ' };
+                    { name: 'Language', flag: '🌐' };
                   const courseData = {
                     id: level._id,
                     title: `${language.name} - ${level.level_name}`,
@@ -600,6 +600,7 @@ export default function Home() {
                       key={level._id}
                       course={courseData}
                       delay={index}
+                      onAuthRequired={openPortal}
                     />
                   );
                 })
