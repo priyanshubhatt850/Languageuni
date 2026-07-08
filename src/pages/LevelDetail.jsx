@@ -39,6 +39,7 @@ import {
   Sparkles
 } from 'lucide-react';
 import { loadScript } from "@paypal/paypal-js";
+import { initiateRazorpayPayment, verifyRazorpayPayment, getRazorpayErrorMessage } from '@/lib/razorpay';
 import CryptoJS from "crypto-js";
 
 const materialIcons = {
@@ -93,6 +94,8 @@ export default function LevelDetail() {
   const [showPracticeChat, setShowPracticeChat] = useState(false);
   const [selectedMaterial, setSelectedMaterial] = useState(null);
   const [showPayPal, setShowPayPal] = useState(false);
+  const [showRazorpay, setShowRazorpay] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState(null); // 'paypal' or 'razorpay'
   const { theme, setTheme } = useTheme();
   const queryClient = useQueryClient();
   const paypalContainerRef = useRef(null);
@@ -243,6 +246,106 @@ export default function LevelDetail() {
       paypalContainerRef.current.innerHTML = "";
     };
   }, [showPayPal, levelId]);
+
+  // ============= RAZORPAY PAYMENT FLOW =============
+  
+  const createRazorpayOrderMutation = useMutation({
+    mutationFn: ({ amount, levelId }) => WWClient.entities.razorpay.postwithparams('create-order', {
+      amount,
+      levelId,
+      instructor_id: level?.instructor_id
+    })
+  });
+
+  const verifyRazorpayPaymentMutation = useMutation({
+    mutationFn: (paymentData) => WWClient.entities.Enrollment.postwithparams('razorpay/verify-payment', paymentData)
+  });
+
+  const handleRazorpayPaymentSuccess = async (paymentData) => {
+    try {
+      // Verify payment with backend
+      const response = await verifyRazorpayPaymentMutation.mutateAsync({
+        ...paymentData,
+        transactionId: razorpayTransactionId
+      });
+
+      if (response.success) {
+        // Update enrollment
+        enrollMutation.mutate();
+        setShowRazorpay(false);
+        setPaymentMethod(null);
+      } else {
+        alert('Payment verification failed: ' + response.message);
+      }
+    } catch (error) {
+      console.error('Payment verification error:', error);
+      alert('Payment verification error. Please contact support.');
+    }
+  };
+
+  const handleRazorpayPaymentFailure = (error) => {
+    const errorMessage = getRazorpayErrorMessage(error);
+    alert('Payment failed: ' + errorMessage);
+    setShowRazorpay(false);
+    setPaymentMethod(null);
+  };
+
+  const [razorpayTransactionId, setRazorpayTransactionId] = useState(null);
+
+  const handleInitiateRazorpayPayment = async () => {
+    try {
+      if (!user || !user.email) {
+        alert('User information missing. Please log in again.');
+        return;
+      }
+
+      // Create order on backend
+      const orderResponse = await createRazorpayOrderMutation.mutateAsync({
+        amount: level.discount_price || level.price,
+        levelId: levelId
+      });
+
+      if (!orderResponse.success) {
+        alert('Failed to create payment order: ' + orderResponse.message);
+        return;
+      }
+
+      // Store transaction ID for later verification
+      setRazorpayTransactionId(orderResponse.transactionId);
+
+      // Initiate Razorpay payment modal
+      await initiateRazorpayPayment({
+        orderId: orderResponse.orderId,
+        amount: orderResponse.amount,
+        currency: orderResponse.currency,
+        keyId: import.meta.env.VITE_RAZORPAY_KEY_ID,
+        user: {
+          name: user.name || user.email,
+          email: user.email,
+          phone: user.phone || ''
+        },
+        levelName: level.level_name,
+        onPaymentSuccess: handleRazorpayPaymentSuccess,
+        onPaymentFailure: handleRazorpayPaymentFailure,
+        onPaymentClosed: () => {
+          setShowRazorpay(false);
+          setPaymentMethod(null);
+        }
+      });
+    } catch (error) {
+      console.error('Error preparing Razorpay payment:', error);
+      alert('Error preparing payment. Please try again.');
+      setShowRazorpay(false);
+      setPaymentMethod(null);
+    }
+  };
+
+  // Trigger Razorpay payment when showRazorpay is true and we have user data
+  useEffect(() => {
+    if (showRazorpay && paymentMethod === 'razorpay' && user) {
+      handleInitiateRazorpayPayment();
+    }
+  }, [showRazorpay, paymentMethod, user]);
 
   if (!level || !language) {
     return (
@@ -462,10 +565,10 @@ export default function LevelDetail() {
                     ) : user ? (
                       <Button
                         className="w-full bg-blue-600 hover:bg-blue-700 h-12 font-semibold"
-                        onClick={() => setShowPayPal(true)}
-                        disabled={enrollMutation.isPending}
+                        onClick={() => setPaymentMethod('select')}
+                        disabled={enrollMutation.isPending || createRazorpayOrderMutation.isPending}
                       >
-                        {enrollMutation.isPending ? 'Processing...' : 'Enroll Now'}
+                        {enrollMutation.isPending || createRazorpayOrderMutation.isPending ? 'Processing...' : 'Enroll Now'}
                       </Button>
                     ) : (
                       <Button
@@ -714,12 +817,105 @@ export default function LevelDetail() {
         )}
       </AnimatePresence>
 
-      {/* PayPal Modal */}
+      {/* Payment Method Selector Modal */}
       <AnimatePresence>
-        {showPayPal && window.paypal && (
+        {paymentMethod === 'select' && (
           <div
             className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
-            onClick={() => setShowPayPal(false)}
+            onClick={() => setPaymentMethod(null)}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="relative bg-white dark:bg-slate-900 rounded-xl shadow-xl max-w-md w-full mx-4"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Header */}
+              <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-800">
+                <h3 className="text-lg font-bold text-slate-900 dark:text-white">
+                  Choose Payment Method
+                </h3>
+                <button
+                  className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+                  onClick={() => setPaymentMethod(null)}
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+
+              <div className="px-6 py-6">
+                {/* Razorpay Option */}
+                <button
+                  className={`w-full p-4 mb-4 border-2 rounded-lg transition-all ${
+                    paymentMethod === 'razorpay'
+                      ? 'border-blue-600 bg-blue-50 dark:bg-blue-900/20'
+                      : 'border-slate-200 dark:border-slate-700 hover:border-blue-400'
+                  }`}
+                  onClick={() => {
+                    setPaymentMethod('razorpay');
+                    setShowRazorpay(true);
+                  }}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="text-left">
+                      <h4 className="font-semibold text-slate-900 dark:text-white">Razorpay</h4>
+                      <p className="text-sm text-slate-600 dark:text-slate-400">Debit/Credit Card, UPI, Wallet</p>
+                    </div>
+                    <div className="text-2xl">💳</div>
+                  </div>
+                </button>
+
+                {/* PayPal Option */}
+                <button
+                  className={`w-full p-4 border-2 rounded-lg transition-all ${
+                    paymentMethod === 'paypal'
+                      ? 'border-blue-600 bg-blue-50 dark:bg-blue-900/20'
+                      : 'border-slate-200 dark:border-slate-700 hover:border-blue-400'
+                  }`}
+                  onClick={() => {
+                    setPaymentMethod('paypal');
+                    setShowPayPal(true);
+                  }}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="text-left">
+                      <h4 className="font-semibold text-slate-900 dark:text-white">PayPal</h4>
+                      <p className="text-sm text-slate-600 dark:text-slate-400">Secure PayPal checkout</p>
+                    </div>
+                    <div className="text-2xl">🅿️</div>
+                  </div>
+                </button>
+
+                {/* Price Info */}
+                <div className="mt-6 pt-6 border-t border-slate-200 dark:border-slate-700">
+                  <div className="text-center">
+                    <p className="text-sm text-slate-600 dark:text-slate-400 mb-1">Total Amount</p>
+                    <div className="text-2xl font-bold text-slate-900 dark:text-white">
+                      ${level?.discount_price || level?.price}
+                    </div>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">
+                      One-time payment • Lifetime access
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* PayPal Modal */}
+      <AnimatePresence>
+        {showPayPal && paymentMethod === 'paypal' && window.paypal && (
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
+            onClick={() => {
+              setShowPayPal(false);
+              setPaymentMethod(null);
+            }}
           >
             <div
               className="relative bg-white dark:bg-slate-900 rounded-xl p-0 shadow-xl max-w-md w-full mx-4"
@@ -732,7 +928,10 @@ export default function LevelDetail() {
                 </h3>
                 <button
                   className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
-                  onClick={() => setShowPayPal(false)}
+                  onClick={() => {
+                    setShowPayPal(false);
+                    setPaymentMethod(null);
+                  }}
                 >
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -760,7 +959,10 @@ export default function LevelDetail() {
                 <Button
                   variant="outline"
                   className="w-full border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
-                  onClick={() => setShowPayPal(false)}
+                  onClick={() => {
+                    setShowPayPal(false);
+                    setPaymentMethod(null);
+                  }}
                 >
                   Cancel
                 </Button>

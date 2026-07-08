@@ -44,7 +44,7 @@ export default function CourseCard({ course, variant = 'default', delay = 0 }) {
         onClick={handleClick}
 
       >
-        <Card className="overflow-hidden border-0 shadow-md hover:shadow-2xl transition-all duration-300 bg-gradient-to-br from-white to-slate-50/50 dark:from-slate-900 dark:to-slate-800/50 rounded-2xl h-full flex flex-col">
+        <Card className="overflow-hidden border border-slate-100 dark:border-slate-800/50 shadow-sm hover:shadow-xl dark:hover:shadow-2xl dark:hover:shadow-purple-500/10 transition-all duration-300 bg-white dark:bg-slate-900 rounded-2xl h-full flex flex-col">
           {/* Thumbnail */}
           <div className="relative overflow-hidden aspect-video bg-gradient-to-br from-violet-100 to-purple-100 dark:from-violet-900/30 dark:to-purple-900/30">
             <img

@@ -63,7 +63,8 @@ function createClient(config) {
     "User",
     "UserBadge",
     "UserPoints",
-    "Wallet"
+    "Wallet",
+    "razorpay"
   ]
   entityNames.forEach((name) => {
     entities[name] = {
