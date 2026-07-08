@@ -177,6 +177,7 @@ export default function Home() {
   const [authLoading, setAuthLoading] = useState(false);
 
   // Student Onboarding States
+  const [onboardingSubStep, setOnboardingSubStep] = useState(1); // 1 | 2 | 3
   const [selectedLanguages, setSelectedLanguages] = useState([]);
   const [interests, setInterests] = useState([]);
   const [avatarUrl, setAvatarUrl] = useState('');
@@ -188,6 +189,8 @@ export default function Home() {
     { name: "French", flag: "🇫🇷" },
     { name: "German", flag: "🇩🇪" },
     { name: "Italian", flag: "🇮🇹" },
+    { name: "Portuguese", flag: "🇵🇹" },
+    { name: "Mandarin", flag: "🇨🇳" },
     { name: "Japanese", flag: "🇯🇵" },
     { name: "Korean", flag: "🇰🇷" },
     { name: "Arabic", flag: "🇸🇦" }
