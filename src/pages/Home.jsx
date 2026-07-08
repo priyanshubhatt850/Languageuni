@@ -1033,7 +1033,7 @@ export default function Home() {
 
         {/* Reusable Auth Portal Modal Popup */}
         <Dialog open={showAuthModal} onOpenChange={setShowAuthModal}>
-          <DialogContent className="sm:max-w-2xl border border-slate-800/80 bg-slate-950 text-white rounded-2xl shadow-2xl p-7 overflow-hidden relative !opacity-100 !scale-100 !visible">
+          <DialogContent className="sm:max-w-2xl border border-slate-800/80 bg-slate-950 text-white rounded-2xl shadow-2xl p-7 overflow-hidden relative !opacity-100 !scale-100 !visible !z-[99999]">
             {/* Background glowing orb */}
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[350px] h-[350px] bg-violet-500/5 rounded-full blur-[100px] pointer-events-none" />
             
