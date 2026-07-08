@@ -314,6 +314,7 @@ export default function Home() {
   const coursetoshow = isAuthenticated ? a1Levels : dummyCourses;
 
   const openPortal = () => {
+    toast("Opening Portal...");
     setAuthStep('role');
     setSelectedRole(null);
     setEmail('');
