@@ -1033,18 +1033,41 @@ export default function Home() {
                   </DialogDescription>
                 </DialogHeader>
 
+                <style>{`
+                  @keyframes book-page-flap {
+                    0%, 100% { transform: scaleX(1); }
+                    50% { transform: scaleX(0.7) skewY(-2deg); }
+                  }
+                  @keyframes cap-toss {
+                    0%, 100% { transform: translateY(0) rotate(0deg); }
+                    50% { transform: translateY(-4px) rotate(-8deg); }
+                  }
+                  .animate-book-flap {
+                    transform-origin: center;
+                  }
+                  .group:hover .animate-book-flap {
+                    animation: book-page-flap 0.6s ease-in-out infinite;
+                  }
+                  .animate-cap-toss {
+                    transform-origin: center;
+                  }
+                  .group:hover .animate-cap-toss {
+                    animation: cap-toss 0.7s ease-in-out infinite;
+                  }
+                `}</style>
+
                 <div className="grid grid-cols-1 gap-4">
                   {/* Instructor Option */}
                   <Card
                     onClick={() => handleRoleSelect({ id: 'instructor', title: 'Instructor Partner', color: 'from-violet-600 to-purple-600', icon: GraduationCap, iconColor: 'text-violet-600' })}
-                    className="border border-slate-200 dark:border-slate-805 hover:border-violet-500 dark:hover:border-violet-500 hover:bg-slate-50/50 dark:hover:bg-slate-850/60 cursor-pointer transition-all duration-200 rounded-xl group"
+                    className="border border-slate-200 dark:border-slate-805 hover:border-violet-500 dark:hover:border-violet-500 hover:bg-slate-50/50 dark:hover:bg-slate-850/60 cursor-pointer transition-all duration-300 hover:scale-[1.02] hover:shadow-xl hover:shadow-violet-500/5 rounded-xl group"
                   >
                     <CardContent className="p-5 flex items-start gap-4">
-                      <div className="w-10 h-10 rounded-xl bg-violet-100 dark:bg-violet-950/40 border border-violet-200/50 dark:border-violet-900/50 flex items-center justify-center text-violet-600 dark:text-violet-400 shrink-0 group-hover:scale-105 transition-transform">
-                        <GraduationCap className="w-5 h-5" />
+                      <div className="w-10 h-10 rounded-xl bg-violet-100 dark:bg-violet-950/40 border border-violet-200/50 dark:border-violet-900/50 flex items-center justify-center text-violet-600 dark:text-violet-400 shrink-0 transition-transform">
+                        <GraduationCap className="w-5 h-5 animate-cap-toss" />
                       </div>
                       <div className="space-y-1 text-left">
-                        <h4 className="font-bold text-slate-850 dark:text-white text-sm">Instructor Partner</h4>
+                        <h4 className="font-bold text-slate-850 dark:text-white text-sm group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors">Instructor Partner</h4>
                         <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed font-light">Teach, publish learning levels, manage scheduled classes, and review earnings.</p>
                       </div>
                     </CardContent>
@@ -1053,14 +1076,14 @@ export default function Home() {
                   {/* Student Option */}
                   <Card
                     onClick={() => handleRoleSelect({ id: 'student', title: 'Student Learner', color: 'from-emerald-500 to-teal-600', icon: BookOpen, iconColor: 'text-emerald-600' })}
-                    className="border border-slate-200 dark:border-slate-805 hover:border-emerald-500 dark:hover:border-emerald-500 hover:bg-slate-50/50 dark:hover:bg-slate-850/60 cursor-pointer transition-all duration-200 rounded-xl group"
+                    className="border border-slate-200 dark:border-slate-805 hover:border-emerald-500 dark:hover:border-emerald-500 hover:bg-slate-50/50 dark:hover:bg-slate-850/60 cursor-pointer transition-all duration-300 hover:scale-[1.02] hover:shadow-xl hover:shadow-emerald-500/5 rounded-xl group"
                   >
                     <CardContent className="p-5 flex items-start gap-4">
-                      <div className="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-950/40 border border-emerald-200/50 dark:border-emerald-900/50 flex items-center justify-center text-emerald-600 dark:text-emerald-400 shrink-0 group-hover:scale-105 transition-transform">
-                        <BookOpen className="w-5 h-5" />
+                      <div className="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-950/40 border border-emerald-200/50 dark:border-emerald-900/50 flex items-center justify-center text-emerald-600 dark:text-emerald-400 shrink-0 transition-transform">
+                        <BookOpen className="w-5 h-5 animate-book-flap" />
                       </div>
                       <div className="space-y-1 text-left">
-                        <h4 className="font-bold text-slate-850 dark:text-white text-sm">Student Learner</h4>
+                        <h4 className="font-bold text-slate-850 dark:text-white text-sm group-hover:text-emerald-600 dark:group-hover:text-emerald-405 transition-colors">Student Learner</h4>
                         <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed font-light">Access core curriculum materials, practice decks, and verify language completions.</p>
                       </div>
                     </CardContent>
