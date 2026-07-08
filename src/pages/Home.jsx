@@ -976,17 +976,14 @@ export default function Home() {
                         className="border border-slate-100 hover:border-violet-200 bg-white hover:bg-slate-50/20 hover:shadow-xl transition-all duration-300 rounded-[24px] p-6 cursor-pointer flex flex-col justify-between group relative overflow-hidden"
                       >
                         <div className="space-y-4">
-                          {/* Shelf widget design */}
-                          <div className="relative w-24 h-24 mx-auto rounded-full bg-violet-50 flex items-center justify-center border border-violet-100 shrink-0">
-                            <GraduationCap className="w-10 h-10 text-violet-600 group-hover:scale-105 transition-transform" />
-                            <div className="absolute -left-4 bottom-2 w-8 h-8 rounded-lg bg-violet-100/90 flex items-center justify-center border border-violet-200 text-violet-600 shadow-sm">
-                              <Calendar className="w-4 h-4" />
-                            </div>
-                            <div className="absolute -right-4 bottom-2 w-8 h-8 rounded-lg bg-violet-100/90 flex items-center justify-center border border-violet-200 text-violet-600 shadow-sm">
-                              <BarChart3 className="w-4 h-4" />
-                            </div>
+                          {/* Generated 3D Shelf Illustration */}
+                          <div className="relative w-full h-32 flex items-center justify-center overflow-hidden shrink-0">
+                            <img
+                              src="/instructor_portal.png"
+                              alt="Instructor Portal Illustration"
+                              className="w-auto h-full max-h-[120px] object-contain group-hover:scale-105 transition-transform duration-300"
+                            />
                           </div>
-                          <div className="w-36 h-1.5 bg-amber-200/50 rounded-full mx-auto" />
                           
                           <div className="space-y-1.5 text-center">
                             <h4 className="font-extrabold text-slate-800 text-base">Instructor Partner</h4>
@@ -1014,17 +1011,14 @@ export default function Home() {
                         className="border border-slate-105 hover:border-emerald-200 bg-white hover:bg-slate-50/20 hover:shadow-xl transition-all duration-300 rounded-[24px] p-6 cursor-pointer flex flex-col justify-between group relative overflow-hidden"
                       >
                         <div className="space-y-4">
-                          {/* Shelf widget design */}
-                          <div className="relative w-24 h-24 mx-auto rounded-full bg-emerald-50 flex items-center justify-center border border-emerald-100 shrink-0">
-                            <BookOpen className="w-10 h-10 text-emerald-600 group-hover:scale-105 transition-transform" />
-                            <div className="absolute -left-4 bottom-2 w-8 h-8 rounded-lg bg-emerald-100/90 flex items-center justify-center border border-emerald-200 text-emerald-650 shadow-sm">
-                              <BookOpen className="w-4 h-4" />
-                            </div>
-                            <div className="absolute -right-4 bottom-2 w-8 h-8 rounded-lg bg-emerald-100/90 flex items-center justify-center border border-emerald-200 text-emerald-650 shadow-sm">
-                              <Check className="w-4 h-4" />
-                            </div>
+                          {/* Generated 3D Shelf Illustration */}
+                          <div className="relative w-full h-32 flex items-center justify-center overflow-hidden shrink-0">
+                            <img
+                              src="/student_portal.png"
+                              alt="Student Portal Illustration"
+                              className="w-auto h-full max-h-[120px] object-contain group-hover:scale-105 transition-transform duration-300"
+                            />
                           </div>
-                          <div className="w-36 h-1.5 bg-amber-200/50 rounded-full mx-auto" />
                           
                           <div className="space-y-1.5 text-center">
                             <h4 className="font-extrabold text-slate-800 text-base">Student Learner</h4>
