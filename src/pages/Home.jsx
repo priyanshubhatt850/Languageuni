@@ -248,6 +248,7 @@ export default function Home() {
         learning_interests: interests,
         avatar_url: avatarUrl
       });
+      await checkUserAuth();
       toast.success('Welcome to Global Tongue!');
       setShowAuthModal(false);
       navigate('/StudentDashboard');
@@ -1397,7 +1398,7 @@ export default function Home() {
                           <Button
                             onClick={handleCompleteOnboarding}
                             disabled={authLoading}
-                            className="flex-1 bg-emerald-605 hover:bg-emerald-700 text-white font-bold h-11 rounded-xl transition-all shadow-md shadow-emerald-600/15"
+                            className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold h-11 rounded-xl transition-all shadow-md shadow-emerald-600/15"
                           >
                             {authLoading ? 'Completing...' : 'Complete Profile'}
                           </Button>

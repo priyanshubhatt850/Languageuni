@@ -16,6 +16,7 @@ import {
   GraduationCap
 } from 'lucide-react';
 import { uploadImageToCloudinary } from '@/utils/cloudinaryUpload';
+import { useAuth } from '@/lib/AuthContext';
 
 const languagesList = [
   { name: 'English', flag: '🇬🇧' },
@@ -34,6 +35,7 @@ const interestOptions = ['Business', 'Travel', 'Conversation', 'Grammar', 'Exam 
 
 export default function StudentOnboarding() {
   const navigate = useNavigate();
+  const { checkUserAuth } = useAuth();
   const [user, setUser] = useState(null);
   const [selectedLanguages, setSelectedLanguages] = useState([]);
   const [interests, setInterests] = useState([]);
@@ -98,6 +100,7 @@ export default function StudentOnboarding() {
         learning_interests: interests,
         avatar_url: avatarUrl
       });
+      await checkUserAuth();
 
       toast.success('Welcome to Global Tongue!');
       navigate('/StudentDashboard');
