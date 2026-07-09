@@ -56,34 +56,32 @@ export default function InstructorDashboard() {
 
   useEffect(() => {
     const loadUser = async () => {
-      const userData = await WWClient.auth.me();
-      
-      // Check if instructor profile exists
-      const instructorProfiles = await WWClient.entities.InstructorProfile.filter({ user_id: userData.id });
-      if (instructorProfiles.length === 0) {
-        window.location.href = createPageUrl('InstructorOnboarding');
-        return;
+      const res = await WWClient.auth.getme();
+      if (res.success && res.data) {
+        setUser(res.data);
+      } else {
+        const userData = await WWClient.auth.me();
+        setUser(userData);
       }
-      
-      setUser(userData);
       setLoading(false);
     };
     loadUser();
   }, []);
 
-  const { data: instructorProfile } = useQuery({
-    queryKey: ['instructor-profile', user?.id],
-    queryFn: async () => {
-      const profiles = await WWClient.entities.InstructorProfile.filter({ user_id: user?.id });
-      return profiles[0];
-    },
-    enabled: !!user?.id
+  const { data: aggregateRes, isLoading: isAggLoading } = useQuery({
+    queryKey: ['instructor-dashboard-aggregate', user?._id || user?.id],
+    queryFn: () => WWClient.custom.get(`/aggregate/instructor-dashboard/${user?._id || user?.id}`),
+    enabled: !!(user?._id || user?.id),
   });
 
+  const aggregateData = aggregateRes?.data || {};
+  const instructorProfile = aggregateData.profile || {};
+  const stats = aggregateData.stats || {};
+
   const { data: courseLevels = [] } = useQuery({
-    queryKey: ['instructor-course-levels', user?.id],
-    queryFn: () => WWClient.entities.CourseLevel.filter({ instructor_id: user?.id }),
-    enabled: !!user?.id,
+    queryKey: ['instructor-course-levels', user?._id || user?.id],
+    queryFn: () => WWClient.entities.CourseLevel.filter({ instructor_id: user?._id || user?.id }),
+    enabled: !!(user?._id || user?.id),
     initialData: []
   });
 
@@ -111,9 +109,9 @@ export default function InstructorDashboard() {
   );
 
   const { data: notifications = [] } = useQuery({
-    queryKey: ['instructor-notifications', user?.id],
-    queryFn: () => WWClient.entities.Notification.filter({ user_id: user?.id }, '-created_date', 10),
-    enabled: !!user?.id,
+    queryKey: ['instructor-notifications', user?._id || user?.id],
+    queryFn: () => WWClient.entities.Notification.filter({ user_id: user?._id || user?.id }, '-created_date', 10),
+    enabled: !!(user?._id || user?.id),
     initialData: []
   });
 
@@ -127,17 +125,17 @@ export default function InstructorDashboard() {
     : 0;
 
   const getLanguageName = (languageId) => {
-    const lang = languages.find(l => l.id === languageId);
+    const lang = languages.find(l => (l._id || l.id) === languageId);
     return lang ? `${lang.flag} ${lang.name}` : 'Unknown';
   };
 
   const getUserName = (userId) => {
-    const user = allUsers.find(u => u.id === userId);
+    const user = allUsers.find(u => (u._id || u.id) === userId);
     return user?.full_name || 'Student';
   };
 
   const getCourseName = (courseId) => {
-    const course = courseLevels.find(c => c.id === courseId);
+    const course = courseLevels.find(c => (c._id || c.id) === courseId);
     if (!course) return 'Unknown Course';
     const langName = getLanguageName(course.language_id);
     return `${langName} - ${course.level_name}`;
@@ -147,7 +145,7 @@ export default function InstructorDashboard() {
     WWClient.auth.logout();
   };
 
-  if (loading) return <LoadingPage />;
+  if (loading || isAggLoading) return <LoadingPage />;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-violet-50/30 to-slate-50 dark:from-slate-950 dark:via-violet-950/20 dark:to-slate-950">

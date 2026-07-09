@@ -78,56 +78,42 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     const loadUser = async () => {
-      const userData = await WWClient.auth.me();
-      setUser(userData);
+      const res = await WWClient.auth.getme();
+      if (res.success && res.data) {
+        setUser(res.data);
+      } else {
+        const userData = await WWClient.auth.me();
+        setUser(userData);
+      }
       setLoading(false);
     };
     loadUser();
   }, []);
 
-  const { data: allUsers = [] } = useQuery({
-    queryKey: ['all-users'],
-    queryFn: () => WWClient.entities.User.list(),
-    initialData: []
-  });
-
-  const { data: courses = [] } = useQuery({
-    queryKey: ['all-courses'],
-    queryFn: () => WWClient.entities.Course.list(),
-    initialData: []
-  });
-
-  const { data: enrollments = [] } = useQuery({
-    queryKey: ['all-enrollments'],
-    queryFn: () => WWClient.entities.Enrollment.list(),
-    initialData: []
-  });
-
-  const { data: instructorProfiles = [] } = useQuery({
-    queryKey: ['all-instructors'],
-    queryFn: () => WWClient.entities.InstructorProfile.list(),
-    initialData: []
-  });
-
-  const { data: notifications = [] } = useQuery({
-    queryKey: ['admin-notifications', user?._id],
-    queryFn: () => WWClient.entities.Notification.filter({ user_id: user?._id }, '-created_date', 10),
+  const { data: aggregateRes, isLoading: isAggLoading } = useQuery({
+    queryKey: ['admin-dashboard-aggregate', user?._id],
+    queryFn: () => WWClient.custom.get('/aggregate/admin-dashboard'),
     enabled: !!user?._id,
-    initialData: []
-});
+  });
 
-  const students = allUsers.filter(u => u.role === 'student' || !u.role);
-  const instructors = allUsers.filter(u => u.role === 'instructor');
-  const pendingInstructors = instructorProfiles.filter(p => p.verification_status === 'pending');
-  const totalRevenue = enrollments
-    .filter(e => e.payment_status === 'completed')
-    .reduce((sum, e) => sum + (e.payment_amount || 0), 0);
+  const dashboardData = aggregateRes?.data || {};
+  const stats = dashboardData.stats || {};
+  const recentUsers = dashboardData.recent_users || [];
+  const recentCourses = dashboardData.recent_courses || [];
+  const recentEnrollments = dashboardData.recent_enrollments || [];
+  const notifications = dashboardData.notifications || [];
+
+  const totalStudentsCount = stats.total_students || 0;
+  const totalInstructorsCount = stats.total_instructors || 0;
+  const totalCoursesCount = stats.total_courses || 0;
+  const pendingInstructorsCount = stats.pending_instructors || 0;
+  const totalRevenue = stats.total_revenue || 0;
 
   const handleLogout = () => {
     WWClient.auth.logout();
   };
 
-  if (loading) return <LoadingPage />;
+  if (loading || isAggLoading) return <LoadingPage />;
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
@@ -155,7 +141,7 @@ export default function AdminDashboard() {
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
             <StatsCard
               title="Total Students"
-              value={students.length}
+              value={totalStudentsCount}
               icon={GraduationCap}
               color="violet"
               change="+18% this month"
@@ -164,18 +150,18 @@ export default function AdminDashboard() {
             />
             <StatsCard
               title="Instructors"
-              value={instructors.length}
+              value={totalInstructorsCount}
               icon={UserCheck}
               color="blue"
-              change={`${pendingInstructors.length} pending`}
+              change={`${pendingInstructorsCount} pending`}
               delay={1}
             />
             <StatsCard
               title="Total Courses"
-              value={courses.length}
+              value={totalCoursesCount}
               icon={BookOpen}
               color="green"
-              change={`${courses.filter(c => c.status === 'published').length} published`}
+              change={`${totalCoursesCount} total`}
               changeType="increase"
               delay={2}
             />
@@ -191,7 +177,7 @@ export default function AdminDashboard() {
           </div>
 
           {/* Alerts */}
-          {pendingInstructors.length > 0 && (
+          {pendingInstructorsCount > 0 && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -202,7 +188,7 @@ export default function AdminDashboard() {
                   <div className="flex items-center gap-3">
                     <AlertCircle className="w-5 h-5 text-amber-600" />
                     <p className="text-amber-800 dark:text-amber-200">
-                      <strong>{pendingInstructors.length}</strong> instructor applications pending review
+                      <strong>{pendingInstructorsCount}</strong> instructor applications pending review
                     </p>
                   </div>
                   <Link to={createPageUrl('AdminInstructors')}>
@@ -336,8 +322,8 @@ export default function AdminDashboard() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {courses.slice(0, 4).map((course) => (
-                    <div key={course.id} className="flex items-center gap-4">
+                  {recentCourses.slice(0, 4).map((course) => (
+                    <div key={course.id || course._id} className="flex items-center gap-4">
                       <div className="w-12 h-12 rounded-lg bg-slate-100 dark:bg-slate-700 overflow-hidden">
                         <img
                           src={course.thumbnail_url || `https://images.unsplash.com/photo-1546410531-bb4caa6b424d?w=100&h=100&fit=crop`}
@@ -349,7 +335,7 @@ export default function AdminDashboard() {
                         <p className="font-medium text-slate-900 dark:text-white truncate">
                           {course.title}
                         </p>
-                        <p className="text-sm text-slate-500">{course.instructor_name}</p>
+                        <p className="text-sm text-slate-500">{course.instructor_name || 'Admin'}</p>
                       </div>
                       <Badge variant="secondary" className={
                         course.status === 'published' 

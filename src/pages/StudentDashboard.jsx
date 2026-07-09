@@ -39,10 +39,14 @@ export default function StudentDashboard() {
 
   useEffect(() => {
     const loadUser = async () => {
-      const userData = await WWClient.auth.me();
+      const res = await WWClient.auth.getme();
+      let userData = res.data;
+      if (!userData) {
+        userData = await WWClient.auth.me();
+      }
       
       // Check if onboarding is completed
-      if (!userData.onboarding_completed) {
+      if (userData && !userData.onboarding_completed) {
         window.location.href = createPageUrl('StudentOnboarding');
         return;
       }
@@ -53,15 +57,23 @@ export default function StudentDashboard() {
     loadUser();
   }, []);
 
-  const { data: enrollments = [] } = useQuery({
-    queryKey: ['my-enrollments', user?._id],
-    queryFn: () => WWClient.entities.Enrollment.filter({ user_id: user?._id }),
+  const { data: aggregateRes, isLoading: isAggLoading } = useQuery({
+    queryKey: ['student-dashboard-aggregate', user?._id],
+    queryFn: () => WWClient.custom.get(`/aggregate/student-progress/${user?._id}`),
     enabled: !!user?._id,
-    initialData: []
   });
 
+  const dashboardData = aggregateRes?.data || {};
+  const enrollments = dashboardData.enrollments || [];
+  const stats = dashboardData.stats || {};
+
+  const totalCourses = stats.total_courses || 0;
+  const inProgressCount = stats.in_progress || 0;
+  const completedCount = stats.completed || 0;
+  const certificatesCount = stats.total_certificates || 0;
+
   const { data: allLessons = [] } = useQuery({
-    queryKey: ['lessons-for-live-classes'],
+    queryKey: ['lessons-for-live-classes', enrollments],
     queryFn: async () => {
       if (enrollments.length === 0) return [];
       const courseIds = [...new Set(enrollments.map(e => e.course_id))];
@@ -88,7 +100,7 @@ export default function StudentDashboard() {
       const points = await WWClient.entities.UserPoints.filter({ user_id: user?._id });
       return points[0];
     },
-    enabled: !!user?.id
+    enabled: !!(user?._id || user?.id)
   });
 
   const { data: userBadges = [] } = useQuery({
@@ -132,7 +144,7 @@ export default function StudentDashboard() {
     WWClient.auth.logout();
   };
 
-  if (loading) return <LoadingPage />;
+  if (loading || isAggLoading) return <LoadingPage />;
 
   return (
     <div className="min-h-screen bg-slate-50/50 dark:bg-slate-950 transition-colors duration-300">
@@ -419,7 +431,7 @@ export default function StudentDashboard() {
                     </div>
                     <div>
                       <p className="text-orange-105 text-xs font-bold uppercase tracking-wider">Active Streak</p>
-                      <p className="text-3xl font-black tracking-tight">0 Days</p>
+                      <p className="text-3xl font-black tracking-tight">{user?.streak_count || 0} Days</p>
                     </div>
                   </div>
                   <p className="mt-4 text-orange-100 text-xs font-medium leading-relaxed">

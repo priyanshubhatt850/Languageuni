@@ -85,9 +85,51 @@ export default function InstructorCourses() {
 
   useEffect(() => {
     const loadUser = async () => {
-      const userData = await WWClient.auth.me();
+      const res = await WWClient.auth.getme();
+      let userData = res.data;
+      if (!userData) {
+        userData = await WWClient.auth.me();
+      }
       setUser(userData);
       setLoading(false);
+
+      if (userData) {
+        try {
+          const activeRes = await WWClient.custom.get(`/teachingsession/active/${userData._id || userData.id}`);
+          if (activeRes.success && activeRes.data) {
+            const activeSession = activeRes.data;
+            const levelId = activeSession.course_level_id;
+            const startTime = new Date(activeSession.start_time).getTime();
+            const elapsedSeconds = Math.floor((Date.now() - startTime) / 1000);
+
+            setActiveTimers(prev => ({
+              ...prev,
+              [levelId]: {
+                sessionId: activeSession._id || activeSession.id,
+                startTime,
+                elapsedSeconds,
+                meetLink: activeSession.meet_link
+              }
+            }));
+
+            const interval = setInterval(() => {
+              setActiveTimers(prev => {
+                if (!prev[levelId]) return prev;
+                return {
+                  ...prev,
+                  [levelId]: {
+                    ...prev[levelId],
+                    elapsedSeconds: Math.floor((Date.now() - startTime) / 1000)
+                  }
+                };
+              });
+            }, 1000);
+            setTimerIntervals(prev => ({ ...prev, [levelId]: interval }));
+          }
+        } catch (err) {
+          console.error("Failed to restore active class timer:", err);
+        }
+      }
     };
     loadUser();
   }, []);
@@ -217,16 +259,13 @@ export default function InstructorCourses() {
 
   const startClassMutation = useMutation({
     mutationFn: async ({ levelId, levelName, startTime }) => {
-      // Create session first
-      const session = await WWClient.entities.TeachingSession.create({
-        instructor_id: user.id,
+      // Call backend start class lifecycle API
+      const res = await WWClient.custom.post('/teachingsession/start-class', {
+        instructor_id: user._id || user.id,
         course_level_id: levelId,
-        session_date: new Date().toISOString(),
-        hours_taught: 0,
-        hourly_rate: instructorProfile?.hourly_rate || 0,
-        amount_earned: 0,
-        status: 'pending'
+        hourly_rate: instructorProfile?.hourly_rate || 0
       });
+      const session = res.data;
 
       // Try to create meet link
       let meetLink = null;
@@ -235,8 +274,8 @@ export default function InstructorCourses() {
         meetLink = meetResult.meetLink;
         
         // Update session with meet link
-        if (meetLink) {
-          await WWClient.entities.TeachingSession.update(session.id, {
+        if (meetLink && session) {
+          await WWClient.entities.TeachingSession.update(session._id || session.id, {
             meet_link: meetLink
           });
         }
@@ -244,7 +283,7 @@ export default function InstructorCourses() {
         console.error('Could not create meet link:', error);
       }
 
-      return { levelId, sessionId: session.id, startTime, meetLink };
+      return { levelId, sessionId: session._id || session.id, startTime, meetLink };
     },
     onSuccess: ({ levelId, sessionId, startTime, meetLink }) => {
       setActiveTimers(prev => ({
@@ -269,17 +308,11 @@ export default function InstructorCourses() {
   });
 
   const endClassMutation = useMutation({
-    mutationFn: async ({ levelId, sessionId, elapsedSeconds }) => {
-      const hoursWorked = elapsedSeconds / 3600;
-      const hourlyRate = instructorProfile?.hourly_rate || 0;
-      const amount = hoursWorked * hourlyRate;
-      
-      await WWClient.entities.TeachingSession.update(sessionId, {
-        hours_taught: hoursWorked,
-        amount_earned: amount
-      });
-
-      return { levelId, hoursWorked, amount };
+    mutationFn: async ({ levelId, sessionId }) => {
+      // Call backend end class lifecycle API
+      const res = await WWClient.custom.post(`/teachingsession/end-class/${sessionId}`);
+      const session = res.data;
+      return { levelId, hoursWorked: session.hours_taught || 0, amount: session.amount_earned || 0 };
     },
     onSuccess: ({ levelId, hoursWorked, amount }) => {
       if (timerIntervals[levelId]) {
@@ -308,8 +341,7 @@ export default function InstructorCourses() {
     if (timer) {
       endClassMutation.mutate({
         levelId,
-        sessionId: timer.sessionId,
-        elapsedSeconds: timer.elapsedSeconds
+        sessionId: timer.sessionId
       });
     }
   };

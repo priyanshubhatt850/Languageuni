@@ -9,7 +9,7 @@ function createClient(config) {
   } = config;
 
   const api = axios.create({
-    baseURL: serverUrl
+    baseURL: serverUrl || 'http://localhost:3000'
   });
 
   /* ================= TOKEN ================= */
@@ -319,11 +319,21 @@ function createClient(config) {
     }
   };
 
+  /* ================= CUSTOM ================= */
+
+  const custom = {
+    get: (url, config) => api.get(url, config).then(r => r.data),
+    post: (url, data, config) => api.post(url, data, config).then(r => r.data),
+    put: (url, data, config) => api.put(url, data, config).then(r => r.data),
+    delete: (url, config) => api.delete(url, config).then(r => r.data)
+  };
+
   return {
     entities,
     auth,
     functions,
     integrations,
+    custom,
     setToken,
     getConfig: () => ({ serverUrl, appId, env, requiresAuth })
   };

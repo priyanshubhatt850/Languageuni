@@ -60,27 +60,46 @@ export default function Messages() {
       }
       return await WWClient.entities.ChatConversation.filter({ student_id: user?._id }, '-last_message_at');
     },
-    enabled: !!user?.id,
+    enabled: !!(user?._id || user?.id),
     initialData: []
   });
 
   const { data: enrollments = [] } = useQuery({
     queryKey: ['student-enrollments', user?._id],
-    queryFn: () => WWClient.entities.Enrollment.filter({ user_id: user?.id, status: 'active' }),
-    enabled: !!user?.id && user?.role !== 'admin',
+    queryFn: () => WWClient.entities.Enrollment.filter({ user_id: user?._id || user?.id, status: 'active' }),
+    enabled: !!(user?._id || user?.id) && user?.role !== 'admin',
+    initialData: []
+  });
+
+  const { data: allUsers = [] } = useQuery({
+    queryKey: ['all-users-chat'],
+    queryFn: () => WWClient.entities.User.list(),
     initialData: []
   });
 
   const { data: courseLevels = [] } = useQuery({
-    queryKey: ['enrolled-courses', enrollments],
-    queryFn: async () => {
-      const courseIds = enrollments.map(e => e.course_id);
-      if (courseIds.length === 0) return [];
-      return await WWClient.entities.CourseLevel.filter({ id: { $in: courseIds } });
-    },
-    enabled: enrollments.length > 0,
+    queryKey: ['all-course-levels-chat'],
+    queryFn: () => WWClient.entities.CourseLevel.list(),
     initialData: []
   });
+
+  const userMap = React.useMemo(() => {
+    const map = {};
+    allUsers.forEach(u => {
+      const idStr = u._id || u.id;
+      if (idStr) map[idStr.toString()] = u;
+    });
+    return map;
+  }, [allUsers]);
+
+  const courseMap = React.useMemo(() => {
+    const map = {};
+    courseLevels.forEach(c => {
+      const idStr = c._id || c.id;
+      if (idStr) map[idStr.toString()] = c;
+    });
+    return map;
+  }, [courseLevels]);
 
   const { data: messages = [] } = useQuery({
     queryKey: ['chat-messages', selectedConversation?._id],
@@ -110,7 +129,7 @@ export default function Messages() {
   const { data: notifications = [] } = useQuery({
     queryKey: ['my-notifications', user?._id],
     queryFn: () => WWClient.entities.Notification.filter({ user_id: user?._id }, '-created_date', 10),
-    enabled: !!user?.id,
+    enabled: !!(user?._id || user?.id),
     initialData: []
   });
 
@@ -331,41 +350,56 @@ export default function Messages() {
                         const StatusIcon = statusIcons[conv.status];
                         const unreadCount = isAdmin ? conv.unread_admin_count : conv.unread_student_count;
                         
+                        const student = userMap[conv.student_id];
+                        const course = courseMap[conv.course_id];
+                        const displayName = isAdmin ? (student?.full_name || 'Student') : conv.subject;
+                        const subtitle = isAdmin ? conv.subject : (course?.level_name ? `Course: ${course.level_name}` : 'General support');
+                        const initials = student?.full_name ? student.full_name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) : 'S';
+                        const avatarUrl = student?.avatar_url || student?.profile_image_url;
+
                         return (
                           <button
                             key={conv._id || conv.id}
                             onClick={() => setSelectedConversation(conv)}
                             className={cn(
-                              "w-full p-4 flex items-start gap-3 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors text-left",
-                              selectedConversation?._id === conv._id || selectedConversation?.id === conv.id && "bg-violet-50 dark:bg-violet-900/20"
+                              "w-full p-4 flex items-start gap-3 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors text-left border-b border-slate-100 dark:border-slate-800",
+                              (selectedConversation?._id === conv._id || selectedConversation?.id === conv.id) && "bg-violet-50/70 dark:bg-violet-950/20"
                             )}
                           >
-                            <div className="w-10 h-10 rounded-full bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center flex-shrink-0">
-                              <TypeIcon className="w-5 h-5 text-violet-600 dark:text-violet-400" />
-                            </div>
+                            <Avatar className="w-10 h-10 rounded-full border border-slate-200/50 dark:border-slate-700/50 flex-shrink-0">
+                              {avatarUrl ? (
+                                <AvatarImage src={avatarUrl} alt={student?.full_name} className="object-cover" />
+                              ) : null}
+                              <AvatarFallback className="bg-violet-100 dark:bg-violet-900/40 text-violet-700 dark:text-violet-300 text-xs font-bold">
+                                {isAdmin ? initials : <TypeIcon className="w-4 h-4" />}
+                              </AvatarFallback>
+                            </Avatar>
                             <div className="flex-1 min-w-0">
                               <div className="flex items-start justify-between mb-1">
-                                <p className="font-semibold text-slate-900 dark:text-white truncate pr-2">
-                                  {conv.subject}
+                                <p className="font-semibold text-sm text-slate-900 dark:text-white truncate pr-2">
+                                  {displayName}
                                 </p>
                                 {unreadCount > 0 && (
-                                  <Badge className="bg-violet-600 text-white shrink-0">
+                                  <Badge className="bg-violet-600 hover:bg-violet-600 text-white shrink-0 text-[10px] px-1.5 py-0.5 rounded-full">
                                     {unreadCount}
                                   </Badge>
                                 )}
                               </div>
-                              <div className="flex items-center gap-2 mb-1">
-                                <Badge variant="outline" className={typeColors[conv.type]}>
+                              <p className="text-xs text-slate-500 dark:text-slate-400 truncate mb-2">
+                                {subtitle}
+                              </p>
+                              <div className="flex items-center gap-1.5">
+                                <Badge variant="outline" className={cn("text-[10px] px-1.5 py-0 rounded-md shrink-0 font-medium", typeColors[conv.type])}>
                                   {conv.type}
                                 </Badge>
-                                <Badge variant="outline" className="text-xs">
-                                  <StatusIcon className="w-3 h-3 mr-1" />
+                                <Badge variant="outline" className="text-[10px] px-1.5 py-0 rounded-md shrink-0 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-700 font-medium">
+                                  <StatusIcon className="w-2.5 h-2.5 mr-1" />
                                   {conv.status}
                                 </Badge>
+                                <span className="text-[10px] text-slate-400 ml-auto shrink-0 font-medium">
+                                  {conv.last_message_at && format(new Date(conv.last_message_at), 'MMM d, h:mm a')}
+                                </span>
                               </div>
-                              <p className="text-xs text-slate-500">
-                                {conv.last_message_at && format(new Date(conv.last_message_at), 'MMM d, h:mm a')}
-                              </p>
                             </div>
                           </button>
                         );
@@ -380,10 +414,17 @@ export default function Messages() {
                 "flex-1 flex flex-col",
                 !selectedConversation && "hidden md:flex"
               )}>
-                {selectedConversation ? (
-                  <>
-                    <div className="p-4 border-b border-slate-200 dark:border-slate-700">
-                      <div className="flex items-center justify-between">
+                {selectedConversation ? (() => {
+                  const activeStudent = userMap[selectedConversation.student_id];
+                  const activeCourse = courseMap[selectedConversation.course_id];
+                  const headerTitle = isAdmin ? (activeStudent?.full_name || 'Student') : selectedConversation.subject;
+                  const headerSubtitle = isAdmin ? selectedConversation.subject : (activeCourse?.level_name ? `Course: ${activeCourse.level_name}` : 'General support');
+                  const headerAvatarUrl = activeStudent?.avatar_url || activeStudent?.profile_image_url;
+                  const headerInitials = activeStudent?.full_name ? activeStudent.full_name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) : 'S';
+
+                  return (
+                    <>
+                      <div className="p-4 border-b border-slate-200 dark:border-slate-700/60 flex items-center justify-between">
                         <div className="flex items-center gap-3">
                           <Button
                             variant="ghost"
@@ -393,40 +434,56 @@ export default function Messages() {
                           >
                             <ArrowLeft className="w-5 h-5" />
                           </Button>
+                          
+                          <Avatar className="w-10 h-10 rounded-full border border-slate-200/50 dark:border-slate-700/50 flex-shrink-0">
+                            {headerAvatarUrl ? (
+                              <AvatarImage src={headerAvatarUrl} alt={activeStudent?.full_name} className="object-cover" />
+                            ) : null}
+                            <AvatarFallback className="bg-violet-100 dark:bg-violet-900/40 text-violet-700 dark:text-violet-300 text-xs font-bold">
+                              {isAdmin ? headerInitials : <MessageSquare className="w-4 h-4" />}
+                            </AvatarFallback>
+                          </Avatar>
+
                           <div>
-                            <p className="font-semibold text-slate-900 dark:text-white">
-                              {selectedConversation.subject}
+                            <p className="font-semibold text-sm text-slate-900 dark:text-white">
+                              {headerTitle}
                             </p>
-                            <div className="flex items-center gap-2 mt-1">
-                              <Badge variant="outline" className={typeColors[selectedConversation.type]}>
-                                {selectedConversation.type}
-                              </Badge>
-                              <Badge variant="outline">
-                                {selectedConversation.status}
-                              </Badge>
-                            </div>
+                            <p className="text-xs text-slate-500 dark:text-slate-400">
+                              {headerSubtitle}
+                            </p>
                           </div>
                         </div>
-                        {isAdmin && (
-                          <Select
-                            value={selectedConversation.status}
-                            onValueChange={async (status) => {
-                              await WWClient.entities.ChatConversation.update(selectedConversation._id || selectedConversation.id, { status });
-                              queryClient.invalidateQueries(['chat-conversations']);
-                            }}
-                          >
-                            <SelectTrigger className="w-32">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="open">Open</SelectItem>
-                              <SelectItem value="resolved">Resolved</SelectItem>
-                              <SelectItem value="closed">Closed</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        )}
+                        
+                        <div className="flex items-center gap-3">
+                          <div className="hidden sm:flex items-center gap-1.5">
+                            <Badge variant="outline" className={cn("text-[10px] font-medium px-2 py-0.5 rounded-md", typeColors[selectedConversation.type])}>
+                              {selectedConversation.type}
+                            </Badge>
+                            <Badge variant="outline" className="text-[10px] font-medium px-2 py-0.5 rounded-md text-slate-500 border-slate-200 dark:border-slate-700">
+                              {selectedConversation.status}
+                            </Badge>
+                          </div>
+                          
+                          {isAdmin && (
+                            <Select
+                              value={selectedConversation.status}
+                              onValueChange={async (status) => {
+                                await WWClient.entities.ChatConversation.update(selectedConversation._id || selectedConversation.id, { status });
+                                queryClient.invalidateQueries(['chat-conversations']);
+                              }}
+                            >
+                              <SelectTrigger className="w-32">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="open">Open</SelectItem>
+                                <SelectItem value="resolved">Resolved</SelectItem>
+                                <SelectItem value="closed">Closed</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          )}
+                        </div>
                       </div>
-                    </div>
 
                     <ScrollArea className="flex-1 p-4">
                       <div className="space-y-4">
@@ -443,34 +500,45 @@ export default function Messages() {
                                   isMine ? "justify-end" : "justify-start"
                                 )}
                               >
-                                {!isMine && (
-                                  <Avatar className="w-8 h-8">
-                                    <AvatarFallback className="bg-violet-100 text-violet-700 text-xs">
-                                      A
-                                    </AvatarFallback>
-                                  </Avatar>
-                                )}
+                                {!isMine && (() => {
+                                  const sender = userMap[msg.sender_id];
+                                  const senderInitials = sender?.full_name ? sender.full_name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) : (isAdmin ? 'S' : 'AD');
+                                  const senderAvatar = sender?.avatar_url || sender?.profile_image_url;
+                                  return (
+                                    <Avatar className="w-8 h-8 rounded-full border border-slate-200/50 dark:border-slate-700/50">
+                                      {senderAvatar ? <AvatarImage src={senderAvatar} alt={sender?.full_name} className="object-cover" /> : null}
+                                      <AvatarFallback className="bg-violet-100 dark:bg-violet-900/40 text-violet-700 dark:text-violet-300 text-[10px] font-bold">
+                                        {senderInitials}
+                                      </AvatarFallback>
+                                    </Avatar>
+                                  );
+                                })()}
                                 <div className={cn(
                                   "max-w-[70%] rounded-2xl px-4 py-3",
                                   isMine 
-                                    ? "bg-violet-600 text-white rounded-br-sm"
-                                    : "bg-slate-100 dark:bg-slate-700 text-slate-900 dark:text-white rounded-bl-sm"
+                                    ? "bg-violet-600 text-white rounded-br-sm shadow-sm"
+                                    : "bg-slate-100 dark:bg-slate-700/50 text-slate-900 dark:text-white rounded-bl-sm border border-slate-200/30 dark:border-slate-700/30"
                                 )}>
-                                  <p className="whitespace-pre-wrap">{msg.message}</p>
+                                  <p className="whitespace-pre-wrap text-sm leading-relaxed">{msg.message}</p>
                                   <p className={cn(
-                                    "text-xs mt-2",
-                                    isMine ? "text-violet-200" : "text-slate-500"
+                                    "text-[10px] mt-1.5 font-medium",
+                                    isMine ? "text-violet-200" : "text-slate-400 dark:text-slate-500"
                                   )}>
                                     {format(new Date(msg.created_date), 'MMM d, h:mm a')}
                                   </p>
                                 </div>
-                                {isMine && (
-                                  <Avatar className="w-8 h-8">
-                                    <AvatarFallback className="bg-blue-100 text-blue-700 text-xs">
-                                      {user?.full_name?.charAt(0) || 'U'}
-                                    </AvatarFallback>
-                                  </Avatar>
-                                )}
+                                {isMine && (() => {
+                                  const myInitials = user?.full_name ? user.full_name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) : 'U';
+                                  const myAvatar = user?.avatar_url || user?.profile_image_url;
+                                  return (
+                                    <Avatar className="w-8 h-8 rounded-full border border-slate-200/50 dark:border-slate-700/50">
+                                      {myAvatar ? <AvatarImage src={myAvatar} alt={user?.full_name} className="object-cover" /> : null}
+                                      <AvatarFallback className="bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-[10px] font-bold">
+                                        {myInitials}
+                                      </AvatarFallback>
+                                    </Avatar>
+                                  );
+                                })()}
                               </motion.div>
                             );
                           })}
@@ -504,7 +572,8 @@ export default function Messages() {
                       </div>
                     </div>
                   </>
-                ) : (
+                );
+              })() : (
                   <div className="flex-1 flex items-center justify-center">
                     <EmptyState
                       icon={MessageSquare}
