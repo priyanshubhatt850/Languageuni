@@ -124,8 +124,8 @@ export default function AdminEnrollments() {
   });
 
   const filteredEnrollments = enrollments.filter(enrollment => {
-    const student = users.find(u => u.id === enrollment.user_id);
-    const course = courselevels.find(c => c.id === enrollment.course_id);
+    const student = users.find(u => (u._id || u.id) === enrollment.user_id);
+    const course = courselevels.find(c => (c._id || c.id) === enrollment.course_id);
     
     const searchLower = searchTerm.toLowerCase();
     return !searchTerm || 
@@ -155,7 +155,7 @@ export default function AdminEnrollments() {
   const handleSaveChanges = () => {
     if (!editingEnrollment) return;
     updateEnrollmentMutation.mutate({
-      id: editingEnrollment.id,
+      id: editingEnrollment._id || editingEnrollment.id,
       start_date: editFormData.start_date,
       end_date: editFormData.end_date
     });
@@ -169,7 +169,7 @@ export default function AdminEnrollments() {
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
-      <Sidebar userRole="admin" currentPage="AdminStudents" onLogout={handleLogout} />
+      <Sidebar userRole="admin" currentPage="AdminEnrollments" onLogout={handleLogout} />
       
       <div className="md:pl-[260px]">
         <Header user={user} notifications={notifications} />
@@ -227,11 +227,12 @@ export default function AdminEnrollments() {
                     </TableRow>
                   ) : (
                     paginatedEnrollments.map((enrollment) => {
-                      const student = users.find(u => u.id === enrollment.user_id);
-                      const course = courselevels.find(c => c.id === enrollment.course_id);
+                      const student = users.find(u => (u._id || u.id) === enrollment.user_id);
+                      const course = courselevels.find(c => (c._id || c.id) === enrollment.course_id);
+                      const lang = course ? languages.find(l => (l._id || l.id) === course.language_id) : null;
                       
                       return (
-                        <TableRow key={enrollment.id}>
+                        <TableRow key={enrollment._id || enrollment.id}>
                           <TableCell>
                             <div>
                               <p className="font-medium text-slate-900 dark:text-white">
@@ -244,7 +245,7 @@ export default function AdminEnrollments() {
                             <div>
                               <p className="font-medium">{course?.level_name || 'N/A'}</p>
                               <p className="text-xs text-slate-500">
-                                {languages.find(l => l.id === course?.language_id)?.flag} {languages.find(l => l.id === course?.language_id)?.name}
+                                {lang ? `${lang.flag} ${lang.name}` : ''}
                               </p>
                             </div>
                           </TableCell>
@@ -279,7 +280,7 @@ export default function AdminEnrollments() {
                                 </Button>
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align="end">
-                                <Dialog open={editingEnrollment?.id === enrollment.id}>
+                                <Dialog open={(editingEnrollment?._id || editingEnrollment?.id) === (enrollment._id || enrollment.id)}>
                                   <DialogTrigger asChild>
                                     <DropdownMenuItem onClick={() => handleEditClick(enrollment)}>
                                       <Edit2 className="w-4 h-4 mr-2" />
@@ -330,7 +331,7 @@ export default function AdminEnrollments() {
                                   </DialogContent>
                                 </Dialog>
                                 <DropdownMenuItem 
-                                  onClick={() => deleteEnrollmentMutation.mutate(enrollment.id)}
+                                  onClick={() => deleteEnrollmentMutation.mutate(enrollment._id || enrollment.id)}
                                   className="text-red-600"
                                 >
                                   <Trash2 className="w-4 h-4 mr-2" />
