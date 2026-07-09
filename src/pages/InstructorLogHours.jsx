@@ -216,7 +216,7 @@ export default function InstructorLogHours() {
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
-      <Sidebar userRole="instructor" currentPage="InstructorEarnings" onLogout={handleLogout} />
+      <Sidebar userRole="instructor" currentPage="InstructorLogHours" onLogout={handleLogout} />
       
       <div className="md:pl-[260px]">
         <Header user={user} />

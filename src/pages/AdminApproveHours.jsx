@@ -159,7 +159,7 @@ export default function AdminApproveHours() {
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
-      <Sidebar userRole="admin" currentPage="AdminEarnings" onLogout={handleLogout} />
+      <Sidebar userRole="admin" currentPage="AdminApproveHours" onLogout={handleLogout} />
       
       <div className="md:pl-[260px]">
         <Header user={user} notifications={notifications} />

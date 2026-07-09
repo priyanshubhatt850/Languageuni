@@ -289,7 +289,7 @@ export default function Home() {
     initialData: []
   });
 
-  const languagesToShow = isAuthenticated ? languages : dummyLanguages;
+  const languagesToShow = languages && languages.length > 0 ? languages : dummyLanguages;
 
   const { data: a1Levels = [] } = useQuery({
     queryKey: ['a1-levels'],
@@ -300,7 +300,7 @@ export default function Home() {
     initialData: []
   });
 
-  const coursetoshow = isAuthenticated ? a1Levels : dummyCourses;
+  const coursetoshow = a1Levels && a1Levels.length > 0 ? a1Levels : dummyCourses;
 
   const openPortal = () => {
     setAuthStep('role');

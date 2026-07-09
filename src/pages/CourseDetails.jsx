@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { WWClient } from '@/api/WWClient'
+import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -57,6 +58,37 @@ export default function CourseDetails() {
   const [ratingValue, setRatingValue] = useState(5);
   const [ratingComment, setRatingComment] = useState('');
   const queryClient = useQueryClient();
+  
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [authLoading, setAuthLoading] = useState(false);
+
+  const handleGoogleLoginSuccess = async (credentialResponse) => {
+    try {
+      setAuthLoading(true);
+      const data = await WWClient.functions.invoke('verifyGoogleToken', {
+        googletoken: credentialResponse.credential,
+        service_type: 'student'
+      });
+
+      if (data?.success) {
+        setIsAuthenticated(true);
+        const userData = await WWClient.auth.me();
+        setUser(userData);
+        setShowAuthModal(false);
+        toast.success('Signed in successfully!');
+        queryClient.invalidateQueries(['my-enrollment', courseId]);
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error('Google login failed. Please try again.');
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
+  const handleGoogleLoginError = () => {
+    toast.error('Google login failed. Please try again.');
+  };
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -188,7 +220,7 @@ export default function CourseDetails() {
 
   const handleEnroll = () => {
     if (!isAuthenticated) {
-      WWClient.auth.redirectToLogin(window.location.href);
+      setShowAuthModal(true);
       return;
     }
     enrollMutation.mutate();
@@ -203,7 +235,8 @@ export default function CourseDetails() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50/50 dark:bg-slate-950 transition-colors duration-300">
+    <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
+      <div className="min-h-screen bg-slate-50/50 dark:bg-slate-950 transition-colors duration-300">
       {/* Header */}
       <div className="bg-white/80 dark:bg-slate-950/80 border-b border-slate-200/65 dark:border-slate-900/65 sticky top-0 z-30 backdrop-blur-xl">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -801,6 +834,43 @@ export default function CourseDetails() {
           </div>
         </DialogContent>
       </Dialog>
+      {/* Auth Dialog */}
+      <Dialog open={showAuthModal} onOpenChange={setShowAuthModal}>
+        <DialogContent className="w-[92vw] max-w-sm border border-slate-202 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-white rounded-2xl p-6 shadow-xl">
+          <DialogHeader className="pb-4">
+            <DialogTitle className="flex items-center gap-2.5 text-base font-bold text-left">
+              <div className="w-8 h-8 rounded-lg bg-violet-50 text-violet-605 dark:bg-violet-950/30 dark:text-violet-400 border border-violet-100 dark:border-violet-900/30 flex items-center justify-center shrink-0">
+                <GraduationCap className="w-4.5 h-4.5" />
+              </div>
+              <span>Sign In to Enroll</span>
+            </DialogTitle>
+            <DialogDescription className="text-slate-505 dark:text-slate-400 text-xs text-left pt-2 font-medium">
+              Sign in with Google as a student to purchase and access this course.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-2 flex flex-col items-center">
+            <div className="flex justify-center w-full min-h-[44px]">
+              <GoogleLogin
+                onSuccess={handleGoogleLoginSuccess}
+                onError={handleGoogleLoginError}
+                theme="outline"
+                size="large"
+                width="280px"
+              />
+            </div>
+
+            <Button
+              variant="ghost"
+              onClick={() => setShowAuthModal(false)}
+              className="w-full max-w-[280px] text-xs font-bold text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-105 dark:hover:bg-slate-800 rounded-xl h-11 border border-slate-200 dark:border-slate-800"
+            >
+              Cancel
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
+    </GoogleOAuthProvider>
   );
 }

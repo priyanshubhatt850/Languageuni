@@ -357,9 +357,9 @@ export default function CourseCatalog() {
                 className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"
               >
                 {sortedLevels.map((level, index) => {
-                  const language = languages.find(l => l.id === level.language_id);
+                  const language = languages.find(l => l._id === level.language_id);
                   const courseData = {
-                    id: level.id,
+                    _id: level._id,
                     title: `${language?.name || 'Language'} - ${level.level_name}`,
                     description: level.description || 'Comprehensive language course covering grammatical structures, speech patterns, and custom vocabulary logs.',
                     language: language?.name || '',
@@ -375,7 +375,7 @@ export default function CourseCatalog() {
                   };
                   return (
                     <CourseCard 
-                      key={level.id}
+                      key={level._id}
                       course={courseData}
                       delay={index}
                     />

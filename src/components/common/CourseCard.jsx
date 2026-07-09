@@ -23,28 +23,14 @@ export default function CourseCard({ course, variant = 'default', delay = 0, onA
   const isCompact = variant === 'compact';
   const { isAuthenticated, user, authError, navigateToLogin } = useAuth();
   const navigate = useNavigate();
-  const handleClick = (e) => {
-    if (isAuthenticated) {
-      navigate(`/LevelDetail?id=${course.id}`);
-    } else {
-      e.preventDefault();
-      if (onAuthRequired) {
-        onAuthRequired();
-      } else {
-        navigate(`/RoleSelection`);
-      }
-    }
-  };
-
   return (
-    <Link to={isAuthenticated ? `/LevelDetail?id=${course.id}` : `/RoleSelection`}
+    <Link to={`/LevelDetail?id=${course.id || course._id}`}
     >
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: delay * 0.05 }}
         className="group h-full"
-        onClick={handleClick}
       >
         <Card className="overflow-hidden border border-slate-100 dark:border-slate-800/50 shadow-sm hover:shadow-xl dark:hover:shadow-2xl dark:hover:shadow-purple-500/10 transition-all duration-300 bg-white dark:bg-slate-900 rounded-2xl h-full flex flex-col">
           {/* Thumbnail */}

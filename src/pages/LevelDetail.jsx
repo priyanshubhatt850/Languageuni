@@ -37,11 +37,22 @@ import {
   Zap,
   TrendingUp,
   Shield,
-  Sparkles
+  Sparkles,
+  X,
+  Check
 } from 'lucide-react';
 import { loadScript } from "@paypal/paypal-js";
 import { initiateRazorpayPayment, verifyRazorpayPayment, getRazorpayErrorMessage } from '@/lib/razorpay';
 import CryptoJS from "crypto-js";
+import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
+import { toast } from 'sonner';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 
 const materialIcons = {
   reading: BookOpen,
@@ -100,6 +111,36 @@ export default function LevelDetail() {
   const { theme, setTheme } = useTheme();
   const queryClient = useQueryClient();
   const paypalContainerRef = useRef(null);
+  
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [authLoading, setAuthLoading] = useState(false);
+
+  const handleGoogleLoginSuccess = async (credentialResponse) => {
+    try {
+      setAuthLoading(true);
+      const data = await WWClient.functions.invoke('verifyGoogleToken', {
+        googletoken: credentialResponse.credential,
+        service_type: 'student'
+      });
+
+      if (data?.success) {
+        const userData = await WWClient.auth.me();
+        setUser(userData);
+        setShowAuthModal(false);
+        toast.success('Signed in successfully!');
+        queryClient.invalidateQueries(['level-detail', levelId]);
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error('Google login failed. Please try again.');
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
+  const handleGoogleLoginError = () => {
+    toast.error('Google login failed. Please try again.');
+  };
   useEffect(() => {
     const loadUser = async () => {
       try {
@@ -406,7 +447,8 @@ export default function LevelDetail() {
   ];
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 relative overflow-hidden transition-colors duration-300">
+    <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-950 relative overflow-hidden transition-colors duration-300">
       {/* Decorative background gradients */}
       <div className="absolute top-0 right-1/4 w-96 h-96 bg-violet-200/30 dark:bg-violet-900/10 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute top-1/3 left-10 w-80 h-80 bg-emerald-100/20 dark:bg-emerald-950/5 rounded-full blur-3xl pointer-events-none" />
@@ -597,7 +639,7 @@ export default function LevelDetail() {
                     ) : (
                       <Button
                         className="w-full bg-violet-600 hover:bg-violet-700 text-white rounded-xl h-12 font-bold flex items-center justify-center gap-2 shadow-md shadow-violet-600/10 transition-all hover:scale-[1.02] active:scale-[0.98]"
-                        onClick={() => WWClient.auth.redirectToLogin()}
+                        onClick={() => setShowAuthModal(true)}
                       >
                         Sign In to Enroll <ArrowRight className="w-4 h-4" />
                       </Button>
@@ -841,84 +883,117 @@ export default function LevelDetail() {
           />
         )}
       </AnimatePresence>
-
       {/* Payment Method Selector Modal */}
       <AnimatePresence>
         {paymentMethod === 'select' && (
           <div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 backdrop-blur-sm"
             onClick={() => setPaymentMethod(null)}
           >
             <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
+              initial={{ opacity: 0, scale: 0.96 }}
               animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="relative bg-white dark:bg-slate-900 rounded-2xl shadow-xl max-w-md w-full mx-4 overflow-hidden border border-slate-100 dark:border-slate-800"
+              exit={{ opacity: 0, scale: 0.96 }}
+              className="relative bg-white dark:bg-slate-900 rounded-[28px] shadow-2xl max-w-md w-full mx-4 overflow-hidden border border-slate-100 dark:border-slate-800"
               onClick={(e) => e.stopPropagation()}
             >
+              {/* Branded decorative top border */}
+              <div className="h-1.5 w-full bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600" />
+
               {/* Header */}
-              <div className="flex items-center justify-between px-6 py-4.5 border-b border-slate-100 dark:border-slate-800">
-                <h3 className="text-base font-extrabold text-slate-900 dark:text-white uppercase tracking-wider">
-                  Choose Payment Method
-                </h3>
+              <div className="flex items-center justify-between px-6 py-5 border-b border-slate-100 dark:border-slate-800/80">
+                <div>
+                  <h3 className="text-base font-black text-slate-900 dark:text-white uppercase tracking-wider">
+                    Select Payment Method
+                  </h3>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Secure Checkout</p>
+                </div>
                 <button
-                  className="text-slate-400 hover:text-slate-650 dark:hover:text-slate-350 transition-colors"
+                  className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-600 dark:hover:text-slate-350 transition-all"
                   onClick={() => setPaymentMethod(null)}
                 >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
+                  <X className="w-4 h-4" />
                 </button>
               </div>
 
               <div className="px-6 py-6 space-y-4">
                 {/* Razorpay Option */}
                 <button
-                  className={`w-full p-4 border-2 rounded-2xl transition-all text-left flex items-center justify-between group ${
+                  className={`w-full p-4 border rounded-2xl transition-all duration-300 text-left flex items-center gap-4 group relative ${
                     paymentMethod === 'razorpay'
-                      ? 'border-violet-600 bg-violet-50/40 dark:bg-violet-950/20'
-                      : 'border-slate-100 dark:border-slate-800 hover:border-violet-200 hover:bg-slate-50/50'
+                      ? 'border-violet-600 bg-violet-50/20 dark:bg-violet-950/20 ring-1 ring-violet-600'
+                      : 'border-slate-200 dark:border-slate-800 hover:border-violet-350 dark:hover:border-violet-800 bg-white dark:bg-slate-900/50 hover:bg-slate-50/30'
                   }`}
                   onClick={() => {
                     setPaymentMethod('razorpay');
                     setShowRazorpay(true);
                   }}
                 >
-                  <div className="space-y-1">
-                    <h4 className="font-extrabold text-sm text-slate-850 dark:text-white">Razorpay</h4>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Debit/Credit Card, UPI, Wallets, NetBanking</p>
+                  <div className="w-12 h-12 rounded-xl bg-violet-100/50 dark:bg-violet-950/40 text-violet-600 dark:text-violet-400 flex items-center justify-center shrink-0 border border-violet-200/50 dark:border-violet-900/30 group-hover:scale-105 transition-transform duration-300">
+                    <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <rect x="2" y="5" width="20" height="14" rx="3" fill="currentColor" fillOpacity="0.1" stroke="currentColor" strokeWidth="2"/>
+                      <path d="M2 10H22" stroke="currentColor" strokeWidth="2"/>
+                      <rect x="5" y="14" width="4" height="2" rx="0.5" fill="currentColor"/>
+                    </svg>
                   </div>
-                  <div className="w-10 h-10 rounded-xl bg-violet-50 text-violet-605 flex items-center justify-center shrink-0 text-xl font-bold">💳</div>
+                  <div className="flex-1 space-y-0.5">
+                    <h4 className="font-extrabold text-sm text-slate-900 dark:text-white flex items-center gap-2">
+                      Razorpay
+                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 border border-blue-100 dark:border-blue-900/30 font-medium">Cards, UPI</span>
+                    </h4>
+                    <p className="text-xs text-slate-505 dark:text-slate-400 font-medium">Debit/Credit Card, UPI, Wallets, NetBanking</p>
+                  </div>
+                  <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${
+                    paymentMethod === 'razorpay' ? 'border-violet-600 bg-violet-600 text-white' : 'border-slate-350 dark:border-slate-700'
+                  }`}>
+                    {paymentMethod === 'razorpay' && <Check className="w-3.5 h-3.5 stroke-[3]" />}
+                  </div>
                 </button>
 
                 {/* PayPal Option */}
                 <button
-                  className={`w-full p-4 border-2 rounded-2xl transition-all text-left flex items-center justify-between group ${
+                  className={`w-full p-4 border rounded-2xl transition-all duration-300 text-left flex items-center gap-4 group relative ${
                     paymentMethod === 'paypal'
-                      ? 'border-violet-600 bg-violet-50/40 dark:bg-violet-950/20'
-                      : 'border-slate-100 dark:border-slate-800 hover:border-violet-200 hover:bg-slate-50/50'
+                      ? 'border-violet-600 bg-violet-50/20 dark:bg-violet-950/20 ring-1 ring-violet-600'
+                      : 'border-slate-200 dark:border-slate-800 hover:border-violet-350 dark:hover:border-violet-800 bg-white dark:bg-slate-900/50 hover:bg-slate-50/30'
                   }`}
                   onClick={() => {
                     setPaymentMethod('paypal');
                     setShowPayPal(true);
                   }}
                 >
-                  <div className="space-y-1">
-                    <h4 className="font-extrabold text-sm text-slate-855 dark:text-white">PayPal</h4>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Secure credit card and PayPal checkout</p>
+                  <div className="w-12 h-12 rounded-xl bg-blue-100/50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0 border border-blue-200/50 dark:border-blue-900/30 group-hover:scale-105 transition-transform duration-300">
+                    <svg className="w-6 h-6" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M20.06 8.09c0-3.32-2.39-5.18-5.74-5.18h-5.9c-.43 0-.79.31-.86.73L5.3 17.68c-.06.33.19.64.53.64h3.18c.37 0 .69-.26.75-.62l.84-5.32c.07-.43.44-.74.87-.74h1.75c3.08 0 5.49-1.25 6.19-4.83.21-1.07.65-2.72.65-2.72z" opacity="0.4"/>
+                      <path d="M17.15 11.45c0-3.32-2.39-5.18-5.74-5.18H5.51c-.43 0-.79.31-.86.73L2.39 21.04c-.06.33.19.64.53.64h3.18c.37 0 .69-.26.75-.62l.84-5.32c.07-.43.44-.74.87-.74h1.75c3.08 0 5.49-1.25 6.19-4.83.21-1.07.65-2.72.65-2.72z"/>
+                    </svg>
                   </div>
-                  <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0 text-xl font-bold">🅿️</div>
+                  <div className="flex-1 space-y-0.5">
+                    <h4 className="font-extrabold text-sm text-slate-900 dark:text-white flex items-center gap-2">
+                      PayPal
+                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-450 border border-emerald-100 dark:border-emerald-900/30 font-medium">International</span>
+                    </h4>
+                    <p className="text-xs text-slate-505 dark:text-slate-400 font-medium">Secure credit card and PayPal checkout</p>
+                  </div>
+                  <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${
+                    paymentMethod === 'paypal' ? 'border-violet-600 bg-violet-600 text-white' : 'border-slate-350 dark:border-slate-700'
+                  }`}>
+                    {paymentMethod === 'paypal' && <Check className="w-3.5 h-3.5 stroke-[3]" />}
+                  </div>
                 </button>
 
                 {/* Price Info */}
-                <div className="mt-6 pt-6 border-t border-slate-100 dark:border-slate-800/80 text-center">
-                  <p className="text-xs text-slate-400 font-bold uppercase tracking-wider mb-1">Total Amount</p>
-                  <div className="text-3xl font-black text-slate-900 dark:text-white">
-                    ${level?.discount_price || level?.price}
+                <div className="mt-6 pt-6 border-t border-slate-100 dark:border-slate-800/85 text-center">
+                  <div className="bg-slate-50 dark:bg-slate-800/40 rounded-2xl p-4 border border-slate-100 dark:border-slate-800/60">
+                    <p className="text-xs text-slate-450 dark:text-slate-400 font-bold uppercase tracking-wider mb-1">Total Amount</p>
+                    <div className="text-4xl font-black bg-gradient-to-r from-violet-600 to-purple-650 dark:from-violet-400 dark:to-purple-400 bg-clip-text text-transparent tracking-tight">
+                      ${level?.discount_price || level?.price}
+                    </div>
+                    <div className="flex items-center justify-center gap-1.5 mt-2.5 text-[10px] text-slate-550 dark:text-slate-450 font-bold uppercase tracking-wider">
+                      <Shield className="w-3.5 h-3.5 text-emerald-500" />
+                      <span>One-time payment • Lifetime access</span>
+                    </div>
                   </div>
-                  <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-1.5">
-                    One-time payment • Lifetime access
-                  </p>
                 </div>
               </div>
             </motion.div>
@@ -930,54 +1005,62 @@ export default function LevelDetail() {
       <AnimatePresence>
         {showPayPal && paymentMethod === 'paypal' && window.paypal && (
           <div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 backdrop-blur-sm"
             onClick={() => {
               setShowPayPal(false);
               setPaymentMethod(null);
             }}
           >
             <div
-              className="relative bg-white dark:bg-slate-900 rounded-2xl shadow-xl max-w-md w-full mx-4 overflow-hidden border border-slate-100 dark:border-slate-800"
+              className="relative bg-white dark:bg-slate-900 rounded-[28px] shadow-2xl max-w-md w-full mx-4 overflow-hidden border border-slate-100 dark:border-slate-800"
               onClick={(e) => e.stopPropagation()}
             >
+              {/* Branded decorative top border */}
+              <div className="h-1.5 w-full bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600" />
+
               {/* Header */}
-              <div className="flex items-center justify-between px-6 py-4.5 border-b border-slate-100 dark:border-slate-800">
-                <h3 className="text-base font-extrabold text-slate-900 dark:text-white uppercase tracking-wider">
-                  Complete Your Enrollment
-                </h3>
+              <div className="flex items-center justify-between px-6 py-5 border-b border-slate-100 dark:border-slate-800/80">
+                <div>
+                  <h3 className="text-base font-black text-slate-900 dark:text-white uppercase tracking-wider">
+                    Complete Your Enrollment
+                  </h3>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Secure PayPal Payment</p>
+                </div>
                 <button
-                  className="text-slate-400 hover:text-slate-655 dark:hover:text-slate-350 transition-colors"
+                  className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-slate-105 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-650 dark:hover:text-slate-350 transition-all"
                   onClick={() => {
                     setShowPayPal(false);
                     setPaymentMethod(null);
                   }}
                 >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
+                  <X className="w-4 h-4" />
                 </button>
               </div>
 
-              <div className="px-6 py-5 text-left">
+              <div className="px-6 py-6 text-left space-y-6">
                 {/* Course Summary */}
-                <div className="mb-6 pb-6 border-b border-slate-100 dark:border-slate-800">
-                  <p className="text-xs text-slate-400 font-bold uppercase tracking-wider mb-2">Enrolling in</p>
-                  <h4 className="font-extrabold text-slate-800 dark:text-white mb-3 text-lg leading-tight">Master {level?.level_name}</h4>
-                  <div className="text-3xl font-black text-slate-900 dark:text-white">
-                    ${level?.discount_price || level?.price}
+                <div className="bg-slate-50 dark:bg-slate-800/40 rounded-2xl p-4 border border-slate-100/60 dark:border-slate-800/60 space-y-2">
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Enrolling in</p>
+                  <h4 className="font-extrabold text-slate-800 dark:text-white text-lg leading-tight">Master {level?.level_name}</h4>
+                  <div className="flex items-baseline gap-2.5 pt-1">
+                    <span className="text-3xl font-black bg-gradient-to-r from-violet-600 to-purple-650 dark:from-violet-400 dark:to-purple-400 bg-clip-text text-transparent">
+                      ${level?.discount_price || level?.price}
+                    </span>
+                    <span className="text-[10px] text-slate-450 dark:text-slate-400 line-through">${level?.price}</span>
                   </div>
-                  <p className="text-[10px] text-slate-450 font-bold uppercase tracking-wider mt-1.5">
-                    One-time payment • Lifetime access
-                  </p>
+                  <div className="flex items-center gap-1.5 text-[10px] text-slate-550 dark:text-slate-450 font-bold uppercase tracking-wider pt-2 border-t border-slate-200/40 dark:border-slate-800/40 mt-2">
+                    <Shield className="w-3.5 h-3.5 text-emerald-500" />
+                    <span>One-time payment • Lifetime access</span>
+                  </div>
                 </div>
 
                 {/* PayPal Container */}
-                <div ref={paypalContainerRef} className="mb-6 min-h-[300px]"></div>
+                <div ref={paypalContainerRef} className="mb-4 min-h-[150px] bg-slate-50/50 dark:bg-slate-900/30 p-4 rounded-2xl border border-dashed border-slate-200 dark:border-slate-800"></div>
 
                 {/* Cancel Button */}
                 <Button
                   variant="outline"
-                  className="w-full border-slate-202 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl h-11 font-bold"
+                  className="w-full border-slate-200 dark:border-slate-800 text-slate-650 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl h-11 font-bold"
                   onClick={() => {
                     setShowPayPal(false);
                     setPaymentMethod(null);
@@ -990,6 +1073,44 @@ export default function LevelDetail() {
           </div>
         )}
       </AnimatePresence>
+
+      {/* Auth Dialog */}
+      <Dialog open={showAuthModal} onOpenChange={setShowAuthModal}>
+        <DialogContent className="w-[92vw] max-w-sm border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-white rounded-2xl p-6 shadow-xl">
+          <DialogHeader className="pb-4">
+            <DialogTitle className="flex items-center gap-2.5 text-base font-bold text-left">
+              <div className="w-8 h-8 rounded-lg bg-violet-50 text-violet-605 dark:bg-violet-950/30 dark:text-violet-400 border border-violet-100 dark:border-violet-900/30 flex items-center justify-center shrink-0">
+                <GraduationCap className="w-4.5 h-4.5" />
+              </div>
+              <span>Sign In to Enroll</span>
+            </DialogTitle>
+            <DialogDescription className="text-slate-500 dark:text-slate-400 text-xs text-left pt-2 font-medium">
+              Sign in with Google as a student to purchase and access this course.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-2 flex flex-col items-center">
+            <div className="flex justify-center w-full min-h-[44px]">
+              <GoogleLogin
+                onSuccess={handleGoogleLoginSuccess}
+                onError={handleGoogleLoginError}
+                theme={theme === 'dark' ? 'filled_blue' : 'outline'}
+                size="large"
+                width="280px"
+              />
+            </div>
+
+            <Button
+              variant="ghost"
+              onClick={() => setShowAuthModal(false)}
+              className="w-full max-w-[280px] text-xs font-bold text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-105 dark:hover:bg-slate-800 rounded-xl h-11 border border-slate-200 dark:border-slate-800"
+            >
+              Cancel
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
+    </GoogleOAuthProvider>
   );
 }
