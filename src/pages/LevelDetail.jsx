@@ -584,7 +584,7 @@ export default function LevelDetail() {
                       </Button>
                     ) : user ? (
                       <Button
-                        className="w-full bg-violet-605 hover:bg-violet-700 text-white rounded-xl h-12 font-bold flex items-center justify-center gap-2 shadow-md shadow-violet-600/10 transition-all hover:scale-[1.02] active:scale-[0.98]"
+                        className="w-full bg-violet-600 hover:bg-violet-700 text-white rounded-xl h-12 font-bold flex items-center justify-center gap-2 shadow-md shadow-violet-600/10 transition-all hover:scale-[1.02] active:scale-[0.98]"
                         onClick={() => setPaymentMethod('select')}
                         disabled={enrollMutation.isPending || createRazorpayOrderMutation.isPending}
                       >
@@ -596,7 +596,7 @@ export default function LevelDetail() {
                       </Button>
                     ) : (
                       <Button
-                        className="w-full bg-violet-605 hover:bg-violet-700 text-white rounded-xl h-12 font-bold flex items-center justify-center gap-2 shadow-md shadow-violet-600/10 transition-all hover:scale-[1.02] active:scale-[0.98]"
+                        className="w-full bg-violet-600 hover:bg-violet-700 text-white rounded-xl h-12 font-bold flex items-center justify-center gap-2 shadow-md shadow-violet-600/10 transition-all hover:scale-[1.02] active:scale-[0.98]"
                         onClick={() => WWClient.auth.redirectToLogin()}
                       >
                         Sign In to Enroll <ArrowRight className="w-4 h-4" />

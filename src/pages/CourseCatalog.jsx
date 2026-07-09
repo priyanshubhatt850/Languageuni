@@ -67,7 +67,7 @@ export default function CourseCatalog() {
     queryKey: ['published-levels'],
     queryFn: async () => {
       const allLevels = await WWClient.entities.CourseLevel.filter({ status: 'published' }, 'display_order');
-      const activeLanguageIds = languages.map(l => l.id);
+      const activeLanguageIds = languages.map(l => l._id || l.id);
       return allLevels.filter(level => activeLanguageIds.includes(level.language_id));
     },
     enabled: languages.length > 0,
@@ -78,7 +78,7 @@ export default function CourseCatalog() {
   const uniqueTypes = [...new Set(levels.map(l => l.level_type).filter(Boolean))];
 
   const filteredLevels = levels.filter(level => {
-    const language = languages.find(l => l.id === level.language_id);
+    const language = languages.find(l => (l._id || l.id) === level.language_id);
     
     const matchesSearch = !searchTerm || 
       level.level_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -91,8 +91,9 @@ export default function CourseCatalog() {
     const matchesLevel = selectedLevels.length === 0 || 
       selectedLevels.includes(level.level_name);
     
+    const displayType = level.level_type === 'standard' ? 'CEFR Standard' : 'Exam Prep';
     const matchesCategory = selectedCategories.length === 0 || 
-      selectedCategories.includes(level.level_type);
+      selectedCategories.includes(displayType);
     
     const price = level.discount_price || level.price || 0;
     const matchesPrice = price >= priceRange[0] && price <= priceRange[1];
