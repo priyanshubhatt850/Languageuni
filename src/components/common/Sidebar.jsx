@@ -27,7 +27,8 @@ import {
         Sun,
         Globe,
         Wallet,
-        Clock
+        Clock,
+        ShoppingBag
       } from 'lucide-react';
 import { useTheme } from '@/components/ui/ThemeProvider';
 
@@ -38,6 +39,7 @@ const adminMenuItems = [
   { icon: Users, label: 'Instructors', page: 'AdminInstructors' },
   { icon: GraduationCap, label: 'Students', page: 'AdminStudents' },
   { icon: Calendar, label: 'Enrollments', page: 'AdminEnrollments' },
+  { icon: ShoppingBag, label: 'Cart Reminders', page: 'AdminCartReminders' },
   { icon: Clock, label: 'Approve Hours', page: 'AdminApproveHours' },
   { icon: MessageSquare, label: 'Messages', page: 'Messages' },
   { icon: CreditCard, label: 'Payments', page: 'AdminPayments' },

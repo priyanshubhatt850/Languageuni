@@ -1,5 +1,6 @@
 import AdminAnalytics from './pages/AdminAnalytics';
 import AdminApproveHours from './pages/AdminApproveHours';
+import AdminCartReminders from './pages/AdminCartReminders';
 import AdminCertificates from './pages/AdminCertificates';
 import AdminContent from './pages/AdminContent';
 import AdminCourseLevels from './pages/AdminCourseLevels';
@@ -60,6 +61,7 @@ import __Layout from './Layout.jsx';
 export const PAGES = {
     "AdminAnalytics": AdminAnalytics,
     "AdminApproveHours": AdminApproveHours,
+    "AdminCartReminders": AdminCartReminders,
     "AdminCertificates": AdminCertificates,
     "AdminContent": AdminContent,
     "AdminCourseLevels": AdminCourseLevels,
