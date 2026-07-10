@@ -1400,104 +1400,17 @@ export default function Home() {
                       </div>
                     </div>
 
-                    {!otpSent ? (
-                      /* EMAIL FORM & GOOGLE LOGIN STEP */
-                      <div className="space-y-5">
-                        <div className="space-y-2">
-                          <Label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Email Address</Label>
-                          <div className="relative">
-                            <Mail className="absolute left-3.5 top-3.5 w-4 h-4 text-slate-400" />
-                            <Input
-                              type="email"
-                              placeholder="name@example.com"
-                              value={email}
-                              onChange={(e) => setEmail(e.target.value)}
-                              className="pl-10 h-11 rounded-xl border-slate-200 focus-visible:ring-violet-600 text-sm font-semibold"
-                            />
-                          </div>
-                        </div>
-
-                        <Button
-                          onClick={handleSendOTP}
-                          disabled={authLoading}
-                          className={`w-full text-white font-bold h-11 rounded-xl shadow-md transition-all ${
-                            selectedRole?.id === 'student'
-                              ? 'bg-emerald-600 hover:bg-emerald-750 shadow-emerald-500/10'
-                              : 'bg-violet-600 hover:bg-violet-750 shadow-violet-500/10'
-                          }`}
-                        >
-                          {authLoading ? 'Sending Login Code...' : 'Send Verification OTP'}
-                        </Button>
-
-                        <div className="relative flex py-2 items-center">
-                          <div className="flex-grow border-t border-slate-100"></div>
-                          <span className="flex-shrink mx-4 text-[10px] text-slate-400 font-bold uppercase tracking-widest">or continue with</span>
-                          <div className="flex-grow border-t border-slate-100"></div>
-                        </div>
-
-                        <div className="flex justify-center w-full min-h-[44px]">
-                          <GoogleLogin
-                            onSuccess={handleGoogleLoginSuccess}
-                            onError={handleGoogleLoginError}
-                            theme="outline"
-                            size="large"
-                            width="320px"
-                          />
-                        </div>
+                    <div className="space-y-6 pt-4">
+                      <div className="flex justify-center w-full min-h-[44px]">
+                        <GoogleLogin
+                          onSuccess={handleGoogleLoginSuccess}
+                          onError={handleGoogleLoginError}
+                          theme="outline"
+                          size="large"
+                          width="320px"
+                        />
                       </div>
-                    ) : (
-                      /* OTP VERIFICATION STEP */
-                      <div className="space-y-5">
-                        <div className="space-y-2 text-center p-4 bg-slate-50 dark:bg-slate-900 rounded-2xl border border-slate-100">
-                          <p className="text-xs font-semibold text-slate-650 leading-relaxed">
-                            We've sent a 6-digit login code to <br />
-                            <span className="font-extrabold text-slate-900 dark:text-white">{email}</span>
-                          </p>
-                          <button
-                            onClick={() => setOtpSent(false)}
-                            className={`text-xs font-bold underline ${
-                              selectedRole?.id === 'student' ? 'text-emerald-600 hover:text-emerald-700' : 'text-violet-600 hover:text-violet-700'
-                            }`}
-                          >
-                            Change Email
-                          </button>
-                        </div>
-
-                        <div className="space-y-2">
-                          <Label className="text-xs font-bold text-slate-550 uppercase tracking-wider block text-center">Enter 6-Digit OTP Code</Label>
-                          <Input
-                            type="text"
-                            maxLength={6}
-                            placeholder="0 0 0 0 0 0"
-                            value={otp}
-                            onChange={(e) => setOTP(e.target.value.replace(/\D/g, ''))}
-                            className="h-12 rounded-xl border-slate-200 focus-visible:ring-violet-600 text-center tracking-[0.75em] text-lg font-black max-w-[200px] mx-auto bg-white dark:bg-slate-950"
-                          />
-                        </div>
-
-                        <Button
-                          onClick={handleVerifyOTP}
-                          disabled={authLoading}
-                          className={`w-full text-white font-bold h-11 rounded-xl shadow-md transition-all ${
-                            selectedRole?.id === 'student'
-                              ? 'bg-emerald-600 hover:bg-emerald-750 shadow-emerald-500/10'
-                              : 'bg-violet-600 hover:bg-violet-750 shadow-violet-500/10'
-                          }`}
-                        >
-                          {authLoading ? 'Verifying Code...' : 'Verify Code & Sign In'}
-                        </Button>
-
-                        <div className="text-center pt-1.5">
-                          <button
-                            onClick={handleSendOTP}
-                            disabled={authLoading}
-                            className="text-xs font-bold text-slate-450 hover:text-slate-650 transition-colors"
-                          >
-                            Didn't receive a code? Resend OTP
-                          </button>
-                        </div>
-                      </div>
-                    )}
+                    </div>
 
                     <div className="pt-2 select-none">
                       <Button
