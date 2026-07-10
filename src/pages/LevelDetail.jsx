@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useTheme } from '@/components/ui/ThemeProvider';
 import LandingNavbar from '@/components/common/LandingNavbar';
+import { LoadingPage } from '@/components/common/LoadingSpinner';
 import { motion, AnimatePresence } from 'framer-motion';
 import PracticeChat from '@/components/common/PracticeChat';
 import MaterialViewer from '@/components/learning/MaterialViewer';
