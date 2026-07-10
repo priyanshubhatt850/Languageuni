@@ -53,6 +53,7 @@ import StudentProgress from './pages/StudentProgress';
 import StudentSchedule from './pages/StudentSchedule';
 import StudentSettings from './pages/StudentSettings';
 import StudentLiveSessions from './pages/StudentLiveSessions';
+import Cart from './pages/Cart';
 import __Layout from './Layout.jsx';
 
 
@@ -112,6 +113,7 @@ export const PAGES = {
     "StudentSchedule": StudentSchedule,
     "StudentSettings": StudentSettings,
     "StudentLiveSessions": StudentLiveSessions,
+    "Cart": Cart,
 }
 
 export const pagesConfig = {

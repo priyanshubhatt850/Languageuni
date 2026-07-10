@@ -5,11 +5,13 @@ import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Star, Clock, Users, BookOpen, Play, CheckCircle, Video, FileText, Award, Target } from 'lucide-react';
+import { Star, Clock, Users, BookOpen, Play, CheckCircle, Video, FileText, Award, Target, Heart, Check } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { cn } from "@/lib/utils";
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { useCart } from '@/lib/CartContext';
+
 const levelColors = {
   A1: 'bg-emerald-100 text-emerald-700 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-300 dark:border-emerald-800',
   A2: 'bg-teal-100 text-teal-700 border-teal-200 dark:bg-teal-900/30 dark:text-teal-300 dark:border-teal-800',
@@ -23,15 +25,27 @@ export default function CourseCard({ course, variant = 'default', delay = 0, onA
   const isCompact = variant === 'compact';
   const { isAuthenticated, user, authError, navigateToLogin } = useAuth();
   const navigate = useNavigate();
+  const { items, addToCart, setDrawerOpen } = useCart();
+  const isInCart = items.some(item => (item._id || item.id) === (course.id || course._id));
+
+  const handleCardClick = (e) => {
+    // Avoid navigation when clicking action buttons
+    if (e.target.closest('button') || e.target.closest('a')) {
+      e.stopPropagation();
+      e.preventDefault();
+      return;
+    }
+    navigate(`/LevelDetail?id=${course.id || course._id}`);
+  };
+
   return (
-    <Link to={`/LevelDetail?id=${course.id || course._id}`}
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: delay * 0.05 }}
+      onClick={handleCardClick}
+      className="group h-full cursor-pointer"
     >
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: delay * 0.05 }}
-        className="group h-full"
-      >
         <Card className="overflow-hidden border border-slate-100 dark:border-slate-800/50 shadow-sm hover:shadow-xl dark:hover:shadow-2xl dark:hover:shadow-purple-500/10 transition-all duration-300 bg-white dark:bg-slate-900 rounded-2xl h-full flex flex-col">
           {/* Thumbnail */}
           <div className="relative overflow-hidden aspect-video bg-gradient-to-br from-violet-100 to-purple-100 dark:from-violet-900/30 dark:to-purple-900/30">
@@ -120,30 +134,77 @@ export default function CourseCard({ course, variant = 'default', delay = 0, onA
             </div>
 
             {/* Footer */}
-            <div className="flex items-center justify-between">
-              <div>
-                {course.discount_price ? (
-                  <div className="flex items-baseline gap-2">
-                    <span className="text-3xl font-bold bg-gradient-to-r from-violet-600 to-purple-600 bg-clip-text text-transparent">
-                      ${course.discount_price}
+            <div className="space-y-4 pt-4 border-t border-slate-105 dark:border-slate-800">
+              <div className="flex items-center justify-between">
+                <div>
+                  {course.discount_price ? (
+                    <div className="flex items-baseline gap-1.5">
+                      <span className="text-2xl font-black text-slate-900 dark:text-white">
+                        ${course.discount_price}
+                      </span>
+                      <span className="text-xs text-slate-400 line-through">
+                        ${course.price}
+                      </span>
+                    </div>
+                  ) : (
+                    <span className="text-2xl font-black text-slate-900 dark:text-white">
+                      ${course.price || 0}
                     </span>
-                    <span className="text-sm text-slate-400 line-through">
-                      ${course.price}
-                    </span>
-                  </div>
-                ) : (
-                  <span className="text-3xl font-bold bg-gradient-to-r from-violet-600 to-purple-600 bg-clip-text text-transparent">
-                    ${course.price || 0}
-                  </span>
-                )}
+                  )}
+                </div>
+
+                {/* Wishlist toggle button */}
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="rounded-full text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 w-8 h-8"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    toast.success("Saved course to wishlist!");
+                  }}
+                >
+                  <Heart className="w-4.5 h-4.5" />
+                </Button>
               </div>
-              <Button className="bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white shadow-lg group-hover:shadow-violet-500/50 transition-all">
-                View →
-              </Button>
+
+              <div className="grid grid-cols-2 gap-2">
+                {/* Add to Cart / Added */}
+                {isInCart ? (
+                  <Button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setDrawerOpen(true);
+                    }}
+                    className="w-full bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 rounded-xl text-xs font-bold h-10 flex items-center justify-center gap-1.5"
+                  >
+                    <Check className="w-3.5 h-3.5" /> Added
+                  </Button>
+                ) : (
+                  <Button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      addToCart(course, e);
+                    }}
+                    className="w-full bg-slate-900 hover:bg-black text-white rounded-xl text-xs font-bold h-10"
+                  >
+                    Add to Cart
+                  </Button>
+                )}
+
+                {/* Buy Now */}
+                <Button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigate(`/LevelDetail?id=${course.id || course._id}`);
+                  }}
+                  className="w-full bg-violet-600 hover:bg-violet-700 text-white rounded-xl text-xs font-bold h-10 shadow-sm shadow-violet-600/10"
+                >
+                  Buy Now
+                </Button>
+              </div>
             </div>
           </CardContent>
         </Card>
       </motion.div>
-    </Link>
   );
 }

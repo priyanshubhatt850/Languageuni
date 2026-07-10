@@ -14,10 +14,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Bell, Search, ChevronDown, Plus } from 'lucide-react';
+import { Bell, Search, ChevronDown, Plus, ShoppingBag } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useCart } from '@/lib/CartContext';
 
 export default function Header({ user, notifications = [] }) {
+  const { items, setDrawerOpen } = useCart();
   const [searchOpen, setSearchOpen] = useState(false);
   const [adminModalOpen, setAdminModalOpen] = useState(false);
   const [formData, setFormData] = useState({ name: '', email: '', password: '', confirmPassword: '' });
@@ -124,6 +126,28 @@ export default function Header({ user, notifications = [] }) {
           >
             <Search className="w-5 h-5" />
           </Button>
+
+          {/* Cart Icon */}
+          <motion.button
+            id="navbar-cart-icon"
+            onClick={() => setDrawerOpen(true)}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="relative p-2.5 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all rounded-xl flex items-center justify-center text-slate-700 dark:text-slate-200"
+          >
+            <ShoppingBag className="w-5 h-5" />
+            {items.length > 0 && (
+              <motion.span
+                key={items.length}
+                initial={{ scale: 0, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ type: 'spring', stiffness: 500, damping: 15 }}
+                className="absolute -top-0.5 -right-0.5 w-5 h-5 bg-violet-600 text-white text-[10px] font-black rounded-full flex items-center justify-center shadow-md shadow-violet-600/30"
+              >
+                {items.length}
+              </motion.span>
+            )}
+          </motion.button>
 
           {/* Notifications */}
 

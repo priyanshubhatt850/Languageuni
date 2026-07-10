@@ -46,6 +46,7 @@ import { initiateRazorpayPayment, verifyRazorpayPayment, getRazorpayErrorMessage
 import CryptoJS from "crypto-js";
 import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
 import { toast } from 'sonner';
+import { useCart } from '@/lib/CartContext';
 import {
   Dialog,
   DialogContent,
@@ -100,6 +101,7 @@ const decryptMaterials = (materials) => {
 
 export default function LevelDetail() {
   const navigate = useNavigate();
+  const { items, addToCart, setDrawerOpen } = useCart();
   const urlParams = new URLSearchParams(window.location.search);
   const levelId = urlParams.get('id');
   const [user, setUser] = useState(null);
@@ -624,25 +626,47 @@ export default function LevelDetail() {
                         <CheckCircle className="w-5 h-5" />
                         Enrolled
                       </Button>
-                    ) : user ? (
-                      <Button
-                        className="w-full bg-violet-600 hover:bg-violet-700 text-white rounded-xl h-12 font-bold flex items-center justify-center gap-2 shadow-md shadow-violet-600/10 transition-all hover:scale-[1.02] active:scale-[0.98]"
-                        onClick={() => setPaymentMethod('select')}
-                        disabled={enrollMutation.isPending || createRazorpayOrderMutation.isPending}
-                      >
-                        {enrollMutation.isPending || createRazorpayOrderMutation.isPending ? 'Processing...' : (
-                          <>
-                            Enroll Now <ArrowRight className="w-4 h-4" />
-                          </>
-                        )}
-                      </Button>
                     ) : (
-                      <Button
-                        className="w-full bg-violet-600 hover:bg-violet-700 text-white rounded-xl h-12 font-bold flex items-center justify-center gap-2 shadow-md shadow-violet-600/10 transition-all hover:scale-[1.02] active:scale-[0.98]"
-                        onClick={() => setShowAuthModal(true)}
-                      >
-                        Sign In to Enroll <ArrowRight className="w-4 h-4" />
-                      </Button>
+                      <div className="space-y-3">
+                        {/* Add to Cart / Added Button */}
+                        {items.some(item => (item._id || item.id) === (level?._id || level?.id)) ? (
+                          <Button
+                            className="w-full bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-250 rounded-xl h-12 font-bold flex items-center justify-center gap-2 transition-all hover:scale-[1.02] active:scale-[0.98]"
+                            onClick={() => setDrawerOpen(true)}
+                          >
+                            <Check className="w-5 h-5 text-emerald-650" /> Added (Go to Cart)
+                          </Button>
+                        ) : (
+                          <Button
+                            className="w-full bg-slate-900 hover:bg-black text-white rounded-xl h-12 font-bold flex items-center justify-center gap-2 transition-all hover:scale-[1.02] active:scale-[0.98]"
+                            onClick={(e) => addToCart(level, e)}
+                          >
+                            Add to Cart
+                          </Button>
+                        )}
+
+                        {/* Buy Now Button */}
+                        {user ? (
+                          <Button
+                            className="w-full bg-violet-600 hover:bg-violet-700 text-white rounded-xl h-12 font-bold flex items-center justify-center gap-2 shadow-md shadow-violet-600/10 transition-all hover:scale-[1.02] active:scale-[0.98]"
+                            onClick={() => setPaymentMethod('select')}
+                            disabled={enrollMutation.isPending || createRazorpayOrderMutation.isPending}
+                          >
+                            {enrollMutation.isPending || createRazorpayOrderMutation.isPending ? 'Processing...' : (
+                              <>
+                                Buy Now <ArrowRight className="w-4 h-4" />
+                              </>
+                            )}
+                          </Button>
+                        ) : (
+                          <Button
+                            className="w-full bg-violet-600 hover:bg-violet-700 text-white rounded-xl h-12 font-bold flex items-center justify-center gap-2 shadow-md shadow-violet-600/10 transition-all hover:scale-[1.02] active:scale-[0.98]"
+                            onClick={() => WWClient.auth.redirectToLogin()}
+                          >
+                            Sign In to Buy Now <ArrowRight className="w-4 h-4" />
+                          </Button>
+                        )}
+                      </div>
                     )}
 
                     {/* Trust Highlights */}

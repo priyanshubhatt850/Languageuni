@@ -7,6 +7,10 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
+import { CartProvider } from '@/lib/CartContext';
+import BookFlyingAnimation from '@/components/common/BookFlyingAnimation';
+import CartDrawer from '@/components/common/CartDrawer';
+import AIChat from '@/components/common/AIChat';
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
@@ -70,11 +74,16 @@ function App() {
   return (
     <AuthProvider>
       <QueryClientProvider client={queryClientInstance}>
-        <Router>
-          <NavigationTracker />
-          <AuthenticatedApp />
-        </Router>
-        <Toaster />
+        <CartProvider>
+          <Router>
+            <NavigationTracker />
+            <BookFlyingAnimation />
+            <CartDrawer />
+            <AIChat />
+            <AuthenticatedApp />
+          </Router>
+          <Toaster />
+        </CartProvider>
       </QueryClientProvider>
     </AuthProvider>
   )
