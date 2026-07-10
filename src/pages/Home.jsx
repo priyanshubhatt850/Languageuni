@@ -49,12 +49,14 @@ import {
   RefreshCw,
   X,
   Upload,
-  User
+  User,
+  ShoppingBag
 } from 'lucide-react';
 import { uploadImageToCloudinary } from '@/utils/cloudinaryUpload';
 import { useNavigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import { toast } from 'sonner';
+import { useCart } from '@/lib/CartContext';
 
 const dummyCourses = [
   {
@@ -165,6 +167,7 @@ const dummyLanguages = [
 export default function Home() {
   const { theme, setTheme } = useTheme();
   const { isAuthenticated, user, authError, checkUserAuth } = useAuth();
+  const { items, setDrawerOpen } = useCart();
   const navigate = useNavigate();
 
   // Auth Popup Modal States
@@ -443,6 +446,28 @@ export default function Home() {
               </div>
 
               <div className="flex items-center gap-3">
+                {/* Cart Icon */}
+                <motion.button
+                  id="navbar-cart-icon"
+                  onClick={() => setDrawerOpen(true)}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="relative p-2.5 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all rounded-xl flex items-center justify-center text-slate-700 dark:text-slate-200"
+                >
+                  <ShoppingBag className="w-5 h-5 text-slate-505 dark:text-slate-400" />
+                  {items.length > 0 && (
+                    <motion.span
+                      key={items.length}
+                      initial={{ scale: 0, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      transition={{ type: 'spring', stiffness: 500, damping: 15 }}
+                      className="absolute -top-0.5 -right-0.5 w-5 h-5 bg-violet-600 text-white text-[10px] font-black rounded-full flex items-center justify-center shadow-md shadow-violet-600/30"
+                    >
+                      {items.length}
+                    </motion.span>
+                  )}
+                </motion.button>
+
                 <Button
                   variant="ghost"
                   size="icon"
