@@ -2,12 +2,13 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { WWClient } from '@/api/WWClient';
 import { toast } from 'sonner';
+import { useAuth } from './AuthContext';
 
 const CartContext = createContext(null);
 
 export function CartProvider({ children }) {
   const queryClient = useQueryClient();
-  const [user, setUser] = useState(null);
+  const { user } = useAuth();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [flyingBooks, setFlyingBooks] = useState([]); // for curved path animations
 
@@ -20,19 +21,6 @@ export function CartProvider({ children }) {
   useEffect(() => {
     localStorage.setItem('guest_cart', JSON.stringify(localCart));
   }, [localCart]);
-
-  // Load user session
-  useEffect(() => {
-    const loadUser = async () => {
-      try {
-        const data = await WWClient.auth.me();
-        setUser(data);
-      } catch {
-        setUser(null);
-      }
-    };
-    loadUser();
-  }, []);
 
   // Fetch persistent cart for logged-in user
   const { data: cartData = { items: [], wishlist: [] }, refetch: refetchCart } = useQuery({
