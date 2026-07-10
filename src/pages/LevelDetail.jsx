@@ -441,6 +441,47 @@ export default function LevelDetail() {
                     </p>
                   </div>
 
+                  {/* Mobile Thumbnail & Pricing Card */}
+                  <div className="lg:hidden w-full border border-slate-150 dark:border-slate-800 shadow-md rounded-[24px] overflow-hidden bg-white dark:bg-slate-900/60 backdrop-blur-md p-4 space-y-4">
+                    <div className="aspect-video relative rounded-2xl overflow-hidden bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700">
+                      {level.thumbnail_url ? (
+                        <img
+                          src={
+                            level.thumbnail_url.startsWith('data:image')
+                              ? level.thumbnail_url
+                              : `data:image/jpeg;base64,${level.thumbnail_url}`
+                          }
+                          alt={level.level_name}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-5xl">
+                          {language.flag}
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Price</span>
+                        <div className="flex items-baseline gap-1.5">
+                          <span className="text-2xl font-black text-slate-900 dark:text-white">
+                            ${level.discount_price || level.price}
+                          </span>
+                          {level.discount_price && (
+                            <span className="text-xs text-slate-400 line-through">
+                              ${level.price}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      {level.discount_price && (
+                        <Badge className="bg-rose-100 text-rose-700 dark:bg-rose-950/30 dark:text-rose-300 text-xs py-0.5 px-2 font-bold border-0">
+                          Save {Math.round(((level.price - level.discount_price) / level.price) * 100)}%
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
+
                   {/* 1. CEFR Timeline Roadmap (Signature Element) */}
                   <div className="py-2">
                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">CEFR Language Path</p>

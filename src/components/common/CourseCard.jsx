@@ -129,12 +129,12 @@ export default function CourseCard({ course, variant = 'default', delay = 0, onA
 
           {/* Flags & Level Badges */}
           <div className="absolute top-3 left-3 flex gap-2 z-10">
-            <Badge className={cn("border shadow-md backdrop-blur-md bg-white/95 dark:bg-slate-900/95 font-semibold px-2.5 py-1 rounded-lg text-xs flex items-center gap-1.5", levelColors[course.level])}>
+            <div className={cn("border shadow-md backdrop-blur-md font-bold px-2.5 py-1 rounded-lg text-xs flex items-center gap-1.5", levelColors[course.level])}>
               <span className="text-sm leading-none" role="img" aria-label={course.language}>
                 {getFlag(course.language)}
               </span>
               <span>{course.level}</span>
-            </Badge>
+            </div>
           </div>
 
           {/* Discount Badge */}
