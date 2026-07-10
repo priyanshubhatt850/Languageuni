@@ -137,90 +137,100 @@ export default function Cart() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50/50 dark:bg-slate-950 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-slate-50/50 dark:bg-slate-950 py-12 px-4 sm:px-6 lg:px-8 transition-colors duration-300">
       <div className="max-w-7xl mx-auto">
-        <h1 className="text-3xl font-black text-slate-900 dark:text-white mb-8 tracking-tight text-left">Shopping Cart</h1>
+        <div className="flex items-center gap-3.5 mb-10 text-left">
+          <div className="w-12 h-12 rounded-2xl bg-violet-100 dark:bg-violet-950/40 border border-violet-200 dark:border-violet-850 flex items-center justify-center text-violet-600 dark:text-violet-400 shadow-md">
+            <ShoppingBag className="w-6 h-6" />
+          </div>
+          <div>
+            <h1 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">Shopping Cart</h1>
+            <p className="text-xs text-slate-500 font-bold uppercase tracking-wider mt-0.5">
+              Review and manage your selected language courses
+            </p>
+          </div>
+        </div>
 
         {items.length === 0 ? (
           /* Empty Cart Illustration & Messaging */
-          <div className="flex flex-col items-center justify-center py-20 text-center space-y-6">
+          <div className="flex flex-col items-center justify-center py-24 text-center space-y-6 bg-white dark:bg-slate-900/40 border border-slate-100 dark:border-slate-850 rounded-3xl p-8">
             <div className="relative w-40 h-40">
               {/* Floating animated book icon */}
               <motion.div
                 animate={{
-                  y: [0, -15, 0],
-                  rotate: [0, 5, -5, 0]
+                  y: [0, -12, 0],
+                  rotate: [0, 4, -4, 0]
                 }}
                 transition={{
-                  duration: 5,
+                  duration: 6,
                   repeat: Infinity,
                   ease: "easeInOut"
                 }}
-                className="absolute inset-0 flex items-center justify-center bg-gradient-to-tr from-violet-600/10 to-indigo-600/10 rounded-full border border-violet-100 dark:border-violet-900/30"
+                className="absolute inset-0 flex items-center justify-center bg-gradient-to-tr from-violet-600/10 to-indigo-650/10 rounded-full border border-violet-100 dark:border-violet-800/30 shadow-inner"
               >
                 <BookOpen className="w-20 h-20 text-violet-600 dark:text-violet-400" />
               </motion.div>
-              <span className="absolute top-4 right-4 text-3xl">✨</span>
-              <span className="absolute bottom-4 left-4 text-3xl">📚</span>
+              <span className="absolute top-4 right-4 text-3xl animate-pulse">✨</span>
+              <span className="absolute bottom-4 left-4 text-3xl animate-bounce">📚</span>
             </div>
 
             <div className="space-y-2 max-w-md">
-              <h2 className="text-2xl font-black text-slate-800 dark:text-white">Your learning cart is waiting</h2>
-              <p className="text-slate-505 dark:text-slate-400 font-semibold text-sm">
-                Discover language courses and levels to kickstart your learning journey.
+              <h2 className="text-2xl font-black text-slate-800 dark:text-white">Your cart is empty</h2>
+              <p className="text-slate-500 dark:text-slate-400 font-medium text-sm leading-relaxed">
+                Discover world-class language courses and levels to kickstart your learning journey.
               </p>
             </div>
 
             <Button
               onClick={() => navigate('/CourseCatalog')}
-              className="bg-violet-600 hover:bg-violet-700 text-white rounded-xl h-12 px-8 font-bold shadow-lg shadow-violet-600/20"
+              className="bg-violet-600 hover:bg-violet-750 text-white rounded-xl h-12 px-8 font-bold shadow-lg shadow-violet-650/15 hover:shadow-xl transition-all"
             >
-              Explore Courses
+              Explore Course Catalog
             </Button>
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Cart Items List */}
-            <div className="lg:col-span-2 space-y-6 text-left">
-              <Card className="border border-slate-100 dark:border-slate-850 shadow-sm rounded-3xl overflow-hidden bg-white dark:bg-slate-900/60 backdrop-blur-md">
-                <CardContent className="p-6 divide-y divide-slate-100 dark:divide-slate-800">
-                  {items.map((item) => {
+            <div className="lg:col-span-2 space-y-8 text-left">
+              <Card className="border border-slate-100 dark:border-slate-850 shadow-md rounded-3xl overflow-hidden bg-white dark:bg-slate-900/50 backdrop-blur-md">
+                <CardContent className="p-6 sm:p-8 divide-y divide-slate-100 dark:divide-slate-800">
+                  {items.map((item, index) => {
                     const id = item._id || item.id;
                     const price = item.discount_price || item.price || 0;
 
                     return (
-                      <div key={id} className="py-6 first:pt-0 last:pb-0 flex flex-col sm:flex-row gap-6">
+                      <div key={id} className="py-6 first:pt-0 last:pb-0 flex flex-col sm:flex-row gap-6 group">
                         {/* Course Flag Icon */}
-                        <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-slate-50 dark:bg-slate-800/50 flex items-center justify-center text-4xl shadow-inner flex-shrink-0">
+                        <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-gradient-to-br from-slate-50 to-slate-100/50 dark:from-slate-800/80 dark:to-slate-800/30 flex items-center justify-center text-4xl shadow-inner border border-slate-150 dark:border-slate-750 flex-shrink-0 group-hover:scale-105 transition-transform duration-300">
                           {item.language_id?.flag || '🇬🇧'}
                         </div>
 
                         {/* Details */}
                         <div className="flex-1 min-w-0">
-                          <span className="text-[10px] font-black text-violet-600 dark:text-violet-400 uppercase tracking-widest">
+                          <span className="text-[10px] font-black text-violet-655 dark:text-violet-405 uppercase tracking-widest bg-violet-50 dark:bg-violet-950/40 px-2.5 py-1 rounded-full border border-violet-100/50 dark:border-violet-900/30">
                             {item.language_id?.name || 'Language'}
                           </span>
-                          <h3 className="font-extrabold text-base sm:text-lg text-slate-900 dark:text-white mt-1">
-                            {item.level_name} Course
+                          <h3 className="font-extrabold text-lg text-slate-900 dark:text-white mt-2.5">
+                            {item.level_name} Course Program
                           </h3>
-                          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-                            By {item.instructor_id?.full_name || 'Expert Instructor'}
+                          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 font-medium">
+                            By <span className="font-bold text-slate-750 dark:text-slate-300">{item.instructor_id?.full_name || 'Expert Instructor'}</span>
                           </p>
 
                           {/* Quick Rating */}
                           <div className="flex items-center gap-1.5 mt-2">
                             <Star className="w-3.5 h-3.5 fill-yellow-400 text-yellow-400" />
-                            <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                            <span className="text-xs font-bold text-slate-700 dark:text-slate-350">
                               {item.rating || '4.8'}
                             </span>
                             <span className="text-xs text-slate-400">(Guest Review)</span>
                           </div>
 
                           {/* Actions */}
-                          <div className="flex items-center gap-4 mt-4">
+                          <div className="flex items-center gap-5 mt-4 pt-1">
                             <button
                               onClick={() => removeFromCart(id)}
-                              className="text-xs font-bold text-red-500 hover:text-red-650 flex items-center gap-1.5 transition-colors"
+                              className="text-xs font-bold text-red-500 hover:text-red-650 flex items-center gap-1.5 transition-colors border-r border-slate-200 dark:border-slate-800 pr-5"
                             >
                               <Trash2 className="w-3.5 h-3.5" /> Remove
                             </button>
@@ -234,8 +244,8 @@ export default function Cart() {
                         </div>
 
                         {/* Price */}
-                        <div className="text-right sm:self-start">
-                          <span className="text-lg font-black text-slate-900 dark:text-white">
+                        <div className="text-left sm:text-right sm:self-start shrink-0">
+                          <span className="text-xl font-black text-slate-900 dark:text-white block">
                             ${price}
                           </span>
                           {item.discount_price && (
@@ -252,32 +262,37 @@ export default function Cart() {
 
               {/* Save for Later (Wishlist) Section */}
               {wishlist.length > 0 && (
-                <div className="space-y-4">
+                <div className="space-y-4 pt-2">
                   <h2 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">Saved for Later</h2>
-                  <Card className="border border-slate-100 dark:border-slate-850 shadow-sm rounded-3xl overflow-hidden bg-white/50 dark:bg-slate-900/40">
-                    <CardContent className="p-6 divide-y divide-slate-100 dark:divide-slate-800">
-                      {wishlist.map((item) => {
-                        const id = item._id || item.id;
-                        return (
-                          <div key={id} className="py-4 first:pt-0 last:pb-0 flex items-center justify-between gap-4">
-                            <div className="flex items-center gap-4 min-w-0">
-                              <span className="text-2xl w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
-                                {item.language_id?.flag || '🏳️'}
-                              </span>
-                              <div className="min-w-0">
-                                <h4 className="font-bold text-sm text-slate-800 dark:text-white truncate">
-                                  {item.level_name} Course
-                                </h4>
-                                <p className="text-xs text-slate-500 truncate">
-                                  {item.language_id?.name}
-                                </p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {wishlist.map((item) => {
+                      const id = item._id || item.id;
+                      const price = item.discount_price || item.price || 0;
+                      return (
+                        <Card key={id} className="border border-slate-100 dark:border-slate-850 shadow-sm rounded-2xl overflow-hidden bg-white/60 dark:bg-slate-900/30 hover:shadow-md transition-all duration-300 group">
+                          <CardContent className="p-5 flex flex-col justify-between h-full space-y-4">
+                            <div className="flex items-start justify-between gap-4">
+                              <div className="flex items-center gap-3.5 min-w-0">
+                                <span className="text-2xl w-12 h-12 rounded-xl bg-slate-50 dark:bg-slate-800/80 flex items-center justify-center shadow-inner shrink-0 border border-slate-100 dark:border-slate-700">
+                                  {item.language_id?.flag || '🏳️'}
+                                </span>
+                                <div className="min-w-0">
+                                  <span className="text-[9px] font-black text-slate-400 uppercase tracking-wider">
+                                    {item.language_id?.name}
+                                  </span>
+                                  <h4 className="font-extrabold text-sm text-slate-800 dark:text-white truncate">
+                                    {item.level_name} Level
+                                  </h4>
+                                </div>
                               </div>
+                              <span className="text-sm font-black text-slate-900 dark:text-white">${price}</span>
                             </div>
-                            <div className="flex items-center gap-3">
+                            
+                            <div className="flex items-center gap-2.5">
                               <Button
                                 size="sm"
-                                onClick={() => moveToCart(id)}
-                                className="bg-violet-50 text-violet-650 hover:bg-violet-100 dark:bg-violet-950/30 dark:text-violet-400 rounded-lg font-bold text-xs"
+                                onClick={(e) => moveToCart(id, e)}
+                                className="flex-1 bg-violet-50 text-violet-650 hover:bg-violet-100 dark:bg-violet-950/40 dark:text-violet-400 rounded-xl font-bold text-xs h-9 border border-violet-100 dark:border-violet-900/30"
                               >
                                 Move to Cart
                               </Button>
@@ -285,16 +300,16 @@ export default function Cart() {
                                 variant="ghost"
                                 size="icon"
                                 onClick={() => removeFromCart(id)}
-                                className="text-slate-400 hover:text-red-500 rounded-full h-8 w-8"
+                                className="text-slate-400 hover:text-red-500 rounded-xl h-9 w-9 hover:bg-red-50 dark:hover:bg-red-950/20"
                               >
-                                <Trash2 className="w-3.5 h-3.5" />
+                                <Trash2 className="w-4 h-4" />
                               </Button>
                             </div>
-                          </div>
-                        );
-                      })}
-                    </CardContent>
-                  </Card>
+                          </CardContent>
+                        </Card>
+                      );
+                    })}
+                  </div>
                 </div>
               )}
             </div>
@@ -302,80 +317,87 @@ export default function Cart() {
             {/* Summary & Checkout Sidebar */}
             <div className="space-y-6 text-left">
               {/* Promo Coupon Card */}
-              <Card className="border border-slate-100 dark:border-slate-850 shadow-sm rounded-3xl bg-white dark:bg-slate-900/60 backdrop-blur-md">
+              <Card className="border border-slate-100 dark:border-slate-850 shadow-md rounded-3xl bg-white dark:bg-slate-900/60 backdrop-blur-md">
                 <CardContent className="p-6 space-y-4">
                   <div className="flex items-center gap-2">
                     <Tag className="w-4 h-4 text-violet-600 dark:text-violet-400" />
-                    <h4 className="font-bold text-sm text-slate-800 dark:text-white">Promotions</h4>
+                    <h4 className="font-bold text-sm text-slate-805 dark:text-white">Promotions</h4>
                   </div>
                   
                   {couponApplied ? (
-                    <div className="flex items-center justify-between p-3.5 rounded-2xl bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/30">
-                      <div className="flex items-center gap-2">
-                        <Check className="w-4 h-4 text-emerald-600" />
+                    <div className="flex items-center justify-between p-3.5 rounded-2xl bg-emerald-50/50 dark:bg-emerald-950/25 border border-emerald-100/60 dark:border-emerald-900/30">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-7 h-7 rounded-lg bg-emerald-500 text-white flex items-center justify-center shadow-sm">
+                          <Check className="w-4 h-4 stroke-[3px]" />
+                        </div>
                         <div>
-                          <p className="text-xs font-bold text-emerald-800 dark:text-emerald-400">GLOBAL20 Applied</p>
-                          <p className="text-[10px] text-emerald-600 dark:text-emerald-500">20% Off all courses</p>
+                          <p className="text-xs font-black text-emerald-800 dark:text-emerald-450">GLOBAL20 Applied</p>
+                          <p className="text-[10px] text-emerald-600 dark:text-emerald-500 font-bold">20% discount on cart</p>
                         </div>
                       </div>
                       <button 
                         onClick={handleRemoveCoupon}
-                        className="text-xs font-bold text-red-500 hover:text-red-700"
+                        className="text-xs font-extrabold text-red-500 hover:text-red-650 px-2 py-1 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-md transition-all"
                       >
                         Remove
                       </button>
                     </div>
                   ) : (
-                    <div className="space-y-2">
+                    <div className="space-y-3">
                       <div className="flex gap-2">
                         <Input
-                          placeholder="Enter Promo Code"
+                          placeholder="Promo Code (e.g. GLOBAL20)"
                           value={couponCode}
                           onChange={(e) => setCouponCode(e.target.value)}
-                          className="rounded-xl border-slate-200"
+                          className="rounded-xl border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 focus-visible:ring-violet-600 text-xs font-semibold h-10"
                         />
                         <Button 
                           onClick={handleApplyCoupon}
-                          className="bg-slate-900 hover:bg-black text-white rounded-xl font-bold"
+                          className="bg-violet-600 hover:bg-violet-750 text-white rounded-xl font-bold h-10 px-4 text-xs"
                         >
                           Apply
                         </Button>
                       </div>
                       {couponError && (
-                        <p className="text-xs text-red-500 font-semibold">{couponError}</p>
+                        <p className="text-xs text-red-500 font-bold">{couponError}</p>
                       )}
-                      <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">
-                        Try code <span className="text-violet-600 dark:text-violet-400 font-black">GLOBAL20</span>
-                      </p>
+                      <div className="flex items-center gap-1.5 text-[10px] text-slate-400 font-bold uppercase tracking-wider">
+                        <span>Use code</span>
+                        <span className="text-violet-650 dark:text-violet-405 font-black bg-violet-100/40 dark:bg-violet-950/40 px-2 py-0.5 rounded border border-violet-105/50 dark:border-violet-900/30">GLOBAL20</span>
+                      </div>
                     </div>
                   )}
                 </CardContent>
               </Card>
 
               {/* Price Calculation details */}
-              <Card className="border border-slate-100 dark:border-slate-850 shadow-sm rounded-3xl bg-white dark:bg-slate-900/60 backdrop-blur-md overflow-hidden">
+              <Card className="border border-slate-100 dark:border-slate-850 shadow-md rounded-3xl bg-white dark:bg-slate-900/60 backdrop-blur-md overflow-hidden">
                 <CardContent className="p-6 space-y-4">
-                  <h3 className="font-extrabold text-base text-slate-900 dark:text-white">Order Summary</h3>
+                  <h3 className="font-extrabold text-base text-slate-900 dark:text-white border-b border-slate-100 dark:border-slate-850 pb-3">
+                    Order Summary
+                  </h3>
                   
-                  <div className="space-y-2.5 text-sm font-semibold text-slate-505 dark:text-slate-400">
-                    <div className="flex justify-between">
+                  <div className="space-y-3.5 text-xs font-semibold text-slate-500 dark:text-slate-400">
+                    <div className="flex justify-between items-center">
                       <span>Subtotal</span>
-                      <span className="text-slate-900 dark:text-white">${subtotal}</span>
+                      <span className="text-slate-900 dark:text-white font-bold text-sm">${subtotal}</span>
                     </div>
                     {couponApplied && (
-                      <div className="flex justify-between text-emerald-600">
-                        <span>Discount (20%)</span>
+                      <div className="flex justify-between items-center text-emerald-650 font-bold">
+                        <span className="flex items-center gap-1">
+                          Discount <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100 border-none font-bold text-[10px] px-1.5 py-0.5">20% Off</Badge>
+                        </span>
                         <span>-${discountAmount}</span>
                       </div>
                     )}
-                    <div className="flex justify-between">
+                    <div className="flex justify-between items-center">
                       <span>Estimated Tax (5%)</span>
-                      <span className="text-slate-900 dark:text-white">${tax}</span>
+                      <span className="text-slate-900 dark:text-white font-bold">${tax}</span>
                     </div>
-                    <Separator className="bg-slate-100 dark:bg-slate-800" />
-                    <div className="flex justify-between text-base font-black text-slate-900 dark:text-white">
-                      <span>Total</span>
-                      <span>${total}</span>
+                    <Separator className="bg-slate-100 dark:bg-slate-850" />
+                    <div className="flex justify-between items-center text-sm font-black text-slate-900 dark:text-white pt-1">
+                      <span className="text-base font-black">Total Amount</span>
+                      <span className="text-lg font-black text-violet-650 dark:text-violet-400">${total}</span>
                     </div>
                   </div>
 
@@ -384,7 +406,7 @@ export default function Cart() {
                     <Button
                       onClick={handleRazorpayCheckout}
                       disabled={isProcessingCheckout}
-                      className="w-full bg-violet-600 hover:bg-violet-700 text-white rounded-xl h-12 font-bold flex items-center justify-center gap-2 shadow-lg shadow-violet-600/15"
+                      className="w-full bg-violet-600 hover:bg-violet-750 text-white rounded-xl h-12 font-bold flex items-center justify-center gap-2 shadow-md shadow-violet-650/15"
                     >
                       Checkout with Razorpay <ArrowRight className="w-4 h-4" />
                     </Button>
@@ -394,14 +416,14 @@ export default function Cart() {
                       onClick={handlePaypalCheckout}
                       disabled={isProcessingCheckout}
                       variant="outline"
-                      className="w-full rounded-xl h-12 font-bold"
+                      className="w-full rounded-xl h-12 font-bold border-slate-200 text-slate-700 hover:bg-slate-50 dark:border-slate-800 dark:text-slate-300 dark:hover:bg-slate-900"
                     >
                       Checkout with PayPal
                     </Button>
                   </div>
 
                   {/* Trust badges */}
-                  <div className="space-y-3.5 pt-4 border-t border-slate-100 dark:border-slate-800/80 text-xs font-semibold text-slate-500 dark:text-slate-400">
+                  <div className="space-y-3.5 pt-4 border-t border-slate-100 dark:border-slate-800/80 text-[11px] font-bold text-slate-450 dark:text-slate-500">
                     <div className="flex items-center gap-2">
                       <ShieldCheck className="w-4 h-4 text-emerald-500 flex-shrink-0" />
                       <span>30-Day Money-Back Guarantee</span>

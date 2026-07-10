@@ -168,7 +168,15 @@ export function CartProvider({ children }) {
     }
   };
 
-  const moveToCart = async (courseId) => {
+  const moveToCart = async (courseId, e) => {
+    if (e) {
+      const rect = e.currentTarget.getBoundingClientRect();
+      const startX = rect.left + rect.width / 2;
+      const startY = rect.top + rect.height / 2;
+      const id = Date.now() + Math.random();
+      setFlyingBooks(prev => [...prev, { id, startX, startY }]);
+    }
+
     if (user) {
       await moveToCartMutation.mutateAsync(courseId);
     } else {

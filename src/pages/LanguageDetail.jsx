@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useTheme } from '@/components/ui/ThemeProvider';
+import LandingNavbar from '@/components/common/LandingNavbar';
 import { motion } from 'framer-motion';
 import {
   ArrowLeft,
@@ -26,22 +27,8 @@ import { useCart } from '@/lib/CartContext';
 
 export default function LanguageDetail() {
   const navigate = useNavigate();
-  const { items, setDrawerOpen } = useCart();
   const urlParams = new URLSearchParams(window.location.search);
   const languageId = urlParams.get('id');
-  const [user, setUser] = useState(null);
-  const { theme, setTheme } = useTheme();
-
-  useEffect(() => {
-    const loadUser = async () => {
-      const authenticated = await WWClient.auth.isAuthenticated();
-      if (authenticated) {
-        const userData = await WWClient.auth.me();
-        setUser(userData);
-      }
-    };
-    loadUser();
-  }, []);
 
   const { data: language } = useQuery({
     queryKey: ['language', languageId],
@@ -75,62 +62,7 @@ export default function LanguageDetail() {
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
-      {/* Enhanced Navigation */}
-      <nav className="sticky top-0 z-50 bg-white/90 dark:bg-slate-900/90 backdrop-blur-2xl border-b border-slate-200/50 dark:border-slate-800/50 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center gap-4">
-              <Button variant="ghost" size="icon" onClick={() => navigate(-1)} className="hover:bg-slate-100 dark:hover:bg-slate-800">
-                <ArrowLeft className="w-5 h-5" />
-              </Button>
-              <Link to={createPageUrl('Home')} className="flex items-center gap-2">
-                <img src="/logo.png" alt="Global Tongue logo" className="w-10 h-10 object-contain rounded-xl shadow-lg shadow-violet-500/25" />
-                <span className="font-bold text-xl text-slate-900 dark:text-white">Global Tongue</span>
-              </Link>
-            </div>
-            <div className="flex items-center gap-3">
-              {/* Cart Icon */}
-              <motion.button
-                id="navbar-cart-icon"
-                onClick={() => setDrawerOpen(true)}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="relative p-2.5 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all rounded-xl flex items-center justify-center text-slate-700 dark:text-slate-200"
-              >
-                <ShoppingBag className="w-5 h-5 text-slate-600 dark:text-slate-400" />
-                {items.length > 0 && (
-                  <motion.span
-                    key={items.length}
-                    initial={{ scale: 0, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    transition={{ type: 'spring', stiffness: 500, damping: 15 }}
-                    className="absolute -top-0.5 -right-0.5 w-5 h-5 bg-violet-600 text-white text-[10px] font-black rounded-full flex items-center justify-center shadow-md shadow-violet-600/30"
-                  >
-                    {items.length}
-                  </motion.span>
-                )}
-              </motion.button>
-
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-                className="text-slate-600 dark:text-slate-400"
-              >
-                {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-              </Button>
-              {user && (
-                <Link to={createPageUrl(
-                  user?.role === 'admin' ? 'AdminDashboard' :
-                  user?.role === 'instructor' ? 'InstructorDashboard' : 'StudentDashboard'
-                )}>
-                  <Button className="bg-blue-600 hover:bg-blue-700">Dashboard</Button>
-                </Link>
-              )}
-            </div>
-          </div>
-        </div>
-      </nav>
+      <LandingNavbar showBack={true} />
 
       {/* Hero Section - Compact & Elegant */}
       <section className="relative py-16 px-4 bg-gradient-to-b from-white via-slate-50 to-white dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">

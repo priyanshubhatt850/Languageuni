@@ -85,4 +85,100 @@
   body {
     @apply bg-background text-foreground;
   }
+
+  /* Custom elegant scrollbars applied globally */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: rgba(100, 116, 139, 0.25);
+    border-radius: 9999px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(100, 116, 139, 0.45);
+  }
+  .dark ::-webkit-scrollbar-thumb {
+    background: rgba(148, 163, 184, 0.2);
+  }
+  .dark ::-webkit-scrollbar-thumb:hover {
+    background: rgba(148, 163, 184, 0.4);
+  }
+}
+
+@layer utilities {
+  .glass-panel {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+  
+  .dark .glass-panel {
+    background: rgba(15, 23, 42, 0.7);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  /* 8px spacing standard layout grids */
+  .grid-gap-1 { gap: 8px; }
+  .grid-gap-2 { gap: 16px; }
+  .grid-gap-3 { gap: 24px; }
+  .grid-gap-4 { gap: 32px; }
+  .grid-gap-6 { gap: 48px; }
+  .grid-gap-8 { gap: 64px; }
+
+  /* Premium shadows */
+  .shadow-premium-sm {
+    box-shadow: 0 2px 8px -1px rgba(0, 0, 0, 0.02), 0 1px 3px 0 rgba(0, 0, 0, 0.01);
+  }
+  .shadow-premium-md {
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.04), 0 4px 12px rgba(0, 0, 0, 0.02);
+  }
+  .shadow-premium-lg {
+    box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.06), 0 8px 24px -10px rgba(0, 0, 0, 0.03);
+  }
+  
+  .dark .shadow-premium-sm {
+    box-shadow: 0 2px 8px -1px rgba(0, 0, 0, 0.2), 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+  }
+  .dark .shadow-premium-md {
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3), 0 4px 12px rgba(0, 0, 0, 0.2);
+  }
+  .dark .shadow-premium-lg {
+    box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.4), 0 8px 24px -10px rgba(0, 0, 0, 0.3);
+  }
+
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(100, 116, 139, 0.25);
+    border-radius: 9999px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(100, 116, 139, 0.45);
+  }
+  .dark .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(148, 163, 184, 0.2);
+  }
+  .dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(148, 163, 184, 0.4);
+  }
+}
+
+/* Layout shift transitions for collapsed sidebar */
+@media (min-width: 768px) {
+  body.sidebar-collapsed .md\:pl-\[260px\] {
+    padding-left: 72px !important;
+  }
+}
+.md\:pl-\[260px\] {
+  transition: padding-left 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
 }

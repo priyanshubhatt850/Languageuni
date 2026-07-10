@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import CourseCard from '@/components/common/CourseCard';
+import LandingNavbar from '@/components/common/LandingNavbar';
 import { useTheme } from '@/components/ui/ThemeProvider';
 import { motion, AnimatePresence } from 'framer-motion';
 import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
@@ -270,6 +271,15 @@ export default function Home() {
   }, [isAuthenticated, user]);
 
   useEffect(() => {
+    const searchParams = new URLSearchParams(window.location.search);
+    if (searchParams.get('login') === 'true') {
+      // Clear the query parameter
+      navigate('/', { replace: true });
+      openPortal();
+    }
+  }, [navigate]);
+
+  useEffect(() => {
     const handleError = (event) => {
       const errorMsg = event.error ? event.error.stack : event.message;
       fetch(`http://localhost:3000/log-frontend-error?msg=${encodeURIComponent(errorMsg)}`).catch(() => {});
@@ -424,91 +434,7 @@ export default function Home() {
   return (
     <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
       <div className="min-h-screen bg-white dark:bg-slate-950 transition-colors duration-300">
-        {/* Navigation */}
-        <nav className="fixed top-0 left-0 right-0 z-50 bg-white/80 dark:bg-slate-950/80 backdrop-blur-xl border-b border-slate-200 dark:border-slate-800 transition-all duration-300">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex items-center justify-between h-16">
-              <Link to={createPageUrl('Home')} className="flex items-center gap-2.5 group">
-                <img src="/logo.png" alt="Global Tongue logo" className="w-10 h-10 object-contain rounded-xl shadow-lg shadow-violet-500/25 group-hover:shadow-violet-500/40 group-hover:scale-105 transition-all duration-300" />
-                <span className="font-bold text-xl tracking-tight text-slate-900 dark:text-white">Global Tongue</span>
-              </Link>
-
-              <div className="hidden md:flex items-center gap-8">
-                <Link to={createPageUrl('CourseCatalog')} className="text-slate-600 dark:text-slate-300 hover:text-violet-600 dark:hover:text-violet-400 transition-colors font-medium text-sm">
-                  Courses
-                </Link>
-                <a href="#features" className="text-slate-600 dark:text-slate-300 hover:text-violet-600 dark:hover:text-violet-400 transition-colors font-medium text-sm">
-                  Features
-                </a>
-                <a href="#testimonials" className="text-slate-600 dark:text-slate-300 hover:text-violet-600 dark:hover:text-violet-400 transition-colors font-medium text-sm">
-                  Reviews
-                </a>
-              </div>
-
-              <div className="flex items-center gap-3">
-                {/* Cart Icon */}
-                <motion.button
-                  id="navbar-cart-icon"
-                  onClick={() => setDrawerOpen(true)}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="relative p-2.5 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all rounded-xl flex items-center justify-center text-slate-700 dark:text-slate-200"
-                >
-                  <ShoppingBag className="w-5 h-5 text-slate-505 dark:text-slate-400" />
-                  {items.length > 0 && (
-                    <motion.span
-                      key={items.length}
-                      initial={{ scale: 0, opacity: 0 }}
-                      animate={{ scale: 1, opacity: 1 }}
-                      transition={{ type: 'spring', stiffness: 500, damping: 15 }}
-                      className="absolute -top-0.5 -right-0.5 w-5 h-5 bg-violet-600 text-white text-[10px] font-black rounded-full flex items-center justify-center shadow-md shadow-violet-600/30"
-                    >
-                      {items.length}
-                    </motion.span>
-                  )}
-                </motion.button>
-
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-                  className="text-slate-500 dark:text-slate-400 hover:text-violet-600 dark:hover:text-violet-400 hover:bg-violet-50 dark:hover:bg-violet-950/50 rounded-xl animate-none"
-                >
-                  {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-                </Button>
-
-                {isAuthenticated ? (
-                  <Button
-                    onClick={() => {
-                      if (user?.role === 'student' && !user?.profileCompleted) {
-                        setAuthStep('student-onboarding');
-                        setOnboardingSubStep(1);
-                        setShowAuthModal(true);
-                      } else if (user?.role === 'instructor' && !user?.profileCompleted) {
-                        navigate('/InstructorOnboarding');
-                      } else {
-                        navigate(
-                          user?.role === 'admin' ? '/AdminDashboard' :
-                            user?.role === 'instructor' ? '/InstructorDashboard' : '/StudentDashboard'
-                        );
-                      }
-                    }}
-                    className="bg-violet-600 hover:bg-violet-700 text-white rounded-xl shadow-md shadow-violet-600/20 hover:shadow-lg hover:shadow-violet-600/30 transition-all font-semibold h-10 px-5"
-                  >
-                    Dashboard
-                  </Button>
-                ) : (
-                  <Button
-                    className="bg-violet-600 hover:bg-violet-700 text-white shadow-md shadow-violet-600/20 hover:shadow-lg hover:shadow-violet-600/30 transition-all rounded-xl font-semibold h-10 px-5"
-                    onClick={openPortal}
-                  >
-                    Get Started
-                  </Button>
-                )}
-              </div>
-            </div>
-          </div>
-        </nav>
+        <LandingNavbar openPortal={openPortal} />
 
         {/* Hero Section */}
         <section className="pt-28 pb-20 sm:pt-36 sm:pb-28 px-4 relative overflow-hidden">
@@ -1103,7 +1029,7 @@ export default function Home() {
                       <path d="M90 20 L75 25 L80 15 Z" fill="currentColor" stroke="currentColor" strokeWidth="1" />
                     </svg>
 
-                    <div className="flex flex-col items-center text-center space-y-2 mb-2">
+                    <div className="flex flex-col items-center text-center space-y-2 mb-2 select-none">
                       <img src="/logo.png" alt="Global Tongue logo" className="w-12 h-12 object-contain rounded-xl shrink-0" />
                       <h3 className="text-3xl font-extrabold text-slate-900 tracking-tight">Global Tongue Portal</h3>
                       <p className="text-slate-500 text-sm font-medium">Select your path to continue</p>
@@ -1112,7 +1038,9 @@ export default function Home() {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
                       {/* Instructor Option */}
-                      <div
+                      <motion.div
+                        whileHover={{ scale: 1.02, y: -4 }}
+                        whileTap={{ scale: 0.98 }}
                         onClick={() => handleRoleSelect({ id: 'instructor', title: 'Instructor Partner', color: 'from-violet-600 to-purple-600', icon: GraduationCap, iconColor: 'text-violet-650' })}
                         className="border border-slate-100 hover:border-violet-200 bg-white hover:bg-slate-50/20 hover:shadow-xl transition-all duration-300 rounded-[24px] p-6 cursor-pointer flex flex-col justify-between group relative overflow-hidden"
                       >
@@ -1158,16 +1086,18 @@ export default function Home() {
                           <div className="w-2.5 h-2.5 rounded-full bg-violet-200/60" />
                         </div>
 
-                        <div className="py-2.5 px-4 rounded-xl border border-violet-200 text-violet-600 bg-white hover:bg-violet-50 hover:border-violet-300 transition-all duration-200 text-xs font-bold text-center flex items-center justify-center gap-2">
+                        <div className="py-2.5 px-4 rounded-xl border border-violet-200 text-violet-600 bg-white hover:bg-violet-50 hover:border-violet-305 transition-all duration-200 text-xs font-bold text-center flex items-center justify-center gap-2">
                           <div className="w-6 h-6 rounded-full bg-violet-500 text-white flex items-center justify-center shrink-0">
                             <ArrowRight className="w-3.5 h-3.5" />
                           </div>
                           <span>Continue as Instructor</span>
                         </div>
-                      </div>
+                      </motion.div>
 
                       {/* Student Option */}
-                      <div
+                      <motion.div
+                        whileHover={{ scale: 1.02, y: -4 }}
+                        whileTap={{ scale: 0.98 }}
                         onClick={() => handleRoleSelect({ id: 'student', title: 'Student Learner', color: 'from-emerald-500 to-teal-600', icon: BookOpen, iconColor: 'text-emerald-600' })}
                         className="border border-slate-105 hover:border-emerald-200 bg-white hover:bg-slate-50/20 hover:shadow-xl transition-all duration-300 rounded-[24px] p-6 cursor-pointer flex flex-col justify-between group relative overflow-hidden"
                       >
@@ -1194,7 +1124,7 @@ export default function Home() {
                               </div>
 
                               {/* Right Checklist widget */}
-                              <div className="absolute right-4 bottom-0 w-11 h-11 bg-[#e4f8f0] border border-emerald-100 rounded-xl shadow-sm flex items-center justify-center text-emerald-600 rotate-[10deg] z-10 group-hover:rotate-[6deg] group-hover:scale-105 transition-all duration-300">
+                              <div className="absolute right-4 bottom-0 w-11 h-11 bg-[#e4f8f0] border border-emerald-100 rounded-xl shadow-sm flex items-center justify-center text-emerald-650 rotate-[10deg] z-10 group-hover:rotate-[6deg] group-hover:scale-105 transition-all duration-300">
                                 <Check className="w-5.5 h-5.5" />
                               </div>
                             </div>
@@ -1215,23 +1145,23 @@ export default function Home() {
                           <div className="w-2.5 h-2.5 rounded-full bg-emerald-200/60" />
                         </div>
 
-                        <div className="py-2.5 px-4 rounded-xl border border-emerald-200 text-emerald-650 bg-white hover:bg-emerald-50 hover:border-emerald-300 transition-all duration-200 text-xs font-bold text-center flex items-center justify-center gap-2">
+                        <div className="py-2.5 px-4 rounded-xl border border-emerald-200 text-emerald-650 bg-white hover:bg-emerald-50 hover:border-emerald-305 transition-all duration-200 text-xs font-bold text-center flex items-center justify-center gap-2">
                           <div className="w-6 h-6 rounded-full bg-emerald-500 text-white flex items-center justify-center shrink-0">
                             <ArrowRight className="w-3.5 h-3.5" />
                           </div>
                           <span>Continue as Student</span>
                         </div>
-                      </div>
+                      </motion.div>
                     </div>
 
                     {/* Footer widgets */}
-                    <div className="flex flex-col sm:flex-row items-center justify-between pt-5 mt-4 border-t border-slate-100 gap-4 text-xs font-semibold">
+                    <div className="flex flex-col sm:flex-row items-center justify-between pt-5 mt-4 border-t border-slate-100 gap-4 text-xs font-semibold select-none">
                       <div className="flex items-center gap-2.5">
                         <div className="w-8 h-8 rounded-lg bg-violet-50 text-violet-600 flex items-center justify-center shrink-0 border border-violet-100">
                           <Shield className="w-4 h-4" />
                         </div>
                         <div className="text-left">
-                          <p className="font-extrabold text-slate-800">Trusted Learning</p>
+                          <p className="font-extrabold text-slate-805">Trusted Learning</p>
                           <p className="text-[10px] text-slate-450 font-normal">Safe & Secure</p>
                         </div>
                       </div>
@@ -1241,7 +1171,7 @@ export default function Home() {
                           <GraduationCap className="w-4 h-4" />
                         </div>
                         <div className="text-left">
-                          <p className="font-extrabold text-slate-800">Quality Education</p>
+                          <p className="font-extrabold text-slate-805">Quality Education</p>
                           <p className="text-[10px] text-slate-450 font-normal">Expert Instructors</p>
                         </div>
                       </div>
@@ -1251,7 +1181,7 @@ export default function Home() {
                           <Award className="w-4 h-4" />
                         </div>
                         <div className="text-left">
-                          <p className="font-extrabold text-slate-800">Track Progress</p>
+                          <p className="font-extrabold text-slate-805">Track Progress</p>
                           <p className="text-[10px] text-slate-450 font-normal">Achieve Goals</p>
                         </div>
                       </div>
@@ -1284,22 +1214,22 @@ export default function Home() {
                       <motion.div
                         initial={{ opacity: 0, x: 20 }}
                         animate={{ opacity: 1, x: 0 }}
-                        className="space-y-4 py-2"
+                        className="space-y-5 py-2"
                       >
                         <div className="text-center space-y-1">
                           <h4 className="text-sm font-extrabold text-slate-800">Add a Profile Photo</h4>
                           <p className="text-[11px] text-slate-500 font-medium">Let other learners and instructors recognize you.</p>
                         </div>
                         <div className="flex flex-col items-center">
-                          <div className="relative group">
+                          <div className="relative group cursor-pointer">
                             {avatarUrl ? (
                               <img
                                 src={avatarUrl}
                                 alt="Profile"
-                                className="w-24 h-24 rounded-full object-cover border-4 border-emerald-500 shadow-md"
+                                className="w-24 h-24 rounded-full object-cover border-4 border-emerald-500 shadow-md group-hover:scale-105 transition-transform duration-250"
                               />
                             ) : (
-                              <div className="w-24 h-24 rounded-full bg-slate-50 border-4 border-slate-100 flex items-center justify-center text-slate-400 shadow-inner">
+                              <div className="w-24 h-24 rounded-full bg-slate-50 border-4 border-slate-100 flex items-center justify-center text-slate-400 shadow-inner group-hover:bg-slate-100/50 transition-colors">
                                 <User className="w-12 h-12" />
                               </div>
                             )}
@@ -1314,16 +1244,16 @@ export default function Home() {
                               />
                             </label>
                           </div>
-                          <p className="text-[10px] text-slate-500 font-bold mt-2">
+                          <p className="text-[10px] text-slate-500 font-bold mt-3">
                             {uploading ? 'Uploading avatar...' : 'Upload Profile Picture (Optional)'}
                           </p>
                         </div>
                         <Button
                           onClick={() => setOnboardingSubStep(2)}
                           disabled={uploading}
-                          className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold h-11 rounded-xl transition-all shadow-md shadow-emerald-600/15"
+                          className="w-full bg-emerald-600 hover:bg-emerald-750 text-white font-bold h-11 rounded-xl transition-all shadow-md shadow-emerald-600/15"
                         >
-                          Next Step →
+                          Next Step
                         </Button>
                       </motion.div>
                     )}
@@ -1339,26 +1269,28 @@ export default function Home() {
                           <h4 className="text-sm font-extrabold text-slate-800">What languages do you want to learn?</h4>
                           <p className="text-[11px] text-slate-505 font-medium">Select all that apply.</p>
                         </div>
-                        <div className="grid grid-cols-2 gap-2 max-h-[220px] overflow-y-auto pr-1">
+                        <div className="grid grid-cols-2 gap-2.5 max-h-[220px] overflow-y-auto pr-1">
                           {languagesList.map(lang => {
                             const isSelected = selectedLanguages.includes(lang.name);
                             return (
-                              <button
+                              <motion.button
                                 key={lang.name}
+                                whileHover={{ scale: 1.02 }}
+                                whileTap={{ scale: 0.98 }}
                                 onClick={() => toggleLanguage(lang.name)}
                                 className={`py-2.5 px-3.5 rounded-xl border text-xs font-bold flex items-center justify-center gap-2 transition-all duration-200 ${
                                   isSelected
-                                    ? 'bg-emerald-600 border-emerald-600 text-white shadow-sm shadow-emerald-600/10'
+                                    ? 'bg-emerald-600 border-emerald-650 text-white shadow-sm shadow-emerald-500/20'
                                     : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300'
                                 }`}
                               >
                                 <span className="text-sm">{lang.flag}</span>
                                 <span>{lang.name}</span>
-                              </button>
+                              </motion.button>
                             );
                           })}
                         </div>
-                        <div className="flex gap-3 pt-2">
+                        <div className="flex gap-3 pt-2 select-none">
                           <Button
                             variant="outline"
                             onClick={() => setOnboardingSubStep(1)}
@@ -1374,9 +1306,9 @@ export default function Home() {
                               }
                               setOnboardingSubStep(3);
                             }}
-                            className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold h-11 rounded-xl transition-all shadow-md shadow-emerald-600/15"
+                            className="flex-1 bg-emerald-600 hover:bg-emerald-750 text-white font-bold h-11 rounded-xl transition-all shadow-md shadow-emerald-600/15"
                           >
-                            Next Step →
+                            Next Step
                           </Button>
                         </div>
                       </motion.div>
@@ -1393,26 +1325,28 @@ export default function Home() {
                           <h4 className="text-sm font-extrabold text-slate-800">What are you interested in?</h4>
                           <p className="text-[11px] text-slate-505 font-medium">We'll recommend content based on your interests.</p>
                         </div>
-                        <div className="grid grid-cols-2 gap-2">
+                        <div className="grid grid-cols-2 gap-2.5">
                           {interestOptions.map(interest => {
                             const isSelected = interests.includes(interest);
                             return (
-                              <button
+                              <motion.button
                                 key={interest}
+                                whileHover={{ scale: 1.02 }}
+                                whileTap={{ scale: 0.98 }}
                                 onClick={() => toggleInterest(interest)}
                                 className={`py-2.5 px-3.5 rounded-xl border text-xs font-bold flex items-center justify-center gap-2 transition-all duration-200 ${
                                   isSelected
-                                    ? 'bg-emerald-600 border-emerald-600 text-white shadow-sm shadow-emerald-600/10'
+                                    ? 'bg-emerald-600 border-emerald-650 text-white shadow-sm shadow-emerald-500/20'
                                     : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300'
                                 }`}
                               >
                                 {isSelected && <Check className="w-3.5 h-3.5" />}
                                 <span>{interest}</span>
-                              </button>
+                              </motion.button>
                             );
                           })}
                         </div>
-                        <div className="flex gap-3 pt-2">
+                        <div className="flex gap-3 pt-2 select-none">
                           <Button
                             variant="outline"
                             onClick={() => setOnboardingSubStep(2)}
@@ -1423,7 +1357,7 @@ export default function Home() {
                           <Button
                             onClick={handleCompleteOnboarding}
                             disabled={authLoading}
-                            className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold h-11 rounded-xl transition-all shadow-md shadow-emerald-600/15"
+                            className="flex-1 bg-emerald-600 hover:bg-emerald-750 text-white font-bold h-11 rounded-xl transition-all shadow-md shadow-emerald-600/15"
                           >
                             {authLoading ? 'Completing...' : 'Complete Profile'}
                           </Button>
@@ -1433,20 +1367,19 @@ export default function Home() {
                   </div>
                 ) : (
                   <div className="space-y-6 relative z-10 text-left">
-                    {/* Floating illustrations - hidden on mobile for cleaner height */}
-                    <svg className="absolute -left-6 top-20 w-20 h-20 text-slate-200 pointer-events-none opacity-50 hidden sm:block" viewBox="0 0 100 100" fill="none">
+                    {/* Floating illustrations - hidden on mobile */}
+                    <svg className="absolute -left-6 top-20 w-20 h-20 text-slate-250 pointer-events-none opacity-50 hidden sm:block" viewBox="0 0 100 100" fill="none">
                       <path d="M10 80 Q 30 60, 80 40" stroke="currentColor" strokeWidth="1.5" strokeDasharray="3 3" fill="none" />
                       <path d="M80 40 L68 45 L72 37 Z" fill="currentColor" />
                     </svg>
 
-                    {/* Floating open book in top right corner - hidden on mobile */}
                     <div className={`absolute right-0 top-2 opacity-20 rotate-12 pointer-events-none hidden sm:block ${
                       selectedRole?.id === 'student' ? 'text-emerald-500' : 'text-violet-500'
                     }`}>
                       <BookOpen className="w-16 h-16" />
                     </div>
 
-                    <div className="flex items-center gap-3.5 pb-2">
+                    <div className="flex items-center gap-3.5 pb-3 border-b border-slate-100">
                       <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 border ${
                         selectedRole?.id === 'student'
                           ? 'bg-emerald-50 text-emerald-600 border-emerald-100'
@@ -1456,35 +1389,127 @@ export default function Home() {
                       </div>
                       <div className="space-y-0.5">
                         <h3 className="text-xl font-black text-slate-900 leading-tight">
-                          Sign In
+                          Sign In / Register
                         </h3>
                         <p className="text-slate-500 text-xs font-semibold">
-                          Continue to your{' '}
+                          Access your{' '}
                           <span className={selectedRole?.id === 'student' ? 'text-emerald-600' : 'text-violet-600'}>
-                            {selectedRole?.title}
+                            {selectedRole?.title} Portal
                           </span>
                         </p>
                       </div>
                     </div>
 
-                    <div className="space-y-5 pt-3 flex flex-col items-center">
-                      <div className="flex justify-center w-full min-h-[44px]">
-                        <GoogleLogin
-                          onSuccess={handleGoogleLoginSuccess}
-                          onError={handleGoogleLoginError}
-                          theme="outline"
-                          size="large"
-                          width="280px"
-                        />
-                      </div>
+                    {!otpSent ? (
+                      /* EMAIL FORM & GOOGLE LOGIN STEP */
+                      <div className="space-y-5">
+                        <div className="space-y-2">
+                          <Label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Email Address</Label>
+                          <div className="relative">
+                            <Mail className="absolute left-3.5 top-3.5 w-4 h-4 text-slate-400" />
+                            <Input
+                              type="email"
+                              placeholder="name@example.com"
+                              value={email}
+                              onChange={(e) => setEmail(e.target.value)}
+                              className="pl-10 h-11 rounded-xl border-slate-200 focus-visible:ring-violet-600 text-sm font-semibold"
+                            />
+                          </div>
+                        </div>
 
+                        <Button
+                          onClick={handleSendOTP}
+                          disabled={authLoading}
+                          className={`w-full text-white font-bold h-11 rounded-xl shadow-md transition-all ${
+                            selectedRole?.id === 'student'
+                              ? 'bg-emerald-600 hover:bg-emerald-750 shadow-emerald-500/10'
+                              : 'bg-violet-600 hover:bg-violet-750 shadow-violet-500/10'
+                          }`}
+                        >
+                          {authLoading ? 'Sending Login Code...' : 'Send Verification OTP'}
+                        </Button>
+
+                        <div className="relative flex py-2 items-center">
+                          <div className="flex-grow border-t border-slate-100"></div>
+                          <span className="flex-shrink mx-4 text-[10px] text-slate-400 font-bold uppercase tracking-widest">or continue with</span>
+                          <div className="flex-grow border-t border-slate-100"></div>
+                        </div>
+
+                        <div className="flex justify-center w-full min-h-[44px]">
+                          <GoogleLogin
+                            onSuccess={handleGoogleLoginSuccess}
+                            onError={handleGoogleLoginError}
+                            theme="outline"
+                            size="large"
+                            width="320px"
+                          />
+                        </div>
+                      </div>
+                    ) : (
+                      /* OTP VERIFICATION STEP */
+                      <div className="space-y-5">
+                        <div className="space-y-2 text-center p-4 bg-slate-50 dark:bg-slate-900 rounded-2xl border border-slate-100">
+                          <p className="text-xs font-semibold text-slate-650 leading-relaxed">
+                            We've sent a 6-digit login code to <br />
+                            <span className="font-extrabold text-slate-900 dark:text-white">{email}</span>
+                          </p>
+                          <button
+                            onClick={() => setOtpSent(false)}
+                            className={`text-xs font-bold underline ${
+                              selectedRole?.id === 'student' ? 'text-emerald-600 hover:text-emerald-700' : 'text-violet-600 hover:text-violet-700'
+                            }`}
+                          >
+                            Change Email
+                          </button>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label className="text-xs font-bold text-slate-550 uppercase tracking-wider block text-center">Enter 6-Digit OTP Code</Label>
+                          <Input
+                            type="text"
+                            maxLength={6}
+                            placeholder="0 0 0 0 0 0"
+                            value={otp}
+                            onChange={(e) => setOTP(e.target.value.replace(/\D/g, ''))}
+                            className="h-12 rounded-xl border-slate-200 focus-visible:ring-violet-600 text-center tracking-[0.75em] text-lg font-black max-w-[200px] mx-auto bg-white dark:bg-slate-950"
+                          />
+                        </div>
+
+                        <Button
+                          onClick={handleVerifyOTP}
+                          disabled={authLoading}
+                          className={`w-full text-white font-bold h-11 rounded-xl shadow-md transition-all ${
+                            selectedRole?.id === 'student'
+                              ? 'bg-emerald-600 hover:bg-emerald-750 shadow-emerald-500/10'
+                              : 'bg-violet-600 hover:bg-violet-750 shadow-violet-500/10'
+                          }`}
+                        >
+                          {authLoading ? 'Verifying Code...' : 'Verify Code & Sign In'}
+                        </Button>
+
+                        <div className="text-center pt-1.5">
+                          <button
+                            onClick={handleSendOTP}
+                            disabled={authLoading}
+                            className="text-xs font-bold text-slate-450 hover:text-slate-650 transition-colors"
+                          >
+                            Didn't receive a code? Resend OTP
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="pt-2 select-none">
                       <Button
                         variant="ghost"
-                        onClick={() => setAuthStep('role')}
-                        className="w-full max-w-[280px] text-xs font-bold text-slate-500 hover:text-slate-700 hover:bg-slate-50 rounded-xl flex items-center justify-center gap-1.5 h-11 border border-slate-100"
+                        onClick={() => {
+                          setAuthStep('role');
+                          setOtpSent(false);
+                        }}
+                        className="w-full text-xs font-bold text-slate-450 hover:text-slate-700 hover:bg-slate-50 rounded-xl flex items-center justify-center gap-1.5 h-10 border border-slate-100/50"
                       >
                         <RefreshCw className="w-3.5 h-3.5" />
-                        <span>Go Back / Change Role</span>
+                        <span>Change Path / Role</span>
                       </Button>
                     </div>
                   </div>

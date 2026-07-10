@@ -24,7 +24,6 @@ import {
 } from "@/components/ui/sheet";
 import { Separator } from "@/components/ui/separator";
 import { Card, CardContent } from "@/components/ui/card";
-import { LoadingPage } from '@/components/common/LoadingSpinner';
 import EmptyState from '@/components/common/EmptyState';
 import CourseCard from '@/components/common/CourseCard';
 import { motion } from 'framer-motion';
@@ -38,6 +37,42 @@ import {
   Users,
   Star
 } from 'lucide-react';
+import { cn } from '@/lib/utils';
+
+const levelColors = {
+  A1: 'bg-emerald-50 text-emerald-700 border-emerald-250 dark:bg-emerald-950/30 dark:text-emerald-350 dark:border-emerald-900',
+  A2: 'bg-teal-50 text-teal-700 border-teal-250 dark:bg-teal-950/30 dark:text-teal-350 dark:border-teal-900',
+  B1: 'bg-blue-50 text-blue-700 border-blue-250 dark:bg-blue-950/30 dark:text-blue-350 dark:border-blue-900',
+  B2: 'bg-indigo-50 text-indigo-700 border-indigo-250 dark:bg-indigo-950/30 dark:text-indigo-350 dark:border-indigo-900',
+  C1: 'bg-violet-50 text-violet-700 border-violet-250 dark:bg-violet-950/30 dark:text-violet-350 dark:border-violet-900',
+  C2: 'bg-purple-50 text-purple-700 border-purple-250 dark:bg-purple-950/30 dark:text-purple-350 dark:border-purple-900',
+};
+
+const SkeletonCard = () => (
+  <div className="border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-2xl overflow-hidden h-full flex flex-col animate-pulse shadow-sm">
+    <div className="aspect-video bg-slate-200 dark:bg-slate-850" />
+    <div className="p-5 flex-1 flex flex-col space-y-4">
+      <div className="flex justify-between items-center">
+        <div className="h-6 w-16 bg-slate-200 dark:bg-slate-850 rounded-lg" />
+        <div className="h-4 w-12 bg-slate-200 dark:bg-slate-850 rounded-lg" />
+      </div>
+      <div className="h-5 bg-slate-200 dark:bg-slate-850 rounded-md w-3/4" />
+      <div className="space-y-2 flex-1">
+        <div className="h-3.5 bg-slate-200 dark:bg-slate-850 rounded-md" />
+        <div className="h-3.5 bg-slate-200 dark:bg-slate-850 rounded-md w-5/6" />
+      </div>
+      <div className="h-px bg-slate-100 dark:bg-slate-800/80" />
+      <div className="flex justify-between items-center pt-2">
+        <div className="h-8 w-20 bg-slate-200 dark:bg-slate-850 rounded-lg" />
+        <div className="h-8 w-8 bg-slate-200 dark:bg-slate-850 rounded-full" />
+      </div>
+      <div className="grid grid-cols-2 gap-2 pt-2">
+        <div className="h-10 bg-slate-200 dark:bg-slate-850 rounded-xl" />
+        <div className="h-10 bg-slate-200 dark:bg-slate-850 rounded-xl" />
+      </div>
+    </div>
+  </div>
+);
 
 export default function CourseCatalog() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -50,11 +85,10 @@ export default function CourseCatalog() {
   const [priceRange, setPriceRange] = useState([0, 500]);
   const [sortBy, setSortBy] = useState('popular');
 
-  const { data: languages = [] } = useQuery({
+  const { data: languages = [], isLoading: isLanguagesLoading } = useQuery({
     queryKey: ['active-languages'],
     queryFn: async () => {
       const allLanguages = await WWClient.entities.Language.filter({ is_active: true }, 'display_order');
-      // Remove duplicates based on language code
       const uniqueLanguages = allLanguages.filter((lang, index, self) =>
         index === self.findIndex(l => l.code === lang.code)
       );
@@ -63,7 +97,7 @@ export default function CourseCatalog() {
     initialData: []
   });
 
-  const { data: levels = [], isLoading } = useQuery({
+  const { data: levels = [], isLoading: isLevelsLoading } = useQuery({
     queryKey: ['published-levels'],
     queryFn: async () => {
       const allLevels = await WWClient.entities.CourseLevel.filter({ status: 'published' }, 'display_order');
@@ -74,8 +108,11 @@ export default function CourseCatalog() {
     initialData: []
   });
 
+  const isCatalogLoading = isLanguagesLoading || isLevelsLoading;
+
   const uniqueLevelNames = [...new Set(levels.map(l => l.level_name).filter(Boolean))].sort();
   const uniqueTypes = [...new Set(levels.map(l => l.level_type).filter(Boolean))];
+  const cefrLevels = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
 
   const filteredLevels = levels.filter(level => {
     const language = languages.find(l => (l._id || l.id) === level.language_id);
@@ -137,30 +174,41 @@ export default function CourseCatalog() {
   const hasActiveFilters = selectedLanguages.length > 0 || selectedLevels.length > 0 || 
     selectedCategories.length > 0 || priceRange[0] > 0 || priceRange[1] < 500;
 
-  const FilterSection = ({ title, items, selected, setSelected, isLanguage }) => (
+  const FilterSection = ({ title, items, selected, setSelected, isLanguage, isLoadingSection }) => (
     <div className="space-y-3">
       <h4 className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">{title}</h4>
-      <div className="space-y-2.5">
-        {items.length === 0 ? (
+      <div className="flex flex-wrap gap-1.5">
+        {isLoadingSection ? (
+          <div className="flex flex-wrap gap-1.5 w-full animate-pulse">
+            <div className="h-7 w-16 bg-slate-100 dark:bg-slate-800/80 rounded-lg" />
+            <div className="h-7 w-20 bg-slate-100 dark:bg-slate-800/80 rounded-lg" />
+            <div className="h-7 w-12 bg-slate-100 dark:bg-slate-800/80 rounded-lg" />
+          </div>
+        ) : items.length === 0 ? (
           <p className="text-xs text-slate-400 dark:text-slate-500">No options</p>
         ) : (
           items.map(item => {
             const displayText = isLanguage && typeof item === 'object' ? `${item.flag} ${item.name}` : item;
             const value = isLanguage && typeof item === 'object' ? item.name : item;
             const isChecked = selected.includes(value);
+            const isLevel = title.toLowerCase() === 'level';
+            const levelColorClass = levelColors[value] || 'bg-violet-600 text-white dark:bg-violet-700';
+            
             return (
-              <label key={value} className="flex items-center gap-3 cursor-pointer group select-none">
-                <Checkbox
-                  checked={isChecked}
-                  onCheckedChange={() => toggleFilter(value, selected, setSelected)}
-                  className="rounded-md border-slate-200 dark:border-slate-800 data-[state=checked]:bg-violet-650 data-[state=checked]:border-violet-650"
-                />
-                <span className={`text-sm transition-colors duration-200 ${
+              <button
+                key={value}
+                onClick={() => toggleFilter(value, selected, setSelected)}
+                className={cn(
+                  "px-2.5 py-1 rounded-lg text-xs font-semibold border transition-all duration-200",
                   isChecked 
-                    ? 'text-slate-900 dark:text-white font-medium' 
-                    : 'text-slate-600 dark:text-slate-400 group-hover:text-slate-900 dark:group-hover:text-slate-200'
-                }`}>{displayText}</span>
-              </label>
+                    ? isLevel 
+                      ? `${levelColorClass} border-transparent text-white shadow-sm`
+                      : "bg-violet-600 border-transparent text-white shadow-sm dark:bg-violet-750"
+                    : "bg-slate-50 dark:bg-slate-900 border-slate-150 dark:border-slate-800 text-slate-650 dark:text-slate-400 hover:border-slate-350 dark:hover:border-slate-705 hover:text-slate-900 dark:hover:text-white"
+                )}
+              >
+                {displayText}
+              </button>
             );
           })
         )}
@@ -176,13 +224,15 @@ export default function CourseCatalog() {
         selected={selectedLanguages} 
         setSelected={setSelectedLanguages}
         isLanguage={true}
+        isLoadingSection={isCatalogLoading}
       />
       <Separator className="bg-slate-100 dark:bg-slate-800/80" />
       <FilterSection 
         title="Level" 
-        items={uniqueLevelNames} 
+        items={uniqueLevelNames.length > 0 ? uniqueLevelNames : cefrLevels} 
         selected={selectedLevels} 
         setSelected={setSelectedLevels} 
+        isLoadingSection={isCatalogLoading}
       />
       <Separator className="bg-slate-100 dark:bg-slate-800/80" />
       <FilterSection 
@@ -190,6 +240,7 @@ export default function CourseCatalog() {
         items={uniqueTypes.map(t => t === 'standard' ? 'CEFR Standard' : 'Exam Prep')} 
         selected={selectedCategories} 
         setSelected={setSelectedCategories} 
+        isLoadingSection={isCatalogLoading}
       />
       <Separator className="bg-slate-100 dark:bg-slate-800/80" />
       <div className="space-y-4">
@@ -211,15 +262,13 @@ export default function CourseCatalog() {
       {hasActiveFilters && (
         <>
           <Separator className="bg-slate-100 dark:bg-slate-800/80" />
-          <Button onClick={clearFilters} className="w-full bg-violet-50 hover:bg-violet-100 dark:bg-violet-950/40 dark:hover:bg-violet-900/40 text-violet-700 dark:text-violet-300 border border-violet-100 dark:border-violet-900/50 rounded-xl h-10 transition-colors font-semibold text-xs uppercase tracking-wider">
+          <Button onClick={clearFilters} className="w-full bg-violet-50 hover:bg-violet-100 dark:bg-violet-950/40 dark:hover:bg-violet-900/40 text-violet-750 dark:text-violet-300 border border-violet-100 dark:border-violet-900/50 rounded-xl h-10 transition-colors font-semibold text-xs uppercase tracking-wider">
             Clear Filters
           </Button>
         </>
       )}
     </div>
   );
-
-  if (isLoading) return <LoadingPage />;
 
   return (
     <div className="min-h-screen bg-slate-50/50 dark:bg-slate-950 transition-colors duration-300">
@@ -235,59 +284,98 @@ export default function CourseCatalog() {
             </h1>
           </Link>
           <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold text-slate-400">{sortedLevels.length} course{sortedLevels.length !== 1 ? 's' : ''}</span>
+            {!isCatalogLoading && (
+              <span className="text-xs font-semibold text-slate-400">{sortedLevels.length} course{sortedLevels.length !== 1 ? 's' : ''}</span>
+            )}
           </div>
         </div>
       </div>
 
       <div className="pt-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
-        {/* Search and Sort Toolbar */}
-        <div className="flex flex-col md:flex-row gap-4 items-center justify-between mb-8">
-          <div className="relative w-full md:max-w-lg">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-slate-500" />
-            <Input
-              placeholder="Search courses, levels, languages..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-11 h-11 bg-white dark:bg-slate-900/80 border-slate-200 dark:border-slate-800 rounded-xl text-sm focus-visible:ring-violet-500 transition-all w-full"
-            />
+        {/* Search, Filter & Sort Toolbar */}
+        <div className="flex flex-col gap-5 mb-8">
+          <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
+            {/* Search Input */}
+            <div className="relative w-full sm:max-w-md group">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-violet-500 transition-colors duration-200" />
+              <Input
+                placeholder="Search courses, levels, languages..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-11 pr-10 h-11 bg-white dark:bg-slate-900/80 border-slate-200 dark:border-slate-800 rounded-2xl text-sm focus-visible:ring-violet-500 transition-all w-full shadow-sm hover:shadow-md focus:bg-white dark:focus:bg-slate-900"
+              />
+              {searchTerm && (
+                <button
+                  onClick={() => setSearchTerm('')}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-350 transition-colors"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
+
+            {/* Mobile Filters and Sorting */}
+            <div className="flex items-center gap-3 w-full sm:w-auto">
+              <Sheet>
+                <SheetTrigger asChild>
+                  <Button variant="outline" className="lg:hidden rounded-2xl h-11 text-sm flex-1 sm:flex-initial border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900">
+                    <SlidersHorizontal className="w-4 h-4 mr-2" />
+                    Filters
+                    {hasActiveFilters && (
+                      <Badge className="ml-2 bg-violet-600 hover:bg-violet-750 text-white rounded-full h-5 w-5 p-0 flex items-center justify-center text-xs">
+                        {selectedLanguages.length + selectedLevels.length + selectedCategories.length}
+                      </Badge>
+                    )}
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="left" className="w-72 sm:w-80 border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950">
+                  <SheetHeader className="pb-4 border-b border-slate-100 dark:border-slate-800">
+                    <SheetTitle className="text-slate-900 dark:text-white text-base">Filter Catalog</SheetTitle>
+                  </SheetHeader>
+                  <div className="mt-6 overflow-y-auto max-h-[80vh] pr-1">
+                    <FiltersContent />
+                  </div>
+                </SheetContent>
+              </Sheet>
+
+              <Select value={sortBy} onValueChange={setSortBy}>
+                <SelectTrigger className="w-full sm:w-48 h-11 bg-white dark:bg-slate-900/80 border-slate-200 dark:border-slate-800 rounded-2xl text-sm focus:ring-violet-500 shadow-sm hover:shadow-md transition-all">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="border-slate-200 dark:border-slate-800 rounded-xl">
+                  <SelectItem value="popular">Most Popular</SelectItem>
+                  <SelectItem value="rating">Highest Rated</SelectItem>
+                  <SelectItem value="newest">Newest First</SelectItem>
+                  <SelectItem value="price-low">Price: Low to High</SelectItem>
+                  <SelectItem value="price-high">Price: High to Low</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
-          <div className="flex items-center gap-3 w-full md:w-auto">
-            <Sheet>
-              <SheetTrigger asChild>
-                <Button variant="outline" className="md:hidden rounded-xl h-11 text-sm flex-1 border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900">
-                  <SlidersHorizontal className="w-4 h-4 mr-2" />
-                  Filters
-                  {hasActiveFilters && (
-                    <Badge className="ml-2 bg-violet-600 hover:bg-violet-700 text-white rounded-full h-5 w-5 p-0 flex items-center justify-center text-xs">
-                      {selectedLanguages.length + selectedLevels.length + selectedCategories.length}
-                    </Badge>
-                  )}
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="left" className="w-72 sm:w-80 border-r border-slate-200 dark:border-slate-800">
-                <SheetHeader className="pb-4 border-b border-slate-100 dark:border-slate-800">
-                  <SheetTitle className="text-slate-900 dark:text-white text-base">Filter Catalog</SheetTitle>
-                </SheetHeader>
-                <div className="mt-6 overflow-y-auto max-h-[80vh] pr-1">
-                  <FiltersContent />
-                </div>
-              </SheetContent>
-            </Sheet>
-
-            <Select value={sortBy} onValueChange={setSortBy}>
-              <SelectTrigger className="w-full md:w-48 h-11 bg-white dark:bg-slate-900/80 border-slate-200 dark:border-slate-800 rounded-xl text-sm focus:ring-violet-500">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent className="border-slate-200 dark:border-slate-800">
-                <SelectItem value="popular">Most Popular</SelectItem>
-                <SelectItem value="rating">Highest Rated</SelectItem>
-                <SelectItem value="newest">Newest</SelectItem>
-                <SelectItem value="price-low">Price: Low to High</SelectItem>
-                <SelectItem value="price-high">Price: High to Low</SelectItem>
-              </SelectContent>
-            </Select>
+          {/* Quick CEFR Toggles Row */}
+          <div className="py-2.5 px-1 border-t border-b border-slate-100 dark:border-slate-850 flex items-center gap-3 overflow-x-auto scrollbar-none">
+            <span className="text-[10px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-widest whitespace-nowrap">Quick CEFR Select:</span>
+            <div className="flex items-center gap-2">
+              {cefrLevels.map(level => {
+                const isChecked = selectedLevels.includes(level);
+                const levelColorClass = levelColors[level] || 'bg-violet-650 text-white dark:bg-violet-700';
+                return (
+                  <button
+                    key={level}
+                    onClick={() => toggleFilter(level, selectedLevels, setSelectedLevels)}
+                    className={cn(
+                      "px-3 py-1 rounded-lg text-xs font-bold border transition-all duration-200 whitespace-nowrap",
+                      isChecked 
+                        ? `${levelColorClass} border-transparent text-white shadow-sm scale-95`
+                        : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:border-slate-350 dark:hover:border-slate-700 hover:text-slate-900 dark:hover:text-white"
+                    )}
+                  >
+                    {level}
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </div>
 
@@ -297,7 +385,7 @@ export default function CourseCatalog() {
             {selectedLanguages.map(lang => (
               <Badge 
                 key={lang} 
-                className="bg-violet-50 dark:bg-violet-950/60 hover:bg-violet-100 dark:hover:bg-violet-900/50 text-violet-700 dark:text-violet-300 border border-violet-100 dark:border-violet-900/50 cursor-pointer rounded-lg px-2.5 py-1 text-xs"
+                className="bg-violet-50 dark:bg-violet-950/60 hover:bg-violet-100 dark:hover:bg-violet-900/50 text-violet-750 dark:text-violet-300 border border-violet-100 dark:border-violet-900/50 cursor-pointer rounded-lg px-2.5 py-1 text-xs"
                 onClick={() => toggleFilter(lang, selectedLanguages, setSelectedLanguages)}
               >
                 {lang}
@@ -307,7 +395,10 @@ export default function CourseCatalog() {
             {selectedLevels.map(level => (
               <Badge 
                 key={level} 
-                className="bg-violet-50 dark:bg-violet-950/60 hover:bg-violet-100 dark:hover:bg-violet-900/50 text-violet-700 dark:text-violet-300 border border-violet-100 dark:border-violet-900/50 cursor-pointer rounded-lg px-2.5 py-1 text-xs"
+                className={cn(
+                  "cursor-pointer rounded-lg px-2.5 py-1 text-xs border flex items-center gap-1",
+                  levelColors[level] || "bg-violet-50 dark:bg-violet-950/60 text-violet-750 dark:text-violet-350 border-violet-100 dark:border-violet-900/50"
+                )}
                 onClick={() => toggleFilter(level, selectedLevels, setSelectedLevels)}
               >
                 {level}
@@ -317,7 +408,7 @@ export default function CourseCatalog() {
             {selectedCategories.map(cat => (
               <Badge 
                 key={cat} 
-                className="bg-violet-50 dark:bg-violet-950/60 hover:bg-violet-100 dark:hover:bg-violet-900/50 text-violet-700 dark:text-violet-300 border border-violet-100 dark:border-violet-900/50 cursor-pointer rounded-lg px-2.5 py-1 text-xs"
+                className="bg-violet-50 dark:bg-violet-950/60 hover:bg-violet-100 dark:hover:bg-violet-900/50 text-violet-750 dark:text-violet-300 border border-violet-100 dark:border-violet-900/50 cursor-pointer rounded-lg px-2.5 py-1 text-xs"
                 onClick={() => toggleFilter(cat, selectedCategories, setSelectedCategories)}
               >
                 {cat}
@@ -341,7 +432,13 @@ export default function CourseCatalog() {
 
           {/* Course Grid */}
           <div className="lg:col-span-3">
-            {sortedLevels.length === 0 ? (
+            {isCatalogLoading ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                {[...Array(6)].map((_, i) => (
+                  <SkeletonCard key={i} />
+                ))}
+              </div>
+            ) : sortedLevels.length === 0 ? (
               <EmptyState
                 icon={BookOpen}
                 title="No courses found"
@@ -357,9 +454,9 @@ export default function CourseCatalog() {
                 className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"
               >
                 {sortedLevels.map((level, index) => {
-                  const language = languages.find(l => l._id === level.language_id);
+                  const language = languages.find(l => (l._id || l.id) === level.language_id);
                   const courseData = {
-                    _id: level._id,
+                    _id: level._id || level.id,
                     title: `${language?.name || 'Language'} - ${level.level_name}`,
                     description: level.description || 'Comprehensive language course covering grammatical structures, speech patterns, and custom vocabulary logs.',
                     language: language?.name || '',
@@ -375,7 +472,7 @@ export default function CourseCatalog() {
                   };
                   return (
                     <CourseCard 
-                      key={level._id}
+                      key={level._id || level.id}
                       course={courseData}
                       delay={index}
                     />

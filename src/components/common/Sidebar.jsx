@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -71,9 +71,21 @@ const studentMenuItems = [
 ];
 
 export default function Sidebar({ userRole, currentPage, onLogout }) {
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(() => {
+    const saved = localStorage.getItem('sidebar-collapsed');
+    return saved === 'true';
+  });
   const [mobileOpen, setMobileOpen] = useState(false);
   const { theme, setTheme } = useTheme();
+
+  useEffect(() => {
+    localStorage.setItem('sidebar-collapsed', collapsed);
+    if (collapsed) {
+      document.body.classList.add('sidebar-collapsed');
+    } else {
+      document.body.classList.remove('sidebar-collapsed');
+    }
+  }, [collapsed]);
 
   const menuItems = userRole === 'admin' 
     ? adminMenuItems 
@@ -84,23 +96,55 @@ export default function Sidebar({ userRole, currentPage, onLogout }) {
   const SidebarContent = () => (
     <div className="flex flex-col h-full">
       <div className={cn(
-        "flex items-center h-16 px-6 border-b border-slate-200/50 dark:border-slate-800/50",
-        collapsed ? "justify-center" : "justify-between"
+        "flex items-center h-16 px-6 border-b border-slate-200/50 dark:border-slate-800/50 transition-all duration-300 relative",
+        collapsed ? "justify-center px-4" : "justify-between"
       )}>
+        <Link to={createPageUrl('Home')} className="flex items-center gap-2.5 overflow-hidden">
+          <img src="/logo.png" alt="Global Tongue logo" className="w-9 h-9 object-contain rounded-xl shadow-lg shadow-violet-500/25 flex-shrink-0" />
+          <AnimatePresence initial={false}>
+            {!collapsed && (
+              <motion.span
+                initial={{ opacity: 0, width: 0 }}
+                animate={{ opacity: 1, width: "auto" }}
+                exit={{ opacity: 0, width: 0 }}
+                transition={{ type: "spring", stiffness: 200, damping: 20 }}
+                className="font-bold text-xl bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-300 bg-clip-text text-transparent whitespace-nowrap"
+              >
+                Global Tongue
+              </motion.span>
+            )}
+          </AnimatePresence>
+        </Link>
         {!collapsed && (
-          <Link to={createPageUrl('Home')} className="flex items-center gap-2.5">
-            <img src="/logo.png" alt="Global Tongue logo" className="w-9 h-9 object-contain rounded-xl shadow-lg shadow-violet-500/25" />
-            <span className="font-bold text-xl bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-300 bg-clip-text text-transparent">Global Tongue</span>
-          </Link>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setCollapsed(!collapsed)}
+            className="hidden md:flex hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg"
+          >
+            <motion.div
+              animate={{ rotate: collapsed ? 180 : 0 }}
+              transition={{ type: "spring", stiffness: 200, damping: 15 }}
+            >
+              <ChevronLeft className="w-4 h-4 text-slate-500 dark:text-slate-400" />
+            </motion.div>
+          </Button>
         )}
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => setCollapsed(!collapsed)}
-          className="hidden md:flex"
-        >
-          {collapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
-        </Button>
+        {collapsed && (
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setCollapsed(!collapsed)}
+            className="hidden md:flex hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg absolute -right-3 top-5 z-50 bg-white dark:bg-slate-900 shadow-md border border-slate-200/50 dark:border-slate-800/50 w-6 h-6"
+          >
+            <motion.div
+              animate={{ rotate: collapsed ? 180 : 0 }}
+              transition={{ type: "spring", stiffness: 200, damping: 15 }}
+            >
+              <ChevronLeft className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
+            </motion.div>
+          </Button>
+        )}
         <Button
           variant="ghost"
           size="icon"
@@ -113,54 +157,117 @@ export default function Sidebar({ userRole, currentPage, onLogout }) {
 
       <ScrollArea className="flex-1 py-6">
         <nav className="px-4 space-y-2">
-                  {menuItems.map((item) => {
-                    const isActive = currentPage === item.page;
-                    return (
-                      <Link
-                        key={item.page}
-                        to={createPageUrl(item.page)}
-                        onClick={() => setMobileOpen(false)}
-                        className={cn(
-                          "flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 no-underline",
-                          isActive 
-                            ? "bg-gradient-to-r from-violet-50 to-purple-50 dark:from-violet-900/30 dark:to-purple-900/30 text-violet-600 dark:text-violet-400 shadow-sm"
-                            : "text-slate-600 dark:text-slate-400 hover:bg-slate-50/50 dark:hover:bg-slate-800/50",
-                          collapsed && "justify-center px-2"
-                        )}
-                        style={{ textDecoration: 'none' }}
-                      >
-                        <item.icon className="w-5 h-5 flex-shrink-0" />
-                        {!collapsed && <span className="font-medium text-sm">{item.label}</span>}
-                      </Link>
-                    );
-                  })}
-                </nav>
+          {menuItems.map((item) => {
+            const isActive = currentPage === item.page;
+            return (
+              <Link
+                key={item.page}
+                to={createPageUrl(item.page)}
+                onClick={() => setMobileOpen(false)}
+                className={cn(
+                  "relative flex items-center gap-3 px-4 py-3 rounded-xl transition-colors duration-200 no-underline group",
+                  isActive 
+                    ? "text-violet-600 dark:text-violet-400 animate-gradient"
+                    : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200",
+                  collapsed && "justify-center px-2"
+                )}
+                style={{ textDecoration: 'none' }}
+              >
+                {isActive && (
+                  <motion.div
+                    layoutId="active-nav-bg"
+                    className="absolute inset-0 bg-gradient-to-r from-violet-50 to-purple-50 dark:from-violet-900/20 dark:to-purple-900/20 rounded-xl -z-10 border border-violet-100/50 dark:border-violet-800/20"
+                    transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                  />
+                )}
+                
+                {/* Hover state micro-interaction */}
+                <span className="absolute inset-0 bg-slate-100/40 dark:bg-slate-800/30 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-200 -z-20" />
+
+                <item.icon className={cn(
+                  "w-5 h-5 flex-shrink-0 transition-transform duration-200 group-hover:scale-110",
+                  isActive ? "text-violet-600 dark:text-violet-400" : "text-slate-500 dark:text-slate-400 group-hover:text-slate-700 dark:group-hover:text-slate-300"
+                )} />
+                
+                <AnimatePresence initial={false}>
+                  {!collapsed && (
+                    <motion.span
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -10 }}
+                      transition={{ duration: 0.15 }}
+                      className="font-medium text-sm z-10 whitespace-nowrap"
+                    >
+                      {item.label}
+                    </motion.span>
+                  )}
+                </AnimatePresence>
+              </Link>
+            );
+          })}
+        </nav>
       </ScrollArea>
 
-      <div className="p-4 border-t border-slate-200/50 dark:border-slate-800/50 space-y-2">
+      <div className="p-4 border-t border-slate-200/50 dark:border-slate-800/50 space-y-1">
         <Button
           variant="ghost"
           size="sm"
           onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
           className={cn(
-            "w-full justify-start gap-3 px-4 py-2.5 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/50",
+            "relative w-full justify-start gap-3 px-4 py-2.5 rounded-xl text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 transition-colors duration-200 group",
             collapsed && "justify-center px-2"
           )}
         >
-          {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-          {!collapsed && <span className="text-sm font-medium">{theme === 'dark' ? 'Light' : 'Dark'}</span>}
+          <span className="absolute inset-0 bg-slate-100/40 dark:bg-slate-800/30 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
+          <motion.div
+            whileHover={{ scale: 1.1 }}
+            className="z-10 flex-shrink-0"
+          >
+            {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+          </motion.div>
+          <AnimatePresence initial={false}>
+            {!collapsed && (
+              <motion.span
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -10 }}
+                transition={{ duration: 0.15 }}
+                className="text-sm font-medium z-10 whitespace-nowrap"
+              >
+                {theme === 'dark' ? 'Light' : 'Dark'}
+              </motion.span>
+            )}
+          </AnimatePresence>
         </Button>
         <Button
           variant="ghost"
           size="sm"
           onClick={onLogout}
           className={cn(
-            "w-full justify-start gap-3 px-4 py-2.5 rounded-xl text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20",
+            "relative w-full justify-start gap-3 px-4 py-2.5 rounded-xl text-red-600 hover:text-red-700 hover:bg-red-50/50 dark:hover:bg-red-950/20 transition-colors duration-200 group",
             collapsed && "justify-center px-2"
           )}
         >
-          <LogOut className="w-5 h-5" />
-          {!collapsed && <span className="text-sm font-medium">Logout</span>}
+          <span className="absolute inset-0 bg-red-50/10 dark:bg-red-950/10 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
+          <motion.div
+            whileHover={{ scale: 1.1 }}
+            className="z-10 flex-shrink-0"
+          >
+            <LogOut className="w-5 h-5" />
+          </motion.div>
+          <AnimatePresence initial={false}>
+            {!collapsed && (
+              <motion.span
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -10 }}
+                transition={{ duration: 0.15 }}
+                className="text-sm font-medium z-10 whitespace-nowrap"
+              >
+                Logout
+              </motion.span>
+            )}
+          </AnimatePresence>
         </Button>
       </div>
     </div>
@@ -173,7 +280,7 @@ export default function Sidebar({ userRole, currentPage, onLogout }) {
         variant="ghost"
         size="icon"
         onClick={() => setMobileOpen(true)}
-        className="fixed top-4 left-4 z-50 md:hidden bg-white dark:bg-slate-900 shadow-lg"
+        className="fixed top-4 left-4 z-50 md:hidden bg-white dark:bg-slate-900 shadow-lg border border-slate-200/50 dark:border-slate-800/50 rounded-xl"
       >
         <Menu className="w-5 h-5" />
       </Button>
@@ -186,7 +293,7 @@ export default function Sidebar({ userRole, currentPage, onLogout }) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => setMobileOpen(false)}
-            className="fixed inset-0 bg-black/50 z-40 md:hidden"
+            className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40 md:hidden"
           />
         )}
       </AnimatePresence>
@@ -198,8 +305,8 @@ export default function Sidebar({ userRole, currentPage, onLogout }) {
             initial={{ x: -280 }}
             animate={{ x: 0 }}
             exit={{ x: -280 }}
-            transition={{ type: "spring", damping: 20 }}
-            className="fixed left-0 top-0 bottom-0 w-[280px] bg-white/95 dark:bg-slate-900/95 backdrop-blur-2xl z-50 md:hidden shadow-2xl"
+            transition={{ type: "spring", damping: 25, stiffness: 200 }}
+            className="fixed left-0 top-0 bottom-0 w-[280px] bg-white/95 dark:bg-slate-900/95 backdrop-blur-2xl z-50 md:hidden shadow-2xl border-r border-slate-200/50 dark:border-slate-800/50"
           >
             <SidebarContent />
           </motion.aside>
@@ -209,8 +316,8 @@ export default function Sidebar({ userRole, currentPage, onLogout }) {
       {/* Desktop sidebar */}
       <motion.aside
         animate={{ width: collapsed ? 72 : 260 }}
-        transition={{ type: "spring", damping: 20 }}
-        className="hidden md:flex fixed left-0 top-0 bottom-0 bg-white/40 dark:bg-slate-900/40 backdrop-blur-2xl border-r border-slate-200/50 dark:border-slate-800/50 z-30"
+        transition={{ type: "spring", damping: 25, stiffness: 200 }}
+        className="hidden md:flex fixed left-0 top-0 bottom-0 bg-white/40 dark:bg-slate-900/40 backdrop-blur-2xl border-r border-slate-200/50 dark:border-slate-800/50 z-30 shadow-premium-sm"
       >
         <SidebarContent />
       </motion.aside>
