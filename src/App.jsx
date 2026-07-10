@@ -79,7 +79,7 @@ function App() {
             <NavigationTracker />
             <BookFlyingAnimation />
             <CartDrawer />
-            <AIChat />
+            {/* <AIChat /> */}
             <AuthenticatedApp />
           </Router>
           <Toaster />
